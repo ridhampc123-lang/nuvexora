@@ -1,0 +1,1 @@
+export { LoadingScreen } from "@/components/layout/loading-screen"

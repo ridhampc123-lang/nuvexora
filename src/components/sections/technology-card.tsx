@@ -1,0 +1,1 @@
+export { FeatureCard as TechnologyCard } from "@/components/sections/feature-card";

@@ -1,0 +1,1 @@
+export const missionStatement = "Build enterprise-grade digital products that feel premium, perform flawlessly, and scale responsibly.";

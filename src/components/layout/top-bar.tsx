@@ -1,0 +1,1 @@
+export { AnnouncementBar as TopBar } from "@/components/layout/announcement-bar"

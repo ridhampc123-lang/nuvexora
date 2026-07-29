@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const business_controller_js_1 = require("../controllers/business.controller.js");
+const auth_middleware_js_1 = require("../middleware/auth.middleware.js");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_js_1.verifyJWT);
+router.get("/crm/deals", business_controller_js_1.getDealsPipeline);
+router.get("/hr/employees", business_controller_js_1.getEmployees);
+router.get("/support/tickets", business_controller_js_1.getTickets);
+router.get("/finance/ledger", business_controller_js_1.getFinanceLedger);
+router.post("/ai/generate", business_controller_js_1.generateAiContent);
+exports.default = router;

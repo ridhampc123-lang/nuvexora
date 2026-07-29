@@ -1,0 +1,1 @@
+export const companyValues = ["Craft", "Clarity", "Velocity", "Accountability"] as const;

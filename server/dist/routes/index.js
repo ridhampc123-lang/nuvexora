@@ -1,0 +1,28 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const health_routes_js_1 = __importDefault(require("./health.routes.js"));
+const auth_routes_js_1 = __importDefault(require("./auth.routes.js"));
+const lead_routes_js_1 = __importDefault(require("./lead.routes.js"));
+const project_routes_js_1 = __importDefault(require("./project.routes.js"));
+const blog_routes_js_1 = __importDefault(require("./blog.routes.js"));
+const public_routes_js_1 = __importDefault(require("./public.routes.js"));
+const admin_routes_js_1 = __importDefault(require("./admin.routes.js"));
+const client_routes_js_1 = __importDefault(require("./client.routes.js"));
+const business_routes_js_1 = __importDefault(require("./business.routes.js"));
+const employee_routes_js_1 = __importDefault(require("./employee.routes.js"));
+const router = (0, express_1.Router)();
+router.use("/health", health_routes_js_1.default);
+router.use("/auth", auth_routes_js_1.default);
+router.use("/public", public_routes_js_1.default);
+router.use("/admin", admin_routes_js_1.default);
+router.use("/client", client_routes_js_1.default);
+router.use("/business", business_routes_js_1.default);
+router.use("/employee", employee_routes_js_1.default);
+router.use("/leads", lead_routes_js_1.default);
+router.use("/projects", project_routes_js_1.default);
+router.use("/blogs", blog_routes_js_1.default);
+exports.default = router;

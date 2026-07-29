@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const client_controller_js_1 = require("../controllers/client.controller.js");
+const router = (0, express_1.Router)();
+router.get("/dashboard", client_controller_js_1.getClientDashboardData);
+router.get("/projects", client_controller_js_1.getClientProjects);
+router.get("/tasks", client_controller_js_1.getClientTasks);
+router.patch("/tasks/:id", client_controller_js_1.updateClientTask);
+router.get("/invoices", client_controller_js_1.getClientInvoices);
+router.post("/invoices/:id/pay", client_controller_js_1.payClientInvoice);
+exports.default = router;

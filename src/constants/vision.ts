@@ -1,0 +1,1 @@
+export const visionStatement = "Become the most trusted technology partner for teams building ambitious products.";

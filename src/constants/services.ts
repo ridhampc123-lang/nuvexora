@@ -1,0 +1,17 @@
+export const serviceNames = [
+  "Web Development",
+  "Mobile App Development",
+  "AI Solutions",
+  "SaaS Development",
+  "UI/UX Design",
+  "Cloud & DevOps",
+  "Digital Marketing",
+  "Branding",
+  "Enterprise Software",
+  "CRM",
+  "ERP",
+  "E-Commerce",
+  "Custom Software",
+  "SEO",
+  "Automation",
+] as const;

@@ -1,0 +1,1 @@
+export const processSteps = ["Discover", "Design", "Build", "Launch", "Scale"] as const;

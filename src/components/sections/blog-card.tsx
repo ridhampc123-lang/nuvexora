@@ -1,0 +1,1 @@
+export { FeatureCard as BlogCard } from "@/components/sections/feature-card";
