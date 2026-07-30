@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.subscribeNewsletter = exports.bookMeeting = exports.getHomepageData = void 0;
+exports.subscribeNewsletter = exports.bookMeeting = exports.getPublicPortfolio = exports.getHomepageData = void 0;
 const async_handler_js_1 = require("../utils/async-handler.js");
 const api_response_js_1 = require("../utils/api-response.js");
 const service_model_js_1 = require("../models/service.model.js");
@@ -17,6 +17,10 @@ exports.getHomepageData = (0, async_handler_js_1.asyncHandler)(async (_req, res)
         faq_model_js_1.FAQ.find({ isActive: true }).limit(6),
     ]);
     return res.status(200).json(new api_response_js_1.ApiResponse(200, { services, portfolio, testimonials, faqs }, "Homepage metadata retrieved successfully"));
+});
+exports.getPublicPortfolio = (0, async_handler_js_1.asyncHandler)(async (_req, res) => {
+    const items = await portfolio_model_js_1.Portfolio.find().sort({ createdAt: -1 });
+    return res.status(200).json(new api_response_js_1.ApiResponse(200, items, "Public portfolio retrieved successfully"));
 });
 exports.bookMeeting = (0, async_handler_js_1.asyncHandler)(async (req, res) => {
     const { organizerName, organizerEmail, companyName, meetingDate, timeSlot, topic } = req.body;

@@ -8,7 +8,7 @@ import { ArrowRight, Sparkles, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 export function CTA() {
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-background text-foreground relative overflow-hidden">
+    <section className="pt-10 pb-8 sm:pt-14 sm:pb-10 lg:pt-16 lg:pb-12 bg-background text-foreground relative overflow-hidden">
       <Container size="2xl">
         <div className="relative rounded-[2.5rem] bg-gradient-to-tr from-slate-950 via-slate-900 to-blue-950 p-8 sm:p-12 lg:p-16 text-white overflow-hidden shadow-2xl shadow-blue-950/20 border border-slate-800">
           {/* Ambient Glowing Background */}

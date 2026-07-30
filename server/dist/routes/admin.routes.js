@@ -2,9 +2,21 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const admin_controller_js_1 = require("../controllers/admin.controller.js");
+const admin_blog_controller_js_1 = require("../controllers/admin-blog.controller.js");
+const admin_portfolio_controller_js_1 = require("../controllers/admin-portfolio.controller.js");
 const auth_middleware_js_1 = require("../middleware/auth.middleware.js");
 const router = (0, express_1.Router)();
 router.use(auth_middleware_js_1.verifyJWT, (0, auth_middleware_js_1.requireRole)("SUPER_ADMIN", "ADMIN"));
+// Blogs Management
+router.get("/blogs", admin_blog_controller_js_1.getAdminBlogs);
+router.post("/blogs", admin_blog_controller_js_1.createBlog);
+router.patch("/blogs/:id", admin_blog_controller_js_1.updateBlog);
+router.delete("/blogs/:id", admin_blog_controller_js_1.deleteBlog);
+// Portfolio Management
+router.get("/portfolio", admin_portfolio_controller_js_1.getAdminPortfolio);
+router.post("/portfolio", admin_portfolio_controller_js_1.createPortfolioItem);
+router.patch("/portfolio/:id", admin_portfolio_controller_js_1.updatePortfolioItem);
+router.delete("/portfolio/:id", admin_portfolio_controller_js_1.deletePortfolioItem);
 // Dashboard Metrics
 router.get("/metrics", admin_controller_js_1.getAdminDashboardMetrics);
 // Users Management
@@ -53,4 +65,37 @@ router.get("/milestones", admin_controller_js_1.getAllMilestones);
 router.post("/milestones", admin_controller_js_1.createMilestone);
 router.patch("/milestones/:id", admin_controller_js_1.updateMilestone);
 router.delete("/milestones/:id", admin_controller_js_1.deleteMilestone);
+// Invoice Management
+router.get("/invoices", admin_controller_js_1.getAllInvoices);
+router.post("/invoices", admin_controller_js_1.createInvoice);
+router.patch("/invoices/:id", admin_controller_js_1.updateInvoice);
+router.delete("/invoices/:id", admin_controller_js_1.deleteInvoice);
+// Payment Management
+router.get("/payments", admin_controller_js_1.getAllPayments);
+router.post("/payments", admin_controller_js_1.createPayment);
+router.patch("/payments/:id", admin_controller_js_1.updatePayment);
+router.delete("/payments/:id", admin_controller_js_1.deletePayment);
+// Proposal Management
+router.get("/proposals", admin_controller_js_1.getAllProposals);
+router.post("/proposals", admin_controller_js_1.createProposal);
+router.patch("/proposals/:id", admin_controller_js_1.updateProposal);
+router.delete("/proposals/:id", admin_controller_js_1.deleteProposal);
+// Contract Management
+router.get("/contracts", admin_controller_js_1.getAllContracts);
+router.post("/contracts", admin_controller_js_1.createContract);
+router.patch("/contracts/:id", admin_controller_js_1.updateContract);
+router.delete("/contracts/:id", admin_controller_js_1.deleteContract);
+// Message Management
+router.get("/messages", admin_controller_js_1.getAllMessages);
+router.patch("/messages/:id", admin_controller_js_1.updateMessageStatus);
+router.delete("/messages/:id", admin_controller_js_1.deleteMessage);
+// Meeting Management
+router.get("/meetings", admin_controller_js_1.getAllMeetings);
+router.post("/meetings", admin_controller_js_1.createMeeting);
+router.patch("/meetings/:id", admin_controller_js_1.updateMeeting);
+router.delete("/meetings/:id", admin_controller_js_1.deleteMeeting);
+// Ticket Management
+router.get("/tickets", admin_controller_js_1.getAllTickets);
+router.patch("/tickets/:id", admin_controller_js_1.updateTicket);
+router.delete("/tickets/:id", admin_controller_js_1.deleteTicket);
 exports.default = router;

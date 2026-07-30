@@ -2,14 +2,13 @@
   "name": "nuvexora-backend",
   "version": "1.0.0",
   "private": true,
-  "description": "Nuvexora Technologies Enterprise Backend REST API Service",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "seed": "tsx src/seed/seed.ts",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "seed": "tsx src/seed/seed.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

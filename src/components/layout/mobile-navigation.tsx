@@ -6,19 +6,30 @@ import { MenuIcon, PhoneCallIcon, MailIcon, MessageCircleIcon, SearchIcon, Arrow
 import { navigationConfig } from "@/config/navigation"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { cn } from "@/lib/utils"
 
 function MobileNavigation() {
   return (
     <Sheet>
-      <SheetTrigger render={<Button variant="ghost" size="icon-sm" className="lg:hidden" />}>
-        <MenuIcon className="size-4" aria-hidden="true" />
+      <SheetTrigger
+        render={
+          <Button
+            variant="outline"
+            size="icon"
+            className="flex lg:hidden shrink-0 rounded-xl border-border bg-background text-foreground shadow-xs hover:bg-hover hover:text-foreground"
+            aria-label="Open navigation menu"
+          />
+        }
+      >
+        <MenuIcon className="size-5" aria-hidden="true" />
       </SheetTrigger>
 
       <SheetContent side="right" className="w-[min(92vw,26rem)] border-l-border bg-background dark:bg-slate-950 text-foreground">
-        <div className="flex h-full flex-col gap-6 p-5 pt-16">
+        <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+        <SheetDescription className="sr-only">Access site pages, services, and contact options.</SheetDescription>
+        <div className="flex h-full flex-col gap-6 p-5 pt-12">
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Navigation</p>
             <h2 className="font-heading text-2xl font-semibold tracking-[-0.03em]">Explore Nuvexora</h2>

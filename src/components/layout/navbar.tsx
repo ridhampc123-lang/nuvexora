@@ -49,7 +49,7 @@ function Navbar() {
       initial={false}
       animate={{ y: 0 }}
       className={cn(
-        "sticky top-0 z-[60] border-b transition-all duration-300",
+        "relative z-[60] w-full border-b transition-all duration-300",
         isScrolled ? "border-border/70 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl shadow-soft" : "border-transparent bg-transparent"
       )}
     >
@@ -103,20 +103,9 @@ function Navbar() {
           </NavigationMenuList>
         </NavigationMenu>
 
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Search"
-            title="Search"
-            onClick={() => window.dispatchEvent(new CustomEvent("nuvexora:search"))}
-            className="hidden text-muted-foreground hover:text-foreground md:inline-flex"
-          >
-            <SearchIcon className="size-4" aria-hidden="true" />
-          </Button>
+        <div className="flex items-center gap-2 sm:gap-3">
           <ThemeToggle />
-          <Link href="/book-consultation" className={buttonVariants({ size: "sm" })}>
+          <Link href="/book-consultation" className={cn(buttonVariants({ size: "sm" }), "hidden sm:inline-flex")}>
             Book consultation
           </Link>
           <MobileNavigation />

@@ -40,7 +40,7 @@ export default function RootLayout({
       className={`${jakartaSans.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased w-full overflow-x-clip`}
     >
       <body
-        className="min-h-screen w-full flex flex-col bg-background text-foreground overflow-x-hidden font-sans tracking-tight"
+        className="min-h-screen w-full flex flex-col bg-background text-foreground overflow-x-clip font-sans tracking-tight"
         suppressHydrationWarning
       >
         <SeoSchema />
