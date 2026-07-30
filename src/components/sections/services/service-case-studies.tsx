@@ -60,7 +60,7 @@ const caseStudies: CaseStudyItem[] = [
 
 export function ServiceCaseStudies() {
   return (
-    <section className="py-16 sm:py-24 bg-background text-foreground relative border-t border-slate-200/60 dark:border-slate-800/60">
+    <section className="py-8 sm:py-12 bg-background text-foreground relative border-t border-slate-200/60 dark:border-slate-800/60">
       <Container size="2xl">
         <div className="max-w-3xl mx-auto text-center space-y-4 mb-14">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-xs font-semibold uppercase tracking-wider border border-blue-200/60 dark:border-blue-800/80">

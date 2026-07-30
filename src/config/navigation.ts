@@ -97,7 +97,6 @@ const resourcesMegaMenu: MegaMenuConfig = {
     {
       title: "Plan",
       items: [
-        { label: "Pricing", href: "/pricing", icon: HeartHandshakeIcon },
         { label: "Book Consultation", href: "/book-consultation", icon: CalendarCheck2Icon },
         { label: "FAQ", href: "/contact#faq", icon: BookOpenIcon },
       ],
@@ -167,7 +166,6 @@ export const navigationConfig = {
     { label: "Home", href: "/" },
     servicesMegaMenu,
     { label: "Portfolio", href: "/portfolio" },
-    { label: "Pricing", href: "/pricing" },
     resourcesMegaMenu,
     companyMegaMenu,
   ],
@@ -208,7 +206,6 @@ export const navigationConfig = {
         { label: "Blog", href: "/blog" },
         { label: "Case Studies", href: "/case-studies" },
         { label: "Technologies", href: "/technologies" },
-        { label: "Pricing", href: "/pricing" },
         { label: "FAQ", href: "/contact#faq" },
       ],
     },

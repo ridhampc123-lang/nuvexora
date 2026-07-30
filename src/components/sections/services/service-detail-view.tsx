@@ -71,7 +71,7 @@ export function ServiceDetailView({ service }: { service: Service }) {
   return (
     <article className="min-h-screen bg-background text-foreground">
       {/* 1. Hero Section */}
-      <section className="relative py-16 sm:py-24 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white overflow-hidden border-b border-slate-800">
+      <section className="relative py-10 sm:py-14 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 text-white overflow-hidden border-b border-slate-800">
         <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:24px_24px]" />
         
         <Container size="2xl" className="relative z-10">
@@ -399,7 +399,7 @@ export function ServiceDetailView({ service }: { service: Service }) {
 
       {/* 10. FAQs */}
       {service.faqs && service.faqs.length > 0 && (
-        <section className="py-16 sm:py-24 bg-background text-foreground border-b border-slate-200/60 dark:border-slate-800/60">
+        <section className="py-8 sm:py-12 bg-background text-foreground border-b border-slate-200/60 dark:border-slate-800/60">
           <Container size="2xl">
             <div className="max-w-3xl mx-auto text-center space-y-4 mb-12">
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">

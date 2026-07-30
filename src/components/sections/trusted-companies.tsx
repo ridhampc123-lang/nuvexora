@@ -29,7 +29,7 @@ const companies = [
 
 export function TrustedCompanies() {
   return (
-    <section className="py-12 bg-slate-50/60 border-y border-slate-200/80 overflow-hidden select-none">
+    <section className="py-6 sm:py-8 bg-slate-50/60 border-y border-slate-200/80 overflow-hidden select-none">
       <Container size="2xl">
         <p className="text-center text-xs font-semibold uppercase tracking-[0.25em] text-slate-400 mb-8">
           Trusted By Industry Leaders & High-Growth Enterprises

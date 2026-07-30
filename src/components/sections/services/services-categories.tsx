@@ -105,7 +105,7 @@ export function ServicesCategories() {
   });
 
   return (
-    <section id="service-categories" className="py-16 sm:py-24 bg-slate-50/50 dark:bg-slate-900/40 relative">
+    <section id="service-categories" className="py-8 sm:py-12 bg-slate-50/50 dark:bg-slate-900/40 relative">
       <Container size="2xl">
         <div className="max-w-3xl mx-auto text-center space-y-4 mb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-xs font-semibold uppercase tracking-wider border border-blue-200/60 dark:border-blue-800/80">

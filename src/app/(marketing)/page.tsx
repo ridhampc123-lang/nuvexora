@@ -8,7 +8,6 @@ import {
   PortfolioSection, 
   ProcessSection, 
   TestimonialsSection, 
-  PricingSection, 
   FAQSection, 
   BlogPreviewSection, 
   CTA 
@@ -26,7 +25,6 @@ export default function MarketingHomePage() {
       <PortfolioSection />
       <ProcessSection />
       <TestimonialsSection />
-      <PricingSection />
       <FAQSection />
       <BlogPreviewSection />
       <CTA />

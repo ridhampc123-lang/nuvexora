@@ -7,7 +7,6 @@ import { DevelopmentProcessTimeline } from "@/components/sections/services/devel
 import { WhyChooseNuvexora } from "@/components/sections/services/why-choose-nuvexora";
 import { IndustriesGrid } from "@/components/sections/services/industries-grid";
 import { ServiceCaseStudies } from "@/components/sections/services/service-case-studies";
-import { PricingPhilosophy } from "@/components/sections/services/pricing-philosophy";
 import { ServicesFAQ } from "@/components/sections/services/services-faq";
 import { TestimonialsSection } from "@/components/sections/testimonials";
 import { CTA } from "@/components/sections/cta";
@@ -88,10 +87,7 @@ export default function ServicesPage() {
       {/* 8. Case Studies */}
       <ServiceCaseStudies />
 
-      {/* 9. Pricing Philosophy */}
-      <PricingPhilosophy />
-
-      {/* 10. Frequently Asked Questions */}
+      {/* 9. Frequently Asked Questions */}
       <ServicesFAQ />
 
       {/* 11. Testimonials */}

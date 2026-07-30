@@ -25,7 +25,7 @@ export function DetailedServicesOverview() {
   const activeService = servicesData.find((s) => s.slug === selectedServiceSlug) || featuredServices[0];
 
   return (
-    <section className="py-16 sm:py-24 bg-background text-foreground border-t border-slate-200/60 dark:border-slate-800/60">
+    <section className="py-8 sm:py-12 bg-background text-foreground border-t border-slate-200/60 dark:border-slate-800/60">
       <Container size="2xl">
         {/* Section Header */}
         <div className="max-w-3xl mx-auto text-center space-y-4 mb-12">

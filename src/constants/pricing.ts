@@ -1,1 +1,0 @@
-export const pricingTiers = ["Launch", "Growth", "Enterprise"] as const;

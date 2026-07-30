@@ -80,7 +80,7 @@ export function ServicesSection() {
     : servicesData.filter(s => s.category === activeCategory);
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-background text-foreground relative overflow-hidden">
+    <section className="py-8 sm:py-10 lg:py-12 bg-background text-foreground relative overflow-hidden">
       <Container size="2xl">
         {/* Section Header */}
         <div className="max-w-3xl mx-auto text-center space-y-4 mb-10 sm:mb-12">

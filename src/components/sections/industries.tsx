@@ -60,7 +60,7 @@ const industries = [
 
 export function IndustriesSection() {
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-slate-50/70 dark:bg-slate-950/60 border-y border-slate-200/80 dark:border-slate-800/80 relative overflow-hidden">
+    <section className="py-8 sm:py-10 lg:py-12 bg-slate-50/70 dark:bg-slate-950/60 border-y border-slate-200/80 dark:border-slate-800/80 relative overflow-hidden">
       <Container size="2xl">
         {/* Header */}
         <div className="max-w-3xl mx-auto text-center space-y-4 mb-10 sm:mb-12">

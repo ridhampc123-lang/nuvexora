@@ -46,7 +46,7 @@ export function WhyChooseNuvexora() {
   ];
 
   return (
-    <section className="py-16 sm:py-24 bg-slate-900 text-white relative overflow-hidden">
+    <section className="py-8 sm:py-12 bg-slate-900 text-white relative overflow-hidden">
       {/* Subtle Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
 

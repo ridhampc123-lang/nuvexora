@@ -12,4 +12,3 @@ export * from "@/constants/process";
 export * from "@/constants/values";
 export * from "@/constants/mission";
 export * from "@/constants/vision";
-export * from "@/constants/pricing";

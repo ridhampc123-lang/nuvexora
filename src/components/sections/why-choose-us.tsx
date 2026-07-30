@@ -49,7 +49,7 @@ const valueProps = [
 
 export function WhyChooseUsSection() {
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-slate-950 text-white relative overflow-hidden">
+    <section className="py-8 sm:py-10 lg:py-12 bg-slate-950 text-white relative overflow-hidden">
       {/* Background Ambient Glows */}
       <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-indigo-600/10 blur-[150px] pointer-events-none" />
