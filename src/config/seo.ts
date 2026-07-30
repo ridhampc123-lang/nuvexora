@@ -18,19 +18,24 @@ export function createMetadata(overrides: Metadata = {}): Metadata {
     title: seoConfig.title,
     description: seoConfig.description,
     alternates: { canonical: siteConfig.url },
+    icons: {
+      icon: "/logos/logo.png",
+      shortcut: "/logos/logo.png",
+      apple: "/logos/logo.png",
+    },
     openGraph: {
       type: "website",
       url: siteConfig.url,
       siteName: siteConfig.name,
       title: seoConfig.title.default,
       description: seoConfig.description,
-      images: [seoConfig.openGraphImage],
+      images: ["/logos/logo.png"],
     },
     twitter: {
       card: seoConfig.twitterCard,
       title: seoConfig.title.default,
       description: seoConfig.description,
-      images: [seoConfig.openGraphImage],
+      images: ["/logos/logo.png"],
     },
     robots: {
       index: true,

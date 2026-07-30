@@ -1,9 +1,12 @@
 "use client"
 
 import Link from "next/link"
+import { useEffect, useState } from "react"
+import { usePathname } from "next/navigation"
 import { MenuIcon, PhoneCallIcon, MailIcon, MessageCircleIcon, SearchIcon, ArrowRightIcon } from "lucide-react"
 
 import { navigationConfig } from "@/config/navigation"
+import { useLenis } from "@/providers/smooth-scroll-provider"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
@@ -11,8 +14,32 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { cn } from "@/lib/utils"
 
 function MobileNavigation() {
+  const [open, setOpen] = useState(false)
+  const pathname = usePathname()
+  const { lenis } = useLenis()
+
+  // Automatically close sidebar when pathname changes
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
+
+  // Lock body scroll and pause Lenis smooth scroll when mobile navigation is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden"
+      lenis?.stop()
+    } else {
+      document.body.style.overflow = ""
+      lenis?.start()
+    }
+    return () => {
+      document.body.style.overflow = ""
+      lenis?.start()
+    }
+  }, [open, lenis])
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         render={
           <Button
@@ -26,10 +53,18 @@ function MobileNavigation() {
         <MenuIcon className="size-5" aria-hidden="true" />
       </SheetTrigger>
 
-      <SheetContent side="right" className="w-[min(92vw,26rem)] border-l-border bg-background dark:bg-slate-950 text-foreground">
+      <SheetContent
+        side="right"
+        data-lenis-prevent
+        className="w-[min(92vw,26rem)] border-l-border bg-background dark:bg-slate-950 text-foreground max-h-dvh h-dvh flex flex-col p-0 overflow-hidden"
+      >
         <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
         <SheetDescription className="sr-only">Access site pages, services, and contact options.</SheetDescription>
-        <div className="flex h-full flex-col gap-6 p-5 pt-12">
+
+        <div
+          data-lenis-prevent
+          className="flex flex-col flex-1 h-full min-h-0 overflow-y-auto overscroll-contain p-5 pt-12 gap-6"
+        >
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Navigation</p>
             <h2 className="font-heading text-2xl font-semibold tracking-[-0.03em]">Explore Nuvexora</h2>
@@ -56,14 +91,15 @@ function MobileNavigation() {
                                 const Icon = link.icon
 
                                 return (
-                                <Link
-                                  key={`${group.title}-${link.label}`}
-                                  href={link.href}
-                                  className="flex items-center gap-3 rounded-xl border border-transparent px-3 py-2 transition-all hover:border-border hover:bg-hover"
-                                >
-                                  {Icon ? <Icon className="size-4 text-primary" aria-hidden="true" /> : <ArrowRightIcon className="size-4 text-primary" aria-hidden="true" />}
-                                  <span className="text-sm font-medium">{link.label}</span>
-                                </Link>
+                                  <Link
+                                    key={`${group.title}-${link.label}`}
+                                    href={link.href}
+                                    onClick={() => setOpen(false)}
+                                    className="flex items-center gap-3 rounded-xl border border-transparent px-3 py-2 transition-all hover:border-border hover:bg-hover"
+                                  >
+                                    {Icon ? <Icon className="size-4 text-primary" aria-hidden="true" /> : <ArrowRightIcon className="size-4 text-primary" aria-hidden="true" />}
+                                    <span className="text-sm font-medium">{link.label}</span>
+                                  </Link>
                                 )
                               })}
                             </div>
@@ -79,6 +115,7 @@ function MobileNavigation() {
                 <Link
                   key={`${item.label}-${item.href}`}
                   href={item.href}
+                  onClick={() => setOpen(false)}
                   className="flex items-center justify-between rounded-2xl border border-border bg-surface px-4 py-4 text-base font-semibold transition-all hover:border-primary/20 hover:bg-hover"
                 >
                   {item.label}
@@ -107,10 +144,10 @@ function MobileNavigation() {
           </div>
 
           <div className="mt-auto grid gap-3 sm:grid-cols-2">
-            <Link href="/book-consultation" className={cn(buttonVariants({ size: "lg" }), "w-full")}>
+            <Link href="/book-consultation" onClick={() => setOpen(false)} className={cn(buttonVariants({ size: "lg" }), "w-full")}>
               Book consultation
             </Link>
-            <Link href="/contact" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}>
+            <Link href="/contact" onClick={() => setOpen(false)} className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}>
               Contact sales
             </Link>
           </div>

@@ -49,8 +49,10 @@ function Navbar() {
       initial={false}
       animate={{ y: 0 }}
       className={cn(
-        "relative z-[60] w-full border-b transition-all duration-300",
-        isScrolled ? "border-border/70 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl shadow-soft" : "border-transparent bg-transparent"
+        "sticky top-0 z-50 w-full border-b transition-all duration-300",
+        isScrolled
+          ? "border-border/70 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl shadow-soft"
+          : "border-border/40 bg-white/60 dark:bg-slate-950/60 backdrop-blur-md"
       )}
     >
       <Container className="flex h-20 items-center justify-between gap-4">

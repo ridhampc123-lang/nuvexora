@@ -164,6 +164,7 @@ export function AdminHeader() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
+            data-lenis-prevent
             className="lg:hidden bg-slate-950 text-slate-300 border-b border-slate-800 p-4 z-40 max-h-[75vh] overflow-y-auto"
           >
             <div className="text-[10px] font-extrabold text-blue-400 uppercase tracking-widest px-3 mb-2 flex items-center gap-1">

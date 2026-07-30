@@ -103,8 +103,8 @@ export function AdminSidebar() {
       {/* Brand Header */}
       <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
         <Link href="/admin" className="flex items-center gap-3 overflow-hidden">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-md">
-            <Sparkles className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-xl bg-slate-950 p-1 flex items-center justify-center shrink-0 shadow-md ring-1 ring-white/10 overflow-hidden">
+            <img src="/logos/logo.png" alt="Nuvexora Logo" className="w-full h-full object-cover rounded-lg" />
           </div>
           {!isCollapsed && (
             <div className="flex flex-col leading-none">
