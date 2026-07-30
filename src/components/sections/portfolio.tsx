@@ -52,6 +52,7 @@ export function PortfolioSection() {
         description: p.summary || `Custom enterprise engineering solution developed for ${p.clientName}.`,
         tags: p.techStack?.length > 0 ? p.techStack : ["React", "Node.js", "MongoDB"],
         href: `/portfolio`,
+        coverImage: p.coverImage || "",
         imageColor: "from-blue-600 via-indigo-600 to-slate-900"
       }))
     : defaultProjects;
@@ -94,6 +95,7 @@ export function PortfolioSection() {
               description={project.description}
               tags={project.tags}
               href={project.href}
+              coverImage={project.coverImage}
               imageColor={project.imageColor}
               index={idx}
             />

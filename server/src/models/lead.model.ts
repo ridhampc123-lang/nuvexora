@@ -7,6 +7,7 @@ export interface ILead extends Document {
   company?: string;
   serviceCategory: string;
   budgetRange?: string;
+  timeline?: string;
   message: string;
   status: "new" | "contacted" | "qualified" | "converted" | "closed";
   createdAt: Date;
@@ -21,6 +22,7 @@ const LeadSchema = new Schema<ILead>(
     company: { type: String, default: "" },
     serviceCategory: { type: String, required: true, default: "General Inquiry" },
     budgetRange: { type: String, default: "Undisclosed" },
+    timeline: { type: String, default: "Flexible" },
     message: { type: String, required: true },
     status: {
       type: String,

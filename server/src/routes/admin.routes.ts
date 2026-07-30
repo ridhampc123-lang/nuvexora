@@ -5,6 +5,7 @@ import {
   updateUser,
   getAllLeads,
   updateLeadStatus,
+  deleteLead,
 
   getAllClients,
   createClient,
@@ -63,8 +64,10 @@ import {
   deleteMeeting,
   getAllTickets,
   updateTicket,
-  deleteTicket
+  deleteTicket,
+  uploadMediaImage
 } from "../controllers/admin.controller.js";
+import { upload } from "../config/cloudinary.js";
 import { getAdminBlogs, updateBlog, deleteBlog, createBlog as createAdminBlog } from "../controllers/admin-blog.controller.js";
 import { getAdminPortfolio, createPortfolioItem, updatePortfolioItem, deletePortfolioItem } from "../controllers/admin-portfolio.controller.js";
 import { verifyJWT, requireRole } from "../middleware/auth.middleware.js";
@@ -72,6 +75,9 @@ import { verifyJWT, requireRole } from "../middleware/auth.middleware.js";
 const router = Router();
 
 router.use(verifyJWT, requireRole("SUPER_ADMIN", "ADMIN"));
+
+// Media Image Upload Endpoint
+router.post("/upload", upload.single("image"), uploadMediaImage);
 
 // Blogs Management
 router.get("/blogs", getAdminBlogs);
@@ -95,6 +101,7 @@ router.patch("/users/:id", updateUser);
 // Leads Management
 router.get("/leads", getAllLeads);
 router.patch("/leads/:id", updateLeadStatus);
+router.delete("/leads/:id", deleteLead);
 
 
 

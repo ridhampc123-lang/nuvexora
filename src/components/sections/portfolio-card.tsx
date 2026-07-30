@@ -13,6 +13,7 @@ export interface PortfolioCardProps {
   description: string;
   tags: string[];
   href: string;
+  coverImage?: string;
   imageColor?: string;
   index?: number;
 }
@@ -25,6 +26,7 @@ export function PortfolioCard({
   description,
   tags,
   href,
+  coverImage,
   imageColor = "from-blue-600 to-indigo-700",
   index = 0,
 }: PortfolioCardProps) {
@@ -39,7 +41,12 @@ export function PortfolioCard({
     >
       {/* Top Banner Visual Representation */}
       <div className={`h-48 sm:h-56 bg-gradient-to-tr ${imageColor} p-6 flex flex-col justify-between relative overflow-hidden`}>
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+        {coverImage ? (
+          <img src={coverImage} alt={title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        ) : (
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/30 to-transparent pointer-events-none" />
         
         <div className="flex items-center justify-between relative z-10">
           <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-semibold tracking-wide border border-white/30">

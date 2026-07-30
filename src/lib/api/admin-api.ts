@@ -22,6 +22,37 @@ export const deleteAdminService = async (id: string) => {
 };
 
 
+// --- MEDIA & UPLOAD ---
+export const uploadAdminImage = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append("image", file);
+  
+  try {
+    const { data } = await apiClient.post("/admin/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return data.data.url;
+  } catch {
+    // Client-side fallback: Convert file to Base64 Data URI and post as JSON
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64Image = reader.result as string;
+          const { data } = await apiClient.post("/admin/upload", { image: base64Image });
+          resolve(data.data.url);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  }
+};
+
 // --- BLOGS ---
 export const getAdminBlogs = async () => {
   try {
@@ -112,6 +143,11 @@ export const updateAdminLeadStatus = async ({ id, status }: { id: string; status
   } catch {
     return { id, status };
   }
+};
+
+export const deleteAdminLead = async (id: string) => {
+  const { data } = await apiClient.delete(`/admin/leads/${id}`);
+  return data.data;
 };
 
 

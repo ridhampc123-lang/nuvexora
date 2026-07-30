@@ -53,3 +53,17 @@ export const subscribeNewsletter = async (email: string) => {
   const { data } = await apiClient.post("/public/newsletter/subscribe", { email });
   return data.data;
 };
+
+export const submitLeadInquiry = async (payload: {
+  fullName: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  serviceCategory?: string;
+  budgetRange?: string;
+  timeline?: string;
+  message: string;
+}) => {
+  const { data } = await apiClient.post("/leads", payload);
+  return data.data;
+};

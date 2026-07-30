@@ -6,8 +6,9 @@ export const createLeadSchema = z.object({
     email: z.string().email("Valid email address required"),
     phone: z.string().optional(),
     company: z.string().optional(),
-    serviceCategory: z.string().min(1, "Service category is required"),
+    serviceCategory: z.string().optional(),
     budgetRange: z.string().optional(),
-    message: z.string().min(10, "Message must be at least 10 characters"),
+    timeline: z.string().optional(),
+    message: z.string().min(3, "Message is required"),
   }),
 });

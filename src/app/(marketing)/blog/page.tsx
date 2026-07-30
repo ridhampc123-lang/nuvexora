@@ -39,14 +39,25 @@ export default function BlogPage() {
                   transition={{ delay: idx * 0.1 }}
                   className="group flex flex-col h-full bg-slate-900/40 hover:bg-slate-900/80 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all overflow-hidden relative"
                 >
-                  <div className="p-6 sm:p-8 flex flex-col h-full z-10 relative">
+                  {blog.coverImage && (
+                    <div className="relative w-full h-48 overflow-hidden bg-slate-950 shrink-0">
+                      <img
+                        src={blog.coverImage}
+                        alt={blog.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80" />
+                    </div>
+                  )}
+
+                  <div className="p-6 sm:p-8 flex flex-col flex-1 z-10 relative">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-[10px] uppercase tracking-wider font-bold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
                         {blog.category || "General"}
                       </span>
                       <span className="flex items-center text-xs text-slate-500 font-mono">
                         <Clock className="w-3 h-3 mr-1" />
-                        {blog.readTime || 5} min read
+                        {blog.readTime || "5 min read"}
                       </span>
                     </div>
 
@@ -59,12 +70,12 @@ export default function BlogPage() {
                     </p>
 
                     <div className="mt-auto pt-6 border-t border-slate-800/50 flex items-center justify-between">
-                      <div className="flex items-center text-xs text-slate-500">
-                        <User className="w-4 h-4 mr-1.5" />
-                        <span>{blog.author?.name || "Admin"}</span>
+                      <div className="flex items-center text-xs text-slate-500 font-medium">
+                        <User className="w-4 h-4 mr-1.5 text-blue-400" />
+                        <span>{typeof blog.author === "string" ? blog.author : blog.author?.name || "Nuvexora Architecture Team"}</span>
                       </div>
                       <Link 
-                        href={`/blog/${blog.slug}`} 
+                        href={`/blog/${blog.slug || blog._id}`} 
                         className="text-sm font-semibold text-white flex items-center gap-1 opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all"
                       >
                         Read <ArrowRight className="w-4 h-4 text-blue-400" />
