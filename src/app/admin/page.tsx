@@ -35,8 +35,19 @@ export default function AdminDashboardPage() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    let socketUrl = "http://localhost:5000";
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      if (hostname && hostname !== "localhost" && hostname !== "127.0.0.1") {
+        socketUrl = `http://${hostname}:5000`;
+      }
+    }
+    if (process.env.NEXT_PUBLIC_SOCKET_URL) {
+      socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+    }
+
     // Connect to backend Socket.IO
-    const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000", {
+    const socket = io(socketUrl, {
       withCredentials: true,
     });
 

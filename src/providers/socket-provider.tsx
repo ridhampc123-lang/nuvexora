@@ -20,7 +20,18 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const socketInstance = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000", {
+    let socketUrl = "http://localhost:5000";
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+      if (hostname && hostname !== "localhost" && hostname !== "127.0.0.1") {
+        socketUrl = `http://${hostname}:5000`;
+      }
+    }
+    if (process.env.NEXT_PUBLIC_SOCKET_URL) {
+      socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+    }
+
+    const socketInstance = io(socketUrl, {
       withCredentials: true,
       autoConnect: true,
     });

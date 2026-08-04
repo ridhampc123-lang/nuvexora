@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Bot, Sparkles, Send, Copy, Check, Cpu } from "lucide-react";
+import { getApiBaseUrl } from "@/lib/api/api-client";
 
 export default function AiStudioPage() {
   const [prompt, setPrompt] = useState("");
@@ -18,7 +19,7 @@ export default function AiStudioPage() {
     setResponse(null);
 
     try {
-      const res = await fetch("http://localhost:5000/api/v1/business/ai/generate", {
+      const res = await fetch(`${getApiBaseUrl()}/business/ai/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt, type }),
