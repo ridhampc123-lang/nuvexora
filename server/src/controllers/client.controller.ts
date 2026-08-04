@@ -4,49 +4,74 @@ import { ApiResponse } from "../utils/api-response.js";
 import { Project } from "../models/project.model.js";
 import { Invoice } from "../models/invoice.model.js";
 import { Task } from "../models/task.model.js";
+import { ClientAccount } from "../models/client.model.js";
+import { AuthenticatedRequest } from "../types/index.js";
 
-export const getClientDashboardData = asyncHandler(async (_req: Request, res: Response) => {
-  const [projects, invoices, tasks] = await Promise.all([
-    Project.find().sort({ createdAt: -1 }),
-    Invoice.find().sort({ createdAt: -1 }),
-    Task.find().sort({ createdAt: -1 }),
+export const getClientDashboardData = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req.user?.userId;
+  const client = await ClientAccount.findOne({ userId });
+
+  if (!client) {
+    return res.status(404).json(new ApiResponse(404, null, "Client profile not found"));
+  }
+
+  const clientId = client._id;
+
+  const [projects, invoices] = await Promise.all([
+    Project.find({ clientId }).sort({ createdAt: -1 }),
+    Invoice.find({ clientId }).sort({ createdAt: -1 }),
   ]);
+
+  const projectIds = projects.map(p => p._id);
+  const tasks = await Task.find({ projectId: { $in: projectIds } }).sort({ createdAt: -1 });
+
+  // Calculate stats
+  const activeProjectsCount = projects.filter(p => p.status !== "completed").length;
+  const pendingTasksCount = tasks.filter(t => t.status !== "completed").length;
+  const outstandingInvoices = invoices.filter(i => i.status !== "paid");
+  const outstandingInvoicesTotal = outstandingInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
+
+  const primaryProject = projects[0]?.title || "No Active Project";
+  const deliveryProgress = projects[0]?.progressPercentage || 0;
 
   return res.status(200).json(
     new ApiResponse(
       200,
       {
-        clientName: "Marcus Vance",
-        companyName: "Veloce Financial",
-        primaryProject: "Veloce Financial Banking Engine v4",
-        deliveryProgress: 85,
-        projects: projects.length > 0 ? projects : [
-          { _id: "1", name: "Veloce Financial Banking Engine v4", progress: 85, status: "in_progress", deadline: "Aug 15, 2026" },
-          { _id: "2", name: "Apex Healthcare Patient Portal", progress: 40, status: "in_progress", deadline: "Sep 30, 2026" }
-        ],
-        invoices: invoices.length > 0 ? invoices : [
-          { _id: "inv-1", invoiceNumber: "INV-2026-089", amount: 12500, dueDate: "Aug 01, 2026", status: "pending" }
-        ],
-        tasks: tasks.length > 0 ? tasks : [
-          { _id: "task-1", title: "Approve API v4 Schema Specs", status: "pending", priority: "high" },
-          { _id: "task-2", title: "Review Sprint #14 Deliverables", status: "completed", priority: "medium" }
-        ],
-        activeProjectsCount: 2,
-        pendingTasksCount: 6,
-        outstandingInvoicesTotal: "$12,500",
+        clientName: client.ownerName,
+        companyName: client.companyName,
+        primaryProject,
+        deliveryProgress,
+        projects,
+        invoices,
+        tasks,
+        activeProjectsCount,
+        pendingTasksCount,
+        outstandingInvoicesTotal: `$${outstandingInvoicesTotal.toLocaleString()}`,
+        contractValue: client.contractValue,
+        slaUptimeTarget: client.slaUptimeTarget,
+        notes: client.notes, 
       },
       "Client dashboard overview retrieved successfully"
     )
   );
 });
 
-export const getClientProjects = asyncHandler(async (_req: Request, res: Response) => {
-  const projects = await Project.find().sort({ createdAt: -1 });
+export const getClientProjects = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req.user?.userId;
+  const client = await ClientAccount.findOne({ userId });
+  if (!client) return res.status(200).json(new ApiResponse(200, [], "Client not found"));
+  const projects = await Project.find({ clientId: client._id }).sort({ createdAt: -1 });
   return res.status(200).json(new ApiResponse(200, projects, "Client projects retrieved successfully"));
 });
 
-export const getClientTasks = asyncHandler(async (_req: Request, res: Response) => {
-  const tasks = await Task.find().sort({ createdAt: -1 });
+export const getClientTasks = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req.user?.userId;
+  const client = await ClientAccount.findOne({ userId });
+  if (!client) return res.status(200).json(new ApiResponse(200, [], "Client not found"));
+  const projects = await Project.find({ clientId: client._id });
+  const projectIds = projects.map(p => p._id);
+  const tasks = await Task.find({ projectId: { $in: projectIds } }).sort({ createdAt: -1 });
   return res.status(200).json(new ApiResponse(200, tasks, "Client tasks retrieved successfully"));
 });
 
@@ -58,8 +83,11 @@ export const updateClientTask = asyncHandler(async (req: Request, res: Response)
   return res.status(200).json(new ApiResponse(200, task, "Task updated successfully"));
 });
 
-export const getClientInvoices = asyncHandler(async (_req: Request, res: Response) => {
-  const invoices = await Invoice.find().sort({ createdAt: -1 });
+export const getClientInvoices = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  const userId = req.user?.userId;
+  const client = await ClientAccount.findOne({ userId });
+  if (!client) return res.status(200).json(new ApiResponse(200, [], "Client not found"));
+  const invoices = await Invoice.find({ clientId: client._id }).sort({ createdAt: -1 });
   return res.status(200).json(new ApiResponse(200, invoices, "Client invoices retrieved successfully"));
 });
 
@@ -68,4 +96,5 @@ export const payClientInvoice = asyncHandler(async (req: Request, res: Response)
   const invoice = await Invoice.findByIdAndUpdate(id, { status: "paid" }, { new: true });
   return res.status(200).json(new ApiResponse(200, invoice, "Invoice paid successfully"));
 });
+
 

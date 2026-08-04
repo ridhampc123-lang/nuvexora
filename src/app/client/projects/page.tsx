@@ -20,9 +20,9 @@ import { useClientProjectsQuery } from "@/hooks/use-api-queries";
 interface ProjectItem {
   _id?: string;
   id?: string;
-  name: string;
+  title: string;
   description?: string;
-  progress: number;
+  progressPercentage: number;
   status: string;
   startDate?: string;
   targetDate?: string;
@@ -69,6 +69,12 @@ export default function ClientProjectsPage() {
 
       {/* Main Content Grid */}
       <div className="space-y-6">
+        {projectList.length === 0 && !isLoading && (
+          <div className="p-8 text-center text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl">
+            No engineering projects found for your account.
+          </div>
+        )}
+
         {projectList.map((p) => {
           const pId = p._id || p.id || "";
           const pTech = p.techStack || ["Next.js 16", "Node.js", "PostgreSQL", "PyTorch AI", "Apache Kafka", "Docker"];
@@ -81,7 +87,7 @@ export default function ClientProjectsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-6">
                 <div>
                   <div className="flex items-center gap-3">
-                    <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">{p.name}</h2>
+                    <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">{p.title}</h2>
                     <span className="px-3 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 text-xs font-bold capitalize border border-blue-200/60 dark:border-blue-800/80">
                       {p.status.replace("_", " ")}
                     </span>
@@ -93,7 +99,7 @@ export default function ClientProjectsPage() {
 
                 <div className="flex items-center gap-6">
                   <div className="text-right">
-                    <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{p.progress}%</div>
+                    <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{p.progressPercentage}%</div>
                     <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">Sprint Progress</div>
                   </div>
 
@@ -114,7 +120,7 @@ export default function ClientProjectsPage() {
                   <span className="font-semibold text-slate-400">Target Delivery: <strong className="text-slate-800 dark:text-slate-200">{target}</strong></span>
                 </div>
                 <div className="w-full h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500 rounded-full transition-all duration-700" style={{ width: `${p.progress}%` }} />
+                  <div className="h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500 rounded-full transition-all duration-700" style={{ width: `${p.progressPercentage}%` }} />
                 </div>
               </div>
 
@@ -185,7 +191,7 @@ export default function ClientProjectsPage() {
                     <Users className="w-4 h-4 text-blue-500" />
                     <span>Assigned Nuvexora Team</span>
                   </div>
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 text-slate-750 dark:text-slate-300 font-medium leading-relaxed">
                     {pTeam.join(" • ")}
                   </div>
                 </div>

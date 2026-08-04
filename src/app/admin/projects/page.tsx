@@ -43,7 +43,7 @@ export default function ProjectsCMSPage() {
       setEditingProject(project);
       setFormData({
         title: project.title,
-        clientId: typeof project.clientId === 'object' ? project.clientId._id : project.clientId,
+        clientId: (project.clientId && typeof project.clientId === 'object') ? project.clientId._id : (project.clientId || ""),
         category: project.category || "Web Development",
         progressPercentage: project.progressPercentage || 0,
         status: project.status || "discovery",

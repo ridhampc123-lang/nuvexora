@@ -7,8 +7,11 @@ import {
   getClientInvoices, 
   payClientInvoice 
 } from "../controllers/client.controller.js";
+import { verifyJWT, requireRole } from "../middleware/auth.middleware.js";
 
 const router = Router();
+
+router.use(verifyJWT, requireRole("CLIENT"));
 
 router.get("/dashboard", getClientDashboardData);
 router.get("/projects", getClientProjects);
@@ -18,4 +21,5 @@ router.get("/invoices", getClientInvoices);
 router.post("/invoices/:id/pay", payClientInvoice);
 
 export default router;
+
 
