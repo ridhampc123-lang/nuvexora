@@ -67,7 +67,23 @@ import {
   getAllTickets,
   updateTicket,
   deleteTicket,
-  uploadMediaImage
+  uploadMediaImage,
+  getAuditLogs,
+  getPermissions,
+  getRoles,
+  createRole,
+  getAllServices,
+  createService,
+  updateService,
+  deleteService,
+  getAllMedia,
+  deleteMedia,
+  getAllCareers,
+  createCareer,
+  updateCareer,
+  deleteCareer,
+  getAdminAnalyticsData,
+  getAdminReportsData
 } from "../controllers/admin.controller.js";
 import { upload } from "../config/cloudinary.js";
 import { getAdminBlogs, updateBlog, deleteBlog, createBlog as createAdminBlog } from "../controllers/admin-blog.controller.js";
@@ -197,4 +213,35 @@ router.get("/tickets", getAllTickets);
 router.patch("/tickets/:id", updateTicket);
 router.delete("/tickets/:id", deleteTicket);
 
+// Audit Logs
+router.get("/audit-logs", getAuditLogs);
+
+// Permissions
+router.get("/permissions", getPermissions);
+
+// Roles
+router.get("/roles", getRoles);
+router.post("/roles", createRole);
+
+// Services Management
+router.get("/services", getAllServices);
+router.post("/services", createService);
+router.patch("/services/:id", updateService);
+router.delete("/services/:id", deleteService);
+
+// Media Management
+router.get("/media", getAllMedia);
+router.delete("/media/:id", deleteMedia);
+
+// Careers Management
+router.get("/careers", getAllCareers);
+router.post("/careers", createCareer);
+router.patch("/careers/:id", updateCareer);
+router.delete("/careers/:id", deleteCareer);
+
+// Analytics & Reports
+router.get("/analytics", getAdminAnalyticsData);
+router.get("/reports", getAdminReportsData);
+
 export default router;
+

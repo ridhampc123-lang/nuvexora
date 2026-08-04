@@ -105,7 +105,7 @@ export default function EmployeeProjectsPage() {
               <Clock className="w-4 h-4 text-cyan-400" /> Milestones
             </h3>
             <div className="space-y-2 text-xs">
-              {milestones.map((m) => (
+              {milestones.map((m: any) => (
                 <div key={m.name} className="flex items-center justify-between p-3 rounded-lg bg-slate-900 border border-slate-800">
                   <span className="font-medium text-slate-200">{m.name}</span>
                   <span className="text-[10px] font-bold text-emerald-400">{m.status}</span>

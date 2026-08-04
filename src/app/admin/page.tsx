@@ -10,71 +10,54 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, BarChart, Bar
 } from "recharts";
-import { useAdminMetricsQuery } from "@/hooks/use-api-queries";
+import { useAdminMetricsQuery, useAdminProjectsQuery, useAdminLeadsQuery } from "@/hooks/use-api-queries";
 import { useQueryClient } from "@tanstack/react-query";
-import { io } from "socket.io-client";
-
-const analyticsData = [
-  { month: "Jan", leads: 32, visitors: 4200 },
-  { month: "Feb", leads: 45, visitors: 5600 },
-  { month: "Mar", leads: 68, visitors: 7800 },
-  { month: "Apr", leads: 52, visitors: 6400 },
-  { month: "May", leads: 89, visitors: 9200 },
-  { month: "Jun", leads: 104, visitors: 11400 },
-];
-
-const projectStatusData = [
-  { name: "Discovery", count: 4 },
-  { name: "Development", count: 12 },
-  { name: "QA Testing", count: 6 },
-  { name: "Deployed", count: 18 },
-];
+import { useSocket } from "@/providers/socket-provider";
 
 export default function AdminDashboardPage() {
   const { data: metricsData, isLoading } = useAdminMetricsQuery();
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    let socketUrl = "http://localhost:5000";
-    if (typeof window !== "undefined") {
-      const hostname = window.location.hostname;
-      if (hostname && hostname !== "localhost" && hostname !== "127.0.0.1") {
-        socketUrl = `http://${hostname}:5000`;
-      }
-    }
-    if (process.env.NEXT_PUBLIC_SOCKET_URL) {
-      socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
-    }
-
-    // Connect to backend Socket.IO
-    const socket = io(socketUrl, {
-      withCredentials: true,
-    });
-
-    socket.on("connect", () => {
-      console.log("Admin Dashboard connected to Socket.IO real-time engine.");
-    });
-
-    socket.on("dashboard_update", () => {
-      console.log("Real-time dashboard update received! Invalidating queries...");
-      queryClient.invalidateQueries({ queryKey: ["adminMetrics"] });
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [queryClient]);
+  const { data: projects = [] } = useAdminProjectsQuery();
+  const { data: leads = [] } = useAdminLeadsQuery();
+  const { isConnected } = useSocket();
 
   const metrics = [
-    { label: "Total Clients", value: isLoading ? "..." : String(metricsData?.totalClients ?? 0), change: "+3", icon: Building2, color: "text-blue-600 bg-blue-50" },
-    { label: "Active Projects", value: isLoading ? "..." : String(metricsData?.activeProjects ?? 0), change: "+2", icon: FolderKanban, color: "text-indigo-600 bg-indigo-50" },
-    { label: "Total Employees", value: isLoading ? "..." : String(metricsData?.totalUsers ?? 0), change: "+1", icon: Users, color: "text-emerald-600 bg-emerald-50" },
-    { label: "Pending Tasks", value: isLoading ? "..." : String(metricsData?.totalTasks ?? 0), change: "-5", icon: CheckSquare, color: "text-rose-600 bg-rose-50" },
-    { label: "New Leads", value: isLoading ? "..." : String(metricsData?.totalLeads ?? 0), change: "+12%", icon: MessageSquare, color: "text-orange-600 bg-orange-50" },
-    { label: "Upcoming Meetings", value: isLoading ? "..." : String(metricsData?.upcomingMeetings ?? 0), change: "+4", icon: Video, color: "text-purple-600 bg-purple-50" },
-    { label: "Total Invoices", value: isLoading ? "..." : String(metricsData?.totalInvoices ?? 0), change: "+8", icon: FileSpreadsheet, color: "text-amber-600 bg-amber-50" },
-    { label: "Published Blogs", value: isLoading ? "..." : String(metricsData?.totalBlogs ?? 0), change: "+1", icon: FileText, color: "text-sky-600 bg-sky-50" },
+    { label: "Total Clients", value: isLoading ? "..." : String(metricsData?.totalClients ?? 0), icon: Building2, color: "text-blue-600 bg-blue-50" },
+    { label: "Active Projects", value: isLoading ? "..." : String(metricsData?.activeProjects ?? 0), icon: FolderKanban, color: "text-indigo-600 bg-indigo-50" },
+    { label: "Total Employees", value: isLoading ? "..." : String(metricsData?.totalUsers ?? 0), icon: Users, color: "text-emerald-600 bg-emerald-50" },
+    { label: "Pending Tasks", value: isLoading ? "..." : String(metricsData?.totalTasks ?? 0), icon: CheckSquare, color: "text-rose-600 bg-rose-50" },
+    { label: "New Leads", value: isLoading ? "..." : String(metricsData?.totalLeads ?? 0), icon: MessageSquare, color: "text-orange-600 bg-orange-50" },
+    { label: "Upcoming Meetings", value: isLoading ? "..." : String(metricsData?.upcomingMeetings ?? 0), icon: Video, color: "text-purple-600 bg-purple-50" },
+    { label: "Total Invoices", value: isLoading ? "..." : String(metricsData?.totalInvoices ?? 0), icon: FileSpreadsheet, color: "text-amber-600 bg-amber-50" },
+    { label: "Published Blogs", value: isLoading ? "..." : String(metricsData?.totalBlogs ?? 0), icon: FileText, color: "text-sky-600 bg-sky-50" },
   ];
+
+  // Dynamic status distribution from authentic DB projects
+  const discoveryCount = projects.filter((p: any) => p.status === "discovery" || p.status === "planning").length;
+  const devCount = projects.filter((p: any) => p.status === "in_progress" || p.status === "development").length;
+  const qaCount = projects.filter((p: any) => p.status === "review" || p.status === "qa").length;
+  const deployedCount = projects.filter((p: any) => p.status === "completed").length;
+
+  const projectStatusData = [
+    { name: "Discovery", count: discoveryCount },
+    { name: "Development", count: devCount },
+    { name: "QA Testing", count: qaCount },
+    { name: "Deployed", count: deployedCount },
+  ];
+
+  // Dynamic monthly leads data from authentic DB leads
+  const monthlyLeads: Record<string, number> = {};
+  leads.forEach((l: any) => {
+    if (l.createdAt) {
+      const month = new Date(l.createdAt).toLocaleString("default", { month: "short" });
+      monthlyLeads[month] = (monthlyLeads[month] || 0) + 1;
+    }
+  });
+
+  const analyticsData = Object.keys(monthlyLeads).length > 0
+    ? Object.entries(monthlyLeads).map(([month, count]) => ({ month, leads: count }))
+    : [
+        { month: "Current", leads: leads.length }
+      ];
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto p-4 sm:p-0">
@@ -84,10 +67,10 @@ export default function AdminDashboardPage() {
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Enterprise Overview</h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Real-time business intelligence metrics connected via Socket.IO
-            {metricsData?.systemHealth === "OPTIMAL" && (
+            {isConnected && (
               <span className="ml-2 inline-flex items-center gap-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                SYSTEM OPTIMAL
+                LIVE REALTIME SYNC
               </span>
             )}
           </p>
@@ -121,9 +104,6 @@ export default function AdminDashboardPage() {
                 <div className={`p-3 rounded-2xl ${m.color}`}>
                   <Icon className="w-5 h-5" />
                 </div>
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-800/80">
-                  {m.change}
-                </span>
               </div>
               <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-sans">{m.value}</div>
               <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">{m.label}</div>
@@ -138,10 +118,10 @@ export default function AdminDashboardPage() {
         <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Financial & Lead Trends</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Monthly aggregate data</p>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Authentic Lead Trends</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Database lead records count</p>
             </div>
-            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">2026 H1</span>
+            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">Live DB Data</span>
           </div>
 
           <div className="h-72 w-full">

@@ -140,7 +140,7 @@ export default function ClientProjectsPage() {
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {milestones.map((m, idx) => {
+                  {milestones.map((m: any, idx: number) => {
                     const isDone = m.status === "completed";
                     const isInProgress = m.status === "in_progress";
 

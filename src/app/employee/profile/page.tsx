@@ -30,8 +30,8 @@ export default function EmployeeProfilePage() {
           </div>
           <div>
             <h2 className="text-2xl font-extrabold">{user?.name || "Employee"}</h2>
-            <div className="text-xs text-blue-400 font-semibold">{user?.designation || "Engineer"} • {user?.department || "Engineering"}</div>
-            <div className="text-[11px] text-slate-400">EMP-{user?.id?.slice(-4).toUpperCase() || "001"} • Role: {user?.role || "EMPLOYEE"}</div>
+            <div className="text-xs text-blue-400 font-semibold">{(user as any)?.designation || "Engineer"} • {user?.department || "Engineering"}</div>
+            <div className="text-[11px] text-slate-400">EMP-{(user as any)?.id?.slice(-4).toUpperCase() || (user as any)?._id?.slice(-4).toUpperCase() || "001"} • Role: {user?.role || "EMPLOYEE"}</div>
           </div>
         </div>
 

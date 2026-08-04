@@ -33,3 +33,11 @@ export const getIO = (): Server => {
   }
   return io;
 };
+
+export const broadcastEvent = (event: string, payload?: any) => {
+  if (io) {
+    io.emit(event, payload || { timestamp: new Date().toISOString() });
+    io.emit("dashboard_update", { event, timestamp: new Date().toISOString() });
+  }
+};
+

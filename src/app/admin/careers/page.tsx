@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { AdminDataTable, Column } from "@/components/admin/admin-data-table";
+import { useAdminCareersQuery } from "@/hooks/use-api-queries";
 
 interface CareerItem {
   id: string;
@@ -12,14 +13,17 @@ interface CareerItem {
   isOpen: boolean;
 }
 
-const initialCareers: CareerItem[] = [
-  { id: "1", title: "Principal AI Systems Architect", department: "AI Engineering", type: "Full-Time", location: "San Francisco / Remote", isOpen: true },
-  { id: "2", title: "Senior Full Stack Engineer (Next.js & Node)", department: "Frontend & Web", type: "Full-Time", location: "London / Hybrid", isOpen: true },
-  { id: "3", title: "Staff Cloud DevOps Lead", department: "Infrastructure", type: "Full-Time", location: "Remote", isOpen: true },
-];
-
 export default function CareersCMSPage() {
-  const [careers, setCareers] = useState<CareerItem[]>(initialCareers);
+  const { data: dbCareers = [], isLoading } = useAdminCareersQuery();
+
+  const careers: CareerItem[] = dbCareers.map((item: any) => ({
+    id: item._id || item.id,
+    title: item.title,
+    department: item.department || "Engineering",
+    type: item.type || "Full-Time",
+    location: item.location || "Remote",
+    isOpen: item.isOpen ?? true,
+  }));
 
   const columns: Column<CareerItem>[] = [
     { header: "Position Title", accessorKey: "title" },
@@ -48,3 +52,4 @@ export default function CareersCMSPage() {
     </div>
   );
 }
+

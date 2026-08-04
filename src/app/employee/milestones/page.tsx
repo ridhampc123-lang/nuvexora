@@ -39,7 +39,7 @@ export default function EmployeeMilestonesPage() {
             </p>
           </div>
         ) : (
-          milestones.map((m) => {
+          milestones.map((m: any) => {
             const isCompleted = m.status === "COMPLETED" || m.status === "SUCCESS";
             return (
               <div key={m.name} className="p-6 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">

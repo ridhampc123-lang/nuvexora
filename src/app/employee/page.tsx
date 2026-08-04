@@ -17,12 +17,15 @@ import {
   Calendar,
   Zap,
 } from "lucide-react";
-import { useEmployeeProjectsQuery, useEmployeeTasksQuery } from "@/hooks/use-api-queries";
+import { useEmployeeProjectsQuery, useEmployeeTasksQuery, useEmployeeMeetingsQuery, useEmployeeNotificationsQuery, useMarkNotificationReadMutation } from "@/hooks/use-api-queries";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function EmployeeDashboard() {
   const { data: dbProjects = [], isLoading: loadingProjects } = useEmployeeProjectsQuery();
   const { data: dbTasks = [], isLoading: loadingTasks } = useEmployeeTasksQuery();
+  const { data: dbMeetings = [], isLoading: loadingMeetings } = useEmployeeMeetingsQuery();
+  const { data: dbNotifications = [], isLoading: loadingNotifications } = useEmployeeNotificationsQuery();
+  const markRead = useMarkNotificationReadMutation();
   const { user } = useAuth();
 
   const todaysTasks = dbTasks.map((t: any) => ({
@@ -40,10 +43,13 @@ export default function EmployeeDashboard() {
     status: p.status === "completed" ? "COMPLETED" : "ON_TRACK"
   }));
 
-  const upcomingMeetings: any[] = [];
-  const recentNotifications: any[] = [];
+  const upcomingMeetings = dbMeetings
+    .filter((m: any) => new Date(m.meetingDate) >= new Date(new Date().setHours(0,0,0,0)))
+    .slice(0, 5);
 
-  const completedTasksCount = todaysTasks.filter((t) => t.status === "COMPLETED").length;
+  const recentNotifications = dbNotifications.slice(0, 6);
+
+  const completedTasksCount = todaysTasks.filter((t: any) => t.status === "COMPLETED").length;
 
   return (
     <div className="space-y-8">
@@ -138,7 +144,7 @@ export default function EmployeeDashboard() {
 
             <div className="space-y-3">
               {todaysTasks.length > 0 ? (
-                todaysTasks.map((t) => (
+                todaysTasks.map((t: any) => (
                   <div
                     key={t.title}
                     className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-start justify-between gap-4 hover:border-slate-700 transition-colors"
@@ -161,39 +167,33 @@ export default function EmployeeDashboard() {
 
                     <div className="text-right shrink-0">
                       <div className="text-xs font-semibold text-slate-400">{t.due}</div>
-                      <span
-                        className={`text-[10px] font-bold ${
-                          t.status === "COMPLETED" ? "text-emerald-400" : "text-amber-400"
-                        }`}
-                      >
-                        {t.status}
-                      </span>
+                      <span className="text-[10px] font-bold text-amber-400">{t.status}</span>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-xs text-slate-500 border border-dashed border-slate-800 rounded-xl">
-                  No active tasks assigned to your account.
+                <div className="p-8 text-center text-xs text-slate-500 border border-dashed border-slate-800 rounded-xl">
+                  No tasks scheduled.
                 </div>
               )}
             </div>
           </div>
 
           {/* Assigned Projects */}
-          <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <FolderKanban className="w-5 h-5 text-cyan-400" />
-                <span>My Assigned Projects</span>
-              </h2>
-              <Link href="/employee/projects" className="text-xs font-semibold text-blue-400 hover:underline">
+          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
+                <FolderKanban className="w-4 h-4 text-indigo-400" />
+                <span>My Active Projects</span>
+              </h3>
+              <Link href="/employee/projects" className="text-xs font-bold text-blue-400 hover:underline">
                 Manage Projects →
               </Link>
             </div>
 
             <div className="space-y-4">
               {assignedProjects.length > 0 ? (
-                assignedProjects.map((p) => (
+                assignedProjects.map((p: any) => (
                   <div key={p.name} className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-bold text-white">{p.name}</span>
@@ -229,17 +229,37 @@ export default function EmployeeDashboard() {
             </div>
 
             <div className="space-y-3">
-              {upcomingMeetings.length > 0 ? (
-                upcomingMeetings.map((m) => (
-                  <div key={m.title} className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
-                    <div className="text-xs font-bold text-white">{m.title}</div>
-                    <div className="text-[11px] text-indigo-400 font-semibold">{m.time}</div>
-                    <div className="text-[10px] text-slate-400">Host: {m.host}</div>
+              {loadingMeetings ? (
+                <div className="text-center py-6">
+                  <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                </div>
+              ) : upcomingMeetings.length > 0 ? (
+                upcomingMeetings.map((m: any) => (
+                  <div key={m._id} className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2 hover:border-indigo-800 transition-colors">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="text-xs font-bold text-white leading-snug">{m.title}</div>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-900/60 text-indigo-400 border border-indigo-700/50 shrink-0">SCHEDULED</span>
+                    </div>
+                    <div className="text-[11px] text-indigo-400 font-semibold">
+                      {new Date(m.meetingDate).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} · {m.timeSlot}
+                    </div>
+                    <div className="text-[10px] text-slate-400">Topic: {m.topic}</div>
+                    {m.meetingLink && (
+                      <a
+                        href={m.meetingLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        <Video className="w-3 h-3" /> Join Meeting
+                      </a>
+                    )}
                   </div>
                 ))
               ) : (
-                <div className="text-center py-6 text-xs text-slate-500">
-                  No upcoming meetings scheduled.
+                <div className="flex flex-col items-center gap-2 py-8 text-center">
+                  <Calendar className="w-8 h-8 text-slate-700" />
+                  <div className="text-xs text-slate-500">No upcoming meetings scheduled.</div>
                 </div>
               )}
             </div>
@@ -255,16 +275,33 @@ export default function EmployeeDashboard() {
             </div>
 
             <div className="space-y-2.5">
-              {recentNotifications.length > 0 ? (
-                recentNotifications.map((n) => (
-                  <div key={n.title} className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs space-y-0.5">
-                    <div className="font-semibold text-slate-200">{n.title}</div>
-                    <div className="text-[10px] text-slate-500">{n.time}</div>
-                  </div>
+              {loadingNotifications ? (
+                <div className="text-center py-4">
+                  <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                </div>
+              ) : recentNotifications.length > 0 ? (
+                recentNotifications.map((n: any) => (
+                  <button
+                    key={n._id}
+                    onClick={() => !n.isRead && markRead.mutate(n._id)}
+                    className={`w-full text-left p-3 rounded-xl border text-xs space-y-0.5 transition-all ${
+                      n.isRead
+                        ? "bg-slate-950/40 border-slate-800/60 opacity-60"
+                        : "bg-slate-950/80 border-amber-700/30 hover:border-amber-600/50"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="font-bold text-slate-200 leading-snug">{n.title}</span>
+                      {!n.isRead && <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0 mt-0.5" />}
+                    </div>
+                    <div className="text-[10px] text-slate-400 leading-snug">{n.message}</div>
+                    <div className="text-[10px] text-slate-500">{new Date(n.createdAt).toLocaleString()}</div>
+                  </button>
                 ))
               ) : (
-                <div className="text-center py-6 text-xs text-slate-500">
-                  No new notifications.
+                <div className="flex flex-col items-center gap-2 py-8 text-center">
+                  <Bell className="w-8 h-8 text-slate-700" />
+                  <div className="text-xs text-slate-500">No notifications yet.</div>
                 </div>
               )}
             </div>

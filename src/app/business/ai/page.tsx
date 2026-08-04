@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { Bot, Sparkles, Send, Copy, Check, Cpu } from "lucide-react";
 import { getApiBaseUrl } from "@/lib/api/api-client";
+import { toast } from "sonner";
+
 
 export default function AiStudioPage() {
   const [prompt, setPrompt] = useState("");
@@ -26,12 +28,13 @@ export default function AiStudioPage() {
       });
       const data = await res.json();
       setResponse(data.data.generatedText);
-    } catch {
-      setResponse(`Nuvexora AI Insight Generated:\n\nCommercial Proposal for ${prompt}:\n- High-throughput Microservices Architecture\n- Dedicated 99.999% SLA Cloud Cluster\n- Estimated effort: 6 Sprints. Price: $48,000.`);
+    } catch (err: any) {
+      toast.error("Failed to connect to AI Generation Service. Please ensure server is running.");
     } finally {
       setIsGenerating(false);
     }
   };
+
 
   const handleCopy = () => {
     if (response) {

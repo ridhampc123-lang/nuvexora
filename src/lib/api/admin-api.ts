@@ -589,3 +589,92 @@ export const deleteAdminTicket = async (id: string) => {
   return data.data;
 };
 
+// --- AUDIT LOGS ---
+export const getAdminAuditLogs = async () => {
+  try {
+    const { data } = await apiClient.get("/admin/audit-logs");
+    if (Array.isArray(data.data)) return data.data;
+  } catch {}
+  return [];
+};
+
+// --- PERMISSIONS ---
+export const getAdminPermissions = async () => {
+  try {
+    const { data } = await apiClient.get("/admin/permissions");
+    if (Array.isArray(data.data)) return data.data;
+  } catch {}
+  return [];
+};
+
+// --- ROLES ---
+export const getAdminRoles = async () => {
+  try {
+    const { data } = await apiClient.get("/admin/roles");
+    if (Array.isArray(data.data)) return data.data;
+  } catch {}
+  return [];
+};
+
+export const createAdminRole = async (roleData: any) => {
+  const { data } = await apiClient.post("/admin/roles", roleData);
+  return data.data;
+};
+
+// --- MEDIA ---
+export const getAdminMedia = async () => {
+  try {
+    const { data } = await apiClient.get("/admin/media");
+    if (Array.isArray(data.data)) return data.data;
+  } catch {}
+  return [];
+};
+
+export const deleteAdminMedia = async (id: string) => {
+  const { data } = await apiClient.delete(`/admin/media/${id}`);
+  return data.data;
+};
+
+// --- CAREERS ---
+export const getAdminCareers = async () => {
+  try {
+    const { data } = await apiClient.get("/admin/careers");
+    if (Array.isArray(data.data)) return data.data;
+  } catch {}
+  return [];
+};
+
+export const createAdminCareer = async (careerData: any) => {
+  const { data } = await apiClient.post("/admin/careers", careerData);
+  return data.data;
+};
+
+export const updateAdminCareer = async ({ id, ...careerData }: { id: string; [key: string]: any }) => {
+  const { data } = await apiClient.patch(`/admin/careers/${id}`, careerData);
+  return data.data;
+};
+
+export const deleteAdminCareer = async (id: string) => {
+  const { data } = await apiClient.delete(`/admin/careers/${id}`);
+  return data.data;
+};
+
+// --- ANALYTICS ---
+export const getAdminAnalytics = async () => {
+  try {
+    const { data } = await apiClient.get("/admin/analytics");
+    return data.data;
+  } catch {}
+  return null;
+};
+
+// --- REPORTS ---
+export const getAdminReports = async () => {
+  try {
+    const { data } = await apiClient.get("/admin/reports");
+    return data.data;
+  } catch {}
+  return null;
+};
+
+

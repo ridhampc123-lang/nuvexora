@@ -11,6 +11,8 @@ export interface IMeeting extends Document {
   topic: string;
   status: "scheduled" | "completed" | "cancelled";
   meetingLink?: string;
+  // NEW: employees invited to this meeting (references to User._id)
+  invitedEmployees: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +29,7 @@ const MeetingSchema = new Schema<IMeeting>(
     topic: { type: String, required: true },
     status: { type: String, enum: ["scheduled", "completed", "cancelled"], default: "scheduled" },
     meetingLink: { type: String, default: "" },
+    invitedEmployees: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

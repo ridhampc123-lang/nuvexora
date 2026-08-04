@@ -2,12 +2,13 @@
 
 import React, { useState } from "react";
 import { AdminDataTable, Column } from "@/components/admin/admin-data-table";
-import { useAdminMeetingsQuery, useCreateAdminMeetingMutation, useUpdateAdminMeetingMutation, useDeleteAdminMeetingMutation } from "@/hooks/use-api-queries";
+import { useAdminMeetingsQuery, useCreateAdminMeetingMutation, useUpdateAdminMeetingMutation, useDeleteAdminMeetingMutation, useAdminEmployeesQuery } from "@/hooks/use-api-queries";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Video, Calendar, Clock, Globe } from "lucide-react";
+import { X, Plus, Video, Calendar, Clock, Globe, Users } from "lucide-react";
 
 export default function MeetingsPage() {
   const { data: meetings = [], isLoading } = useAdminMeetingsQuery();
+  const { data: employees = [] } = useAdminEmployeesQuery();
   const createMeeting = useCreateAdminMeetingMutation();
   const updateMeeting = useUpdateAdminMeetingMutation();
   const deleteMeeting = useDeleteAdminMeetingMutation();
@@ -25,7 +26,8 @@ export default function MeetingsPage() {
     timezone: "UTC",
     topic: "",
     status: "scheduled",
-    meetingLink: ""
+    meetingLink: "",
+    invitedEmployees: [] as string[],
   });
 
   const openDrawer = (meeting?: any) => {
@@ -41,7 +43,8 @@ export default function MeetingsPage() {
         timezone: meeting.timezone,
         topic: meeting.topic,
         status: meeting.status,
-        meetingLink: meeting.meetingLink || ""
+        meetingLink: meeting.meetingLink || "",
+        invitedEmployees: (meeting.invitedEmployees || []).map((e: any) => e._id || e),
       });
     } else {
       setEditingMeeting(null);
@@ -55,10 +58,20 @@ export default function MeetingsPage() {
         timezone: "UTC",
         topic: "",
         status: "scheduled",
-        meetingLink: ""
+        meetingLink: "",
+        invitedEmployees: [],
       });
     }
     setIsDrawerOpen(true);
+  };
+
+  const toggleEmployee = (userId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      invitedEmployees: prev.invitedEmployees.includes(userId)
+        ? prev.invitedEmployees.filter(id => id !== userId)
+        : [...prev.invitedEmployees, userId],
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -77,6 +90,7 @@ export default function MeetingsPage() {
       createMeeting.mutate(payload, { onSuccess: () => setIsDrawerOpen(false) });
     }
   };
+
 
   const columns: Column<any>[] = [
     {
@@ -267,6 +281,47 @@ export default function MeetingsPage() {
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Topic</label>
                     <textarea required rows={2} value={formData.topic} onChange={e => setFormData({...formData, topic: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none" />
+                  </div>
+
+                  {/* Invite Employees */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5" /> Invite Employees
+                      {formData.invitedEmployees.length > 0 && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+                          {formData.invitedEmployees.length} selected
+                        </span>
+                      )}
+                    </label>
+                    <p className="text-[10px] text-slate-400">Selected employees will receive an email invite and an in-app notification.</p>
+                    <div className="max-h-48 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl divide-y divide-slate-100 dark:divide-slate-800">
+                      {(employees as any[]).length === 0 ? (
+                        <div className="p-4 text-center text-xs text-slate-400">No employees found. Add employees first.</div>
+                      ) : (employees as any[]).map((emp: any) => {
+                        const uid = emp.userId?._id || emp.userId || emp._id;
+                        const isSelected = formData.invitedEmployees.includes(uid);
+                        return (
+                          <button
+                            key={emp._id}
+                            type="button"
+                            onClick={() => toggleEmployee(uid)}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
+                              isSelected ? "bg-indigo-50 dark:bg-indigo-950/50" : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                            }`}
+                          >
+                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                              isSelected ? "bg-indigo-600 border-indigo-600" : "border-slate-300 dark:border-slate-600"
+                            }`}>
+                              {isSelected && <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 text-white fill-current"><path d="M10.28 1.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414.013l7-8a1 1 0 00-1.414-1.428z"/></svg>}
+                            </div>
+                            <div>
+                              <div className="text-xs font-semibold text-slate-900 dark:text-white">{emp.name}</div>
+                              <div className="text-[10px] text-slate-400">{emp.designation || emp.position} · {emp.department}</div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   <div className="space-y-1.5">

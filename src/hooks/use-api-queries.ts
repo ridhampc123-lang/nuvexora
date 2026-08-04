@@ -67,8 +67,33 @@ import {
   deleteAdminMeeting,
   getAdminTickets,
   updateAdminTicket,
-  deleteAdminTicket
+  deleteAdminTicket,
+  getAdminAuditLogs,
+  getAdminPermissions,
+  getAdminRoles,
+  createAdminRole,
+  getAdminServices,
+  createAdminService,
+  updateAdminService,
+  deleteAdminService,
+  getAdminMedia,
+  deleteAdminMedia,
+  getAdminCareers,
+  createAdminCareer,
+  updateAdminCareer,
+  deleteAdminCareer,
+  getAdminAnalytics,
+  getAdminReports
 } from "@/lib/api/admin-api";
+import {
+  getBusinessDeals,
+  createBusinessDeal,
+  updateBusinessDealStatus,
+  getBusinessEmployees,
+  getBusinessTickets,
+  getBusinessFinanceLedger
+} from "@/lib/api/business-api";
+
 import { 
   getClientDashboard, 
   getClientProjects, 
@@ -876,4 +901,250 @@ export const useEmployeeTasksQuery = () => {
     queryFn: getEmployeeTasks,
   });
 };
+
+// --- AUDIT LOGS HOOK ---
+export const useAdminAuditLogsQuery = () => {
+  return useQuery({
+    queryKey: ["adminAuditLogs"],
+    queryFn: getAdminAuditLogs,
+  });
+};
+
+// --- PERMISSIONS HOOK ---
+export const useAdminPermissionsQuery = () => {
+  return useQuery({
+    queryKey: ["adminPermissions"],
+    queryFn: getAdminPermissions,
+  });
+};
+
+// --- ROLES HOOKS ---
+export const useAdminRolesQuery = () => {
+  return useQuery({
+    queryKey: ["adminRoles"],
+    queryFn: getAdminRoles,
+  });
+};
+
+export const useCreateAdminRoleMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createAdminRole,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminRoles"] });
+    },
+  });
+};
+
+// --- SERVICES HOOKS ---
+export const useAdminServicesQuery = () => {
+  return useQuery({
+    queryKey: ["adminServices"],
+    queryFn: getAdminServices,
+  });
+};
+
+export const useCreateAdminServiceMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createAdminService,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminServices"] });
+    },
+  });
+};
+
+export const useUpdateAdminServiceMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateAdminService,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminServices"] });
+    },
+  });
+};
+
+export const useDeleteAdminServiceMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAdminService,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminServices"] });
+    },
+  });
+};
+
+// --- MEDIA HOOKS ---
+export const useAdminMediaQuery = () => {
+  return useQuery({
+    queryKey: ["adminMedia"],
+    queryFn: getAdminMedia,
+  });
+};
+
+export const useDeleteAdminMediaMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAdminMedia,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminMedia"] });
+    },
+  });
+};
+
+// --- CAREERS HOOKS ---
+export const useAdminCareersQuery = () => {
+  return useQuery({
+    queryKey: ["adminCareers"],
+    queryFn: getAdminCareers,
+  });
+};
+
+export const useCreateAdminCareerMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createAdminCareer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminCareers"] });
+    },
+  });
+};
+
+export const useUpdateAdminCareerMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateAdminCareer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminCareers"] });
+    },
+  });
+};
+
+export const useDeleteAdminCareerMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAdminCareer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminCareers"] });
+    },
+  });
+};
+
+// --- ANALYTICS & REPORTS HOOKS ---
+export const useAdminAnalyticsQuery = () => {
+  return useQuery({
+    queryKey: ["adminAnalytics"],
+    queryFn: getAdminAnalytics,
+  });
+};
+
+export const useAdminReportsQuery = () => {
+  return useQuery({
+    queryKey: ["adminReports"],
+    queryFn: getAdminReports,
+  });
+};
+
+// --- BUSINESS HOOKS ---
+export const useBusinessDealsQuery = () => {
+  return useQuery({
+    queryKey: ["businessDeals"],
+    queryFn: getBusinessDeals,
+  });
+};
+
+export const useCreateBusinessDealMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createBusinessDeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["businessDeals"] });
+    },
+  });
+};
+
+export const useUpdateBusinessDealStatusMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateBusinessDealStatus,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["businessDeals"] });
+    },
+  });
+};
+
+export const useBusinessEmployeesQuery = () => {
+  return useQuery({
+    queryKey: ["businessEmployees"],
+    queryFn: getBusinessEmployees,
+  });
+};
+
+export const useBusinessTicketsQuery = () => {
+  return useQuery({
+    queryKey: ["businessTickets"],
+    queryFn: getBusinessTickets,
+  });
+};
+
+export const useBusinessFinanceLedgerQuery = () => {
+  return useQuery({
+    queryKey: ["businessFinanceLedger"],
+    queryFn: getBusinessFinanceLedger,
+  });
+};
+
+// ====================================
+// EMPLOYEE — MEETINGS & NOTIFICATIONS
+// ====================================
+
+const getEmployeeMeetings = async () => {
+  const { apiClient } = await import("@/lib/api/api-client");
+  const { data } = await apiClient.get("/employee/my/meetings");
+  if (data.meetings) return data.meetings;
+  if (Array.isArray(data.data)) return data.data;
+  return [];
+};
+
+const getEmployeeNotifications = async () => {
+  const { apiClient } = await import("@/lib/api/api-client");
+  const { data } = await apiClient.get("/employee/my/notifications");
+  if (data.notifications) return data.notifications;
+  if (Array.isArray(data.data)) return data.data;
+  return [];
+};
+
+const markNotificationRead = async (id: string) => {
+  const { apiClient } = await import("@/lib/api/api-client");
+  const { data } = await apiClient.patch(`/employee/my/notifications/${id}/read`, {});
+  return data;
+};
+
+export const useEmployeeMeetingsQuery = () => {
+  return useQuery({
+    queryKey: ["employeeMeetings"],
+    queryFn: getEmployeeMeetings,
+    refetchInterval: 60_000, // refetch every minute to catch new meetings
+  });
+};
+
+export const useEmployeeNotificationsQuery = () => {
+  return useQuery({
+    queryKey: ["employeeNotifications"],
+    queryFn: getEmployeeNotifications,
+    refetchInterval: 30_000,
+  });
+};
+
+export const useMarkNotificationReadMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: markNotificationRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employeeNotifications"] });
+    },
+  });
+};
+
+
 

@@ -6,6 +6,8 @@ import { AdminModal } from "@/components/admin/admin-modal";
 import { Edit2, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { getAdminServices, createAdminService, updateAdminService, deleteAdminService } from "@/lib/api/admin-api";
 
+import { useAdminServicesQuery, useCreateAdminServiceMutation, useUpdateAdminServiceMutation, useDeleteAdminServiceMutation } from "@/hooks/use-api-queries";
+
 interface ServiceItem {
   id: string;
   title: string;
@@ -15,43 +17,24 @@ interface ServiceItem {
   isActive: boolean;
 }
 
-const initialServices: ServiceItem[] = [
-  { id: "1", title: "AI Solutions & Neural Engineering", category: "AI & Data", badge: "High Demand", startingPrice: "$12,500", isActive: true },
-  { id: "2", title: "Web & SaaS Development", category: "Web", badge: "Core Expertise", startingPrice: "$4,900", isActive: true },
-  { id: "3", title: "Cloud & DevOps Infrastructure", category: "Cloud", badge: "99.999% SLA", startingPrice: "$8,500", isActive: true },
-  { id: "4", title: "Mobile App Development", category: "Mobile", badge: "Native & Cross-Platform", startingPrice: "$6,800", isActive: true },
-  { id: "5", title: "Enterprise ERP & CRM Systems", category: "Enterprise", badge: "Custom Suite", startingPrice: "$18,000", isActive: true },
-  { id: "6", title: "UI/UX & Brand Identity", category: "Design", badge: "Award Winning", startingPrice: "$3,500", isActive: true },
-];
-
 export default function ServicesCMSPage() {
-  const [services, setServices] = useState<ServiceItem[]>([]);
+  const { data: dbServices = [], isLoading } = useAdminServicesQuery();
+  const createMutation = useCreateAdminServiceMutation();
+  const updateMutation = useUpdateAdminServiceMutation();
+  const deleteMutation = useDeleteAdminServiceMutation();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<ServiceItem | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchServices();
-  }, []);
+  const services: ServiceItem[] = dbServices.map((item: any) => ({
+    id: item._id || item.id,
+    title: item.title,
+    category: item.category,
+    badge: item.badge || "",
+    startingPrice: item.startingPrice || "",
+    isActive: item.isActive ?? true,
+  }));
 
-  const fetchServices = async () => {
-    try {
-      setLoading(true);
-      const data = await getAdminServices();
-      setServices(data.map((item: any) => ({
-        id: item._id,
-        title: item.title,
-        category: item.category,
-        badge: item.badge || "",
-        startingPrice: item.startingPrice || "",
-        isActive: item.isActive,
-      })));
-    } catch (error) {
-      console.error("Failed to fetch services", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const [formData, setFormData] = useState({
     title: "",
@@ -90,12 +73,11 @@ export default function ServicesCMSPage() {
       };
 
       if (editingService) {
-        await updateAdminService({ id: editingService.id, ...payload });
+        updateMutation.mutate({ id: editingService.id, ...payload });
       } else {
-        await createAdminService(payload);
+        createMutation.mutate(payload);
       }
       setIsModalOpen(false);
-      fetchServices();
     } catch (error) {
       console.error("Failed to save service", error);
     }
@@ -103,14 +85,10 @@ export default function ServicesCMSPage() {
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this service?")) {
-      try {
-        await deleteAdminService(id);
-        fetchServices();
-      } catch (error) {
-        console.error("Failed to delete service", error);
-      }
+      deleteMutation.mutate(id);
     }
   };
+
 
   const columns: Column<ServiceItem>[] = [
     { header: "Service Title", accessorKey: "title" },
