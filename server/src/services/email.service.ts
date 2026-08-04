@@ -1,15 +1,5 @@
 import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.SMTP_PORT || "587", 10),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
 export const sendEmail = async ({
   to,
   subject,
@@ -24,6 +14,16 @@ export const sendEmail = async ({
       console.log(`[Email Mock Service] Email to ${to} with subject "${subject}" logged.`);
       return;
     }
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port: parseInt(process.env.SMTP_PORT || "587", 10),
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
 
     await transporter.sendMail({
       from: process.env.SMTP_FROM || "Nuvexora Technologies <no-reply@nuvexora.com>",

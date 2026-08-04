@@ -178,6 +178,15 @@ export const updateAdminClient = async ({ id, ...clientData }: { id: string; [ke
   }
 };
 
+export const deleteAdminClient = async (id: string) => {
+  try {
+    const { data } = await apiClient.delete(`/admin/clients/${id}`);
+    return data.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Failed to delete client");
+  }
+};
+
 export const getAdminClientById = async (id: string) => {
   try {
     const { data } = await apiClient.get(`/admin/clients/${id}`);
@@ -210,6 +219,15 @@ export const updateAdminEmployee = async ({ id, ...employeeData }: { id: string;
     return data.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Failed to update employee");
+  }
+};
+
+export const deleteAdminEmployee = async (id: string) => {
+  try {
+    const { data } = await apiClient.delete(`/admin/employees/${id}`);
+    return data.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Failed to delete employee");
   }
 };
 

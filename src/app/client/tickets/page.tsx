@@ -17,10 +17,12 @@ import {
 } from "lucide-react";
 import { useClientTicketsQuery, useCreateTicketMutation } from "@/hooks/use-api-queries";
 import { toast } from "sonner";
+import { useAuth } from "@/providers/auth-provider";
 
 export default function SupportTicketsPage() {
   const { data: tickets = [], isLoading } = useClientTicketsQuery();
   const createTicketMutation = useCreateTicketMutation();
+  const { user } = useAuth();
 
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
@@ -57,7 +59,7 @@ export default function SupportTicketsPage() {
   const handleSendMessage = () => {
     if (!newMessageText.trim() || !activeTicket) return;
     activeTicket.messages.push({
-      sender: "Marcus Vance",
+      sender: user?.name || "Client",
       role: "Client",
       text: newMessageText,
       timestamp: "Just now"

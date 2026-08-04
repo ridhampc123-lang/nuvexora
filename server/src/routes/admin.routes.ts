@@ -11,10 +11,12 @@ import {
   createClient,
   updateClient,
   getClientById,
+  deleteClient,
   getAllEmployees,
   createEmployee,
   updateEmployee,
   getEmployeeById,
+  deleteEmployee,
   getAllDepartments,
   createDepartment,
   updateDepartment,
@@ -110,12 +112,14 @@ router.get("/clients", getAllClients);
 router.post("/clients", createClient);
 router.patch("/clients/:id", updateClient);
 router.get("/clients/:id", getClientById);
+router.delete("/clients/:id", deleteClient);
 
 // Employees Management
 router.get("/employees", getAllEmployees);
 router.get("/employees/:id", getEmployeeById);
 router.post("/employees", createEmployee);
 router.patch("/employees/:id", updateEmployee);
+router.delete("/employees/:id", deleteEmployee);
 
 // Departments Management
 router.get("/departments", getAllDepartments);

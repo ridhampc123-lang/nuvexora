@@ -146,24 +146,36 @@ export const getAllClients = asyncHandler(async (_req: Request, res: Response) =
 });
 
 export const createClient = asyncHandler(async (req: Request, res: Response) => {
-  const { companyName, clientName, email, accountManager } = req.body;
+  const { companyName, clientName, ownerName, email, accountManager } = req.body;
   
   // 1. Create User & Trigger Activation Email
   const user = await AuthService.createAccountWithActivation(
-    { name: clientName || companyName, email, role: "CLIENT", type: "CLIENT", companyName, accountManager: accountManager?.name },
+    { name: clientName || ownerName || companyName, email, role: "CLIENT", type: "CLIENT", companyName, accountManager: accountManager?.name },
     req.ip,
     req.get("user-agent")
   );
 
   // 2. Create Client Profile
-  const client = await ClientAccount.create({ ...req.body, userId: user._id });
+  const client = await ClientAccount.create({ 
+    ...req.body, 
+    userId: user._id,
+    name: ownerName || clientName,
+    company: companyName
+  });
   getIO().emit("dashboard_update");
   return res.status(201).json(new ApiResponse(201, client, "Client created and activation email sent successfully"));
 });
 
 export const updateClient = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const client = await ClientAccount.findByIdAndUpdate(id, req.body, { new: true });
+  const updateData = { ...req.body };
+  if (updateData.ownerName) {
+    updateData.name = updateData.ownerName;
+  }
+  if (updateData.companyName) {
+    updateData.company = updateData.companyName;
+  }
+  const client = await ClientAccount.findByIdAndUpdate(id, updateData, { new: true });
   getIO().emit("dashboard_update");
   return res.status(200).json(new ApiResponse(200, client, "Client updated successfully"));
 });
@@ -175,6 +187,26 @@ export const getClientById = asyncHandler(async (req: Request, res: Response) =>
     return res.status(404).json(new ApiResponse(404, null, "Client not found"));
   }
   return res.status(200).json(new ApiResponse(200, client, "Client retrieved successfully"));
+});
+
+export const deleteClient = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  
+  const client = await ClientAccount.findById(id);
+  if (!client) {
+    return res.status(404).json(new ApiResponse(404, null, "Client not found"));
+  }
+
+  // Delete associated user if exists
+  if (client.userId) {
+    await User.findByIdAndDelete(client.userId);
+  }
+
+  // Delete the client account profile
+  await ClientAccount.findByIdAndDelete(id);
+
+  getIO().emit("dashboard_update");
+  return res.status(200).json(new ApiResponse(200, null, "Client and associated user deleted successfully"));
 });
 
 // --- EMPLOYEE HR MANAGEMENT ---
@@ -216,6 +248,26 @@ export const updateEmployee = asyncHandler(async (req: Request, res: Response) =
   const employee = await Employee.findByIdAndUpdate(id, req.body, { new: true });
   getIO().emit("dashboard_update");
   return res.status(200).json(new ApiResponse(200, employee, "Employee updated successfully"));
+});
+
+export const deleteEmployee = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  
+  const employee = await Employee.findById(id);
+  if (!employee) {
+    return res.status(404).json(new ApiResponse(404, null, "Employee not found"));
+  }
+
+  // Delete associated user if exists
+  if (employee.userId) {
+    await User.findByIdAndDelete(employee.userId);
+  }
+
+  // Delete the employee profile
+  await Employee.findByIdAndDelete(id);
+
+  getIO().emit("dashboard_update");
+  return res.status(200).json(new ApiResponse(200, null, "Employee and associated user deleted successfully"));
 });
 
 // --- DEPARTMENT MANAGEMENT ---

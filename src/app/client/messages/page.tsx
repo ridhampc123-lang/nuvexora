@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useSocket } from "@/providers/socket-provider";
 import { toast } from "sonner";
+import { useAuth } from "@/providers/auth-provider";
 
 interface ChatMessage {
   id: string;
@@ -37,6 +38,7 @@ const initialMessages: ChatMessage[] = [];
 
 export default function ClientMessagesPage() {
   const { socket, isConnected } = useSocket();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputText, setInputText] = useState("");
   const [selectedMember, setSelectedMember] = useState(initialTeam[0]);
@@ -47,8 +49,8 @@ export default function ClientMessagesPage() {
 
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
-      sender: "Marcus Vance",
-      role: "Client CTO",
+      sender: user?.name || "Client",
+      role: "Client Lead",
       text: inputText,
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       isSelf: true,

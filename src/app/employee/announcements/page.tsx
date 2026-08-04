@@ -4,10 +4,7 @@ import React from "react";
 import { Megaphone, Calendar } from "lucide-react";
 
 export default function EmployeeAnnouncementsPage() {
-  const announcements = [
-    { title: "Nuvexora Q3 All-Hands & AI Innovation Awards", date: "2026-07-24", author: "Executive Team", content: "Join us tomorrow at 11:00 AM EST for our quarterly product roadmap showcase and annual innovation awards." },
-    { title: "Updated Remote Work & Security Compliance Policy", date: "2026-07-20", author: "HR Department", content: "Please review the updated SOC2 data privacy guidelines in the Company Policies tab before end of month." }
-  ];
+  const announcements: any[] = [];
 
   return (
     <div className="space-y-8 text-white">
@@ -22,16 +19,26 @@ export default function EmployeeAnnouncementsPage() {
       </div>
 
       <div className="space-y-4">
-        {announcements.map((a) => (
-          <div key={a.title} className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between text-xs text-slate-400">
-              <span className="font-semibold text-blue-400">{a.author}</span>
-              <span>{a.date}</span>
-            </div>
-            <h2 className="text-xl font-bold text-white">{a.title}</h2>
-            <p className="text-xs text-slate-300 leading-relaxed">{a.content}</p>
+        {announcements.length === 0 ? (
+          <div className="p-12 text-center bg-slate-900 border border-slate-800 rounded-3xl space-y-4 max-w-xl mx-auto">
+            <Megaphone className="w-12 h-12 text-slate-650 mx-auto opacity-55" />
+            <h3 className="text-lg font-bold text-white">No Announcements</h3>
+            <p className="text-sm text-slate-400 max-w-sm mx-auto">
+              There are no active company announcements or team updates published at this time. Check back later for official communications.
+            </p>
           </div>
-        ))}
+        ) : (
+          announcements.map((a) => (
+            <div key={a.title} className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-2">
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span className="font-semibold text-blue-400">{a.author}</span>
+                <span>{a.date}</span>
+              </div>
+              <h2 className="text-xl font-bold text-white">{a.title}</h2>
+              <p className="text-xs text-slate-300 leading-relaxed">{a.content}</p>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

@@ -459,26 +459,37 @@ export function ServiceDetailView({ service }: { service: Service }) {
       <TestimonialsSection />
 
       {/* 13. Contact CTA */}
-      <section className="py-16 sm:py-24 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white relative overflow-hidden">
+      <section className="py-20 sm:py-24 bg-slate-950 text-white relative overflow-hidden border-t border-slate-900">
+        {/* Ambient Glowing Background */}
+        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-blue-600/20 blur-[130px] pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-indigo-600/15 blur-[130px] pointer-events-none" />
+
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+
         <Container size="2xl" className="text-center space-y-6 relative z-10 max-w-3xl">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold">
-            Let's Build Your Next {service.name} Platform
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.15]">
+            Let's Build Your Next{" "}
+            <span className="bg-gradient-to-r from-blue-400 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
+              {service.name} Platform
+            </span>
           </h2>
-          <p className="text-base sm:text-lg text-blue-100 font-normal">
+          <p className="text-base sm:text-lg text-slate-300 font-normal max-w-2xl mx-auto leading-relaxed">
             Schedule a free technical strategy call with our principal architects to align roadmap, budget, and delivery milestones.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
             <Link
               href="/book-consultation"
-              className="px-8 py-4 rounded-xl bg-white text-blue-700 font-bold text-base hover:bg-blue-50 transition-all shadow-xl"
+              className="group inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-base shadow-lg shadow-blue-600/30 hover:shadow-blue-600/45 transition-all duration-300 transform hover:-translate-y-0.5"
             >
-              Book Free Consultation
+              <span>Book Free Consultation</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               href="/contact"
-              className="px-8 py-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white border border-blue-400/40 font-bold text-base transition-all"
+              className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl bg-slate-800/85 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-base shadow-sm transition-all duration-300 backdrop-blur-md transform hover:-translate-y-0.5"
             >
-              Request Enterprise Quote
+              <span>Request Enterprise Quote</span>
             </Link>
           </div>
         </Container>

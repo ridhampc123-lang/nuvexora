@@ -14,6 +14,7 @@ import {
   Eye
 } from "lucide-react";
 import { toast } from "sonner";
+import { useClientInvoicesQuery } from "@/hooks/use-api-queries";
 
 interface FileItem {
   id: string;
@@ -26,13 +27,22 @@ interface FileItem {
   downloadContent: string;
 }
 
-const initialFiles: FileItem[] = [];
-
 export default function ClientFilesPage() {
-  const [files] = useState<FileItem[]>(initialFiles);
+  const { data: invoices = [], isLoading } = useClientInvoicesQuery();
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const files: FileItem[] = invoices.map((inv: any) => ({
+    id: inv._id || inv.id,
+    name: `${inv.invoiceNumber || "INV-XXXX"}.pdf`,
+    category: "Invoices",
+    type: "Adobe PDF Document",
+    size: "142 KB",
+    uploadedAt: inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : "Just now",
+    uploadedBy: "Billing Operations",
+    downloadContent: `Nuvexora Technologies Invoice\nInvoice Number: ${inv.invoiceNumber}\nTotal Amount: $${inv.totalAmount}\nStatus: ${inv.status}`
+  }));
 
   const filteredFiles = files.filter((f) => {
     const matchesCategory = activeCategory === "All" || f.category === activeCategory;

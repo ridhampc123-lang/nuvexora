@@ -7,6 +7,7 @@ import { ShieldCheck, Key, Lock, AlertCircle, ArrowRight, CheckCircle2, ShieldAl
 import { Container } from "@/components/ui/container";
 import { useAuth } from "@/providers/auth-provider";
 import { toast } from "sonner";
+import { apiClient } from "@/lib/api/api-client";
 
 function ActivateFormContent() {
   const router = useRouter();
@@ -63,18 +64,8 @@ function ActivateFormContent() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/activate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to activate account");
-      }
-
-      const data = await response.json();
+      const response = await apiClient.post("/auth/activate", { token, password });
+      const data = response.data;
       login(data.data.user, data.data.accessToken);
       
       toast.success("Account activated securely!");
@@ -88,7 +79,7 @@ function ActivateFormContent() {
         router.push("/employee");
       }
     } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
+      setError(err.response?.data?.message || err.message || "An unexpected error occurred.");
       setLoading(false);
     }
   };

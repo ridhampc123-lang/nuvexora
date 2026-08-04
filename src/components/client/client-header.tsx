@@ -27,6 +27,7 @@ import {
 import { useSocket } from "@/providers/socket-provider";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/providers/auth-provider";
 
 const clientMobileItems = [
   { label: "Portal Overview", href: "/client", icon: LayoutDashboard },
@@ -44,9 +45,12 @@ const clientMobileItems = [
 export function ClientHeader() {
   const pathname = usePathname();
   const { isConnected } = useSocket();
+  const { user, logout } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const initials = user?.name ? user.name.split(" ").map((n: string) => n.charAt(0)).join("").toUpperCase().slice(0, 2) : "CP";
 
   const [unreadCount, setUnreadCount] = useState(3);
   const [notifications, setNotifications] = useState([
@@ -209,25 +213,28 @@ export function ClientHeader() {
               className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
             >
               <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">
-                MV
+                {initials}
               </div>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 hidden sm:inline">Marcus Vance</span>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 hidden sm:inline">{user?.name || "Client"}</span>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             </button>
 
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 text-xs text-slate-900 dark:text-slate-100">
                 <div className="p-2 border-b border-slate-100 dark:border-slate-800">
-                  <div className="font-bold text-slate-900 dark:text-slate-100">Marcus Vance</div>
-                  <div className="text-[10px] text-slate-400">m.vance@velocefin.com</div>
+                  <div className="font-bold text-slate-900 dark:text-slate-100">{user?.name || "Client"}</div>
+                  <div className="text-[10px] text-slate-400">{user?.email || ""}</div>
                 </div>
                 <Link href="/client/settings" className="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl text-slate-700 dark:text-slate-200 font-medium">
                   Account Settings
                 </Link>
-                <Link href="/" className="flex items-center gap-2 p-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl font-medium">
+                <button
+                  onClick={logout}
+                  className="w-full text-left flex items-center gap-2 p-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl font-medium cursor-pointer"
+                >
                   <LogOut className="w-4 h-4 text-rose-500" />
                   Sign Out
-                </Link>
+                </button>
               </div>
             )}
           </div>

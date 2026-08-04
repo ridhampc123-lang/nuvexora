@@ -1,17 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Save, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/providers/auth-provider";
 
 export default function ClientSettingsPage() {
   const [saved, setSaved] = useState(false);
+  const { user } = useAuth();
   const [profile, setProfile] = useState({
-    name: "Marcus Vance",
-    email: "m.vance@velocefin.com",
-    company: "Veloce Financial",
-    phone: "+1 (415) 890-1234",
+    name: "",
+    email: "",
+    company: "",
+    phone: "",
     timezone: "America/New_York (EST)",
   });
+
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        name: user.name || "",
+        email: user.email || "",
+        company: user.companyName || (user as any).company || "",
+        phone: "",
+        timezone: "America/New_York (EST)",
+      });
+    }
+  }, [user]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -54,17 +54,18 @@ const navItems = [
 ];
 
 import { AuthGuard } from "@/components/auth/auth-guard";
+import { useAuth } from "@/providers/auth-provider";
 
 export default function EmployeeLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  const initials = user?.name ? user.name.split(" ").map((n: string) => n.charAt(0)).join("").toUpperCase().slice(0, 2) : "EP";
 
   const handleLogout = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("nuvexora_user");
-      localStorage.removeItem("nuvexora_token");
-    }
+    logout();
     router.push("/login");
   };
 
@@ -112,17 +113,17 @@ export default function EmployeeLayout({ children }: { children: React.ReactNode
         <div className="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
-              AV
+              {initials}
             </div>
             <div>
-              <div className="text-xs font-bold text-white">Alexander Vance</div>
-              <div className="text-[10px] text-slate-400">Senior Architect</div>
+              <div className="text-xs font-bold text-white">{user?.name || "Employee"}</div>
+              <div className="text-[10px] text-slate-400">{user?.department || "Team Member"}</div>
             </div>
           </div>
           <button
             onClick={handleLogout}
             title="Sign Out"
-            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-rose-400 transition-colors"
+            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
           </button>
@@ -153,9 +154,9 @@ export default function EmployeeLayout({ children }: { children: React.ReactNode
 
           <div className="flex items-center gap-3">
             {/* Quick Clock In Badge */}
-            <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold border border-emerald-500/20">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Clocked In (04:32 Hrs)</span>
+            <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-semibold border border-blue-500/20">
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+              <span>Workspace Active</span>
             </div>
 
             {/* Notification Bell */}

@@ -16,7 +16,7 @@ export interface ITicket extends Document {
 const TicketSchema = new Schema<ITicket>(
   {
     ticketNumber: { type: String, required: true, unique: true },
-    clientId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    clientId: { type: Schema.Types.ObjectId, ref: "ClientAccount", required: true },
     subject: { type: String, required: true, trim: true },
     category: { type: String, enum: ["technical", "billing", "sales", "general"], default: "technical" },
     priority: { type: String, enum: ["low", "medium", "high", "urgent"], default: "medium" },

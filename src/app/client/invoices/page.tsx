@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useClientInvoicesQuery, usePayInvoiceMutation } from "@/hooks/use-api-queries";
 import { toast } from "sonner";
+import { useAuth } from "@/providers/auth-provider";
 
 interface InvoiceItem {
   _id?: string;
@@ -31,6 +32,7 @@ interface InvoiceItem {
 export default function ClientInvoicesPage() {
   const { data: invoices = [], isLoading } = useClientInvoicesQuery();
   const payInvoiceMutation = usePayInvoiceMutation();
+  const { user } = useAuth();
 
   const [paymentModalInvoice, setPaymentModalInvoice] = useState<InvoiceItem | null>(null);
   const [cardNumber, setCardNumber] = useState("•••• •••• •••• 4242");
@@ -50,7 +52,9 @@ export default function ClientInvoicesPage() {
 
   const handleDownloadInvoicePDF = (inv: InvoiceItem) => {
     const invNum = inv.invoiceNumber || inv.number || "INV-2026-089";
-    const content = `%PDF-1.4 NUVEXORA TECHNOLOGIES OFFICIAL INVOICE RECEIPT\nInvoice Number: ${invNum}\nClient: Marcus Vance (Veloce Financial)\nDescription: ${inv.description || "Sprint Deliverable"}\nAmount: ${typeof inv.amount === "number" ? `$${inv.amount.toLocaleString()}` : inv.amount}\nStatus: ${inv.status.toUpperCase()}\nPayment Gateway: Stripe Encrypted Settlement`;
+    const clientName = user?.name || "Client";
+    const companyName = user?.companyName || (user as any)?.company || "Organization";
+    const content = `%PDF-1.4 NUVEXORA TECHNOLOGIES OFFICIAL INVOICE RECEIPT\nInvoice Number: ${invNum}\nClient: ${clientName} (${companyName})\nDescription: ${inv.description || "Sprint Deliverable"}\nAmount: ${typeof inv.amount === "number" ? `$${inv.amount.toLocaleString()}` : inv.amount}\nStatus: ${inv.status.toUpperCase()}\nPayment Gateway: Stripe Encrypted Settlement`;
     
     const blob = new Blob([content], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);

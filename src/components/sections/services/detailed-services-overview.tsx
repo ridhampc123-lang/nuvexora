@@ -251,14 +251,15 @@ export function DetailedServicesOverview() {
             )}
 
             {/* Card CTA Footer */}
-            <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                <h4 className="text-xl font-bold">Ready to implement {activeService.name}?</h4>
-                <p className="text-xs text-blue-100 font-normal">Schedule a strategy call to align requirements, timeline, and scope.</p>
+            <div className="relative p-6 rounded-2xl bg-gradient-to-tr from-slate-950 via-slate-900 to-indigo-950/95 border border-slate-800 text-white flex flex-col sm:flex-row items-center justify-between gap-4 overflow-hidden shadow-lg shadow-indigo-950/10">
+              <div className="absolute -right-10 -bottom-10 w-40 h-40 rounded-full bg-blue-600/10 blur-2xl pointer-events-none" />
+              <div className="relative z-10">
+                <h4 className="text-lg font-bold">Ready to implement {activeService.name}?</h4>
+                <p className="text-xs text-slate-400 font-normal">Schedule a strategy call to align requirements, timeline, and scope.</p>
               </div>
               <Link
                 href={`/services/${activeService.slug}`}
-                className="px-6 py-3 rounded-xl bg-white text-blue-700 hover:bg-blue-50 font-bold text-xs sm:text-sm transition-all whitespace-nowrap inline-flex items-center gap-2 shadow-md"
+                className="relative z-10 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm shadow-md transition-all whitespace-nowrap inline-flex items-center gap-2 hover:-translate-y-0.5"
               >
                 <span>View Full {activeService.name} Page</span>
                 <ArrowRight className="w-4 h-4" />

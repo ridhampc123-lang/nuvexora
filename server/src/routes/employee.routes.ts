@@ -21,27 +21,31 @@ router.use(
   )
 );
 
+import { Employee } from "../models/employee.model.js";
+import { Project } from "../models/project.model.js";
+import { Task } from "../models/task.model.js";
+
 // Scoped Employee Endpoints (Strictly filtered by authenticated user ID)
-router.get("/my/projects", (req: any, res) => {
-  res.json({
-    success: true,
-    user: req.user,
-    projects: [
-      { id: "PRJ-101", name: "Veloce Cloud Platform", role: "Lead Architect", progress: 78 },
-      { id: "PRJ-102", name: "Omni Global RAG AI Engine", role: "Senior Engineer", progress: 92 }
-    ]
-  });
+router.get("/my/projects", async (req: any, res) => {
+  try {
+    const employee = await Employee.findOne({ userId: req.user.userId });
+    if (!employee) {
+      return res.json({ success: true, projects: [] });
+    }
+    const projects = await Project.find({ _id: { $in: employee.assignedProjects || [] } }).populate("clientId", "companyName ownerName email name company");
+    return res.json({ success: true, projects });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message || "Failed to fetch projects" });
+  }
 });
 
-router.get("/my/tasks", (req: any, res) => {
-  res.json({
-    success: true,
-    user: req.user,
-    tasks: [
-      { id: "TSK-301", title: "Refactor Next.js App Router Edge Cache Headers", status: "IN_PROGRESS" },
-      { id: "TSK-302", title: "Review Pull Request #142 for RAG Vector Pipeline", status: "BACKLOG" }
-    ]
-  });
+router.get("/my/tasks", async (req: any, res) => {
+  try {
+    const tasks = await Task.find({ assignedTo: req.user.userId }).populate("projectId", "title");
+    return res.json({ success: true, tasks });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message || "Failed to fetch tasks" });
+  }
 });
 
 router.get("/my/timesheets", (req: any, res) => {

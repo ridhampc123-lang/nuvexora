@@ -16,7 +16,7 @@ export interface IContract extends Document {
 const ContractSchema = new Schema<IContract>(
   {
     title: { type: String, required: true },
-    clientId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    clientId: { type: Schema.Types.ObjectId, ref: "ClientAccount", required: true },
     projectId: { type: Schema.Types.ObjectId, ref: "Project" },
     content: { type: String, required: true },
     status: { type: String, enum: ["draft", "sent", "signed", "expired"], default: "draft" },

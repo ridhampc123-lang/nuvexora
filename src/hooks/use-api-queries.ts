@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getHomepageData, bookConsultationMeeting, subscribeNewsletter, getPublicBlogs, getPublicPortfolio } from "@/lib/api/public-api";
+import { getEmployeeProjects, getEmployeeTasks } from "@/lib/api/employee-api";
 import { 
   getAdminMetrics, 
   getAdminUsers, 
@@ -10,10 +11,12 @@ import {
   getAdminClients,
   createAdminClient,
   updateAdminClient,
+  deleteAdminClient,
   getAdminClientById,
   getAdminEmployees,
   createAdminEmployee,
   updateAdminEmployee,
+  deleteAdminEmployee,
   getAdminEmployeeById,
   getAdminDepartments,
   createAdminDepartment,
@@ -197,10 +200,32 @@ export const useUpdateAdminClientMutation = () => {
   });
 };
 
+export const useDeleteAdminClientMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAdminClient,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminClients"] });
+      queryClient.invalidateQueries({ queryKey: ["adminMetrics"] });
+    },
+  });
+};
+
 export const useAdminEmployeesQuery = () => {
   return useQuery({
     queryKey: ["adminEmployees"],
     queryFn: getAdminEmployees,
+  });
+};
+
+export const useDeleteAdminEmployeeMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAdminEmployee,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminEmployees"] });
+      queryClient.invalidateQueries({ queryKey: ["adminMetrics"] });
+    },
   });
 };
 
@@ -835,6 +860,20 @@ export const useBookMeetingMutation = () => {
 export const useSubscribeNewsletterMutation = () => {
   return useMutation({
     mutationFn: subscribeNewsletter,
+  });
+};
+
+export const useEmployeeProjectsQuery = () => {
+  return useQuery({
+    queryKey: ["employeeProjects"],
+    queryFn: getEmployeeProjects,
+  });
+};
+
+export const useEmployeeTasksQuery = () => {
+  return useQuery({
+    queryKey: ["employeeTasks"],
+    queryFn: getEmployeeTasks,
   });
 };
 

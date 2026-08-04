@@ -1,8 +1,11 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IClientAccount extends Document {
+  userId?: mongoose.Types.ObjectId;
   companyName: string;
   ownerName: string;
+  name?: string;
+  company?: string;
   email: string;
   phone?: string;
   industry: string;
@@ -21,8 +24,11 @@ export interface IClientAccount extends Document {
 
 const ClientAccountSchema = new Schema<IClientAccount>(
   {
+    userId: { type: Schema.Types.ObjectId, ref: "User" },
     companyName: { type: String, required: true, trim: true },
     ownerName: { type: String, required: true },
+    name: { type: String, default: "" },
+    company: { type: String, default: "" },
     email: { type: String, required: true, lowercase: true },
     phone: { type: String, default: "" },
     industry: { type: String, required: true },

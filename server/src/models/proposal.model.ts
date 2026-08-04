@@ -16,7 +16,7 @@ const ProposalSchema = new Schema<IProposal>(
   {
     title: { type: String, required: true },
     projectId: { type: Schema.Types.ObjectId, ref: "Project" },
-    clientId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    clientId: { type: Schema.Types.ObjectId, ref: "ClientAccount", required: true },
     amount: { type: Number, required: true },
     status: { type: String, enum: ["draft", "sent", "accepted", "rejected"], default: "draft" },
     validUntil: { type: Date, required: true },

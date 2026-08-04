@@ -16,6 +16,7 @@ import {
   PlayCircle
 } from "lucide-react";
 import { useClientProjectsQuery } from "@/hooks/use-api-queries";
+import { useAuth } from "@/providers/auth-provider";
 
 interface ProjectItem {
   _id?: string;
@@ -34,15 +35,9 @@ interface ProjectItem {
 export default function ClientProjectsPage() {
   const { data: projects = [], isLoading } = useClientProjectsQuery();
   const [activeTab, setActiveTab] = useState<"active" | "all">("active");
+  const { user } = useAuth();
 
   const projectList: ProjectItem[] = isLoading ? [] : projects;
-
-  const milestonesData = [
-    { title: "Sprint #12: Database Schema & High-Concurrency Indexing", status: "completed", date: "Jun 15, 2026", lead: "Dr. Aris Thorne" },
-    { title: "Sprint #13: Real-Time Event Stream Bus (Kafka & Redis)", status: "completed", date: "Jul 05, 2026", lead: "Elena Rostova" },
-    { title: "Sprint #14: Risk AI Inference Engine & Banking API v4", status: "in_progress", date: "Aug 01, 2026", lead: "Alexander Vance" },
-    { title: "Sprint #15: Multi-Region Staging & Penetration Testing", status: "scheduled", date: "Aug 15, 2026", lead: "Security Lead" },
-  ];
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12">
@@ -77,9 +72,22 @@ export default function ClientProjectsPage() {
 
         {projectList.map((p) => {
           const pId = p._id || p.id || "";
+          const clientMember = `${user?.name || "Client"} (Client)`;
           const pTech = p.techStack || ["Next.js 16", "Node.js", "PostgreSQL", "PyTorch AI", "Apache Kafka", "Docker"];
-          const pTeam = p.team || ["Alexander Vance (Lead)", "Elena Rostova (DevOps)", "Dr. Aris Thorne (AI)", "Marcus Vance (Client)"];
+          const pTeam = p.team || ["Alexander Vance (Lead)", "Elena Rostova (DevOps)", "Dr. Aris Thorne (AI)", clientMember];
           const target = p.targetDate || p.deadline || "Aug 15, 2026";
+
+          const milestones = (p as any).milestones && (p as any).milestones.length > 0 ? (p as any).milestones.map((m: any) => ({
+            title: m.title,
+            status: m.status || "pending",
+            date: m.dueDate ? new Date(m.dueDate).toLocaleDateString() : "TBD",
+            lead: "Sprint Lead"
+          })) : [
+            { title: "Sprint #12: Database Schema & High-Concurrency Indexing", status: "completed", date: "Jun 15, 2026", lead: "Dr. Aris Thorne" },
+            { title: "Sprint #13: Real-Time Event Stream Bus (Kafka & Redis)", status: "completed", date: "Jul 05, 2026", lead: "Elena Rostova" },
+            { title: "Sprint #14: Risk AI Inference Engine & Banking API v4", status: "in_progress", date: "Aug 01, 2026", lead: "Alexander Vance" },
+            { title: "Sprint #15: Multi-Region Staging & Penetration Testing", status: "scheduled", date: "Aug 15, 2026", lead: "Security Lead" },
+          ];
 
           return (
             <div key={pId} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
@@ -132,7 +140,7 @@ export default function ClientProjectsPage() {
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {milestonesData.map((m, idx) => {
+                  {milestones.map((m, idx) => {
                     const isDone = m.status === "completed";
                     const isInProgress = m.status === "in_progress";
 

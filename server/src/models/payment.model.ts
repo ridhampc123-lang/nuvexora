@@ -14,7 +14,7 @@ export interface IPayment extends Document {
 const PaymentSchema = new Schema<IPayment>(
   {
     invoiceId: { type: Schema.Types.ObjectId, ref: "Invoice", required: true },
-    clientId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    clientId: { type: Schema.Types.ObjectId, ref: "ClientAccount", required: true },
     amount: { type: Number, required: true },
     paymentMethod: { type: String, enum: ["stripe", "bank_transfer", "crypto", "card"], default: "card" },
     transactionId: { type: String, required: true },

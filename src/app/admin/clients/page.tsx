@@ -9,7 +9,8 @@ import {
 import { 
   useAdminClientsQuery, 
   useCreateAdminClientMutation, 
-  useUpdateAdminClientMutation 
+  useUpdateAdminClientMutation,
+  useDeleteAdminClientMutation
 } from "@/hooks/use-api-queries";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ export default function AdminClientManagement() {
   const { data: clients = [], isLoading } = useAdminClientsQuery();
   const createMutation = useCreateAdminClientMutation();
   const updateMutation = useUpdateAdminClientMutation();
+  const deleteMutation = useDeleteAdminClientMutation();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showDrawer, setShowDrawer] = useState(false);
@@ -61,8 +63,9 @@ export default function AdminClientManagement() {
 
   const softDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this client?")) {
-      updateMutation.mutate({ id, status: "deleted" }, {
-        onSuccess: () => toast.success("Client deleted"),
+      deleteMutation.mutate(id, {
+        onSuccess: () => toast.success("Client deleted successfully"),
+        onError: (err: any) => toast.error(err.message || "Failed to delete client"),
       });
     }
   };

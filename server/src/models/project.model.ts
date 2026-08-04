@@ -29,7 +29,7 @@ const MilestoneSchema = new Schema<IMilestone>({
 const ProjectSchema = new Schema<IProject>(
   {
     title: { type: String, required: true, trim: true },
-    clientId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    clientId: { type: Schema.Types.ObjectId, ref: "ClientAccount", required: true },
     category: { type: String, required: true },
     status: {
       type: String,

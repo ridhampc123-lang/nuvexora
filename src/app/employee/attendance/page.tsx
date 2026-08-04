@@ -1,17 +1,50 @@
 "use client";
 
 import React, { useState } from "react";
-import { UserCheck, Play, Pause, Square, Clock } from "lucide-react";
+import { UserCheck, Play, Square, Clock, Pause } from "lucide-react";
+import { toast } from "sonner";
 
 export default function EmployeeAttendancePage() {
-  const [clockedIn, setClockedIn] = useState(true);
+  const [clockedIn, setClockedIn] = useState(false);
   const [onBreak, setOnBreak] = useState(false);
+  const [clockInTime, setClockInTime] = useState<string | null>(null);
+  const [history, setHistory] = useState<any[]>([]);
 
-  const history = [
-    { date: "2026-07-24", clockIn: "09:00 AM", clockOut: "In Progress", total: "4h 32m", status: "PRESENT" },
-    { date: "2026-07-23", clockIn: "08:55 AM", clockOut: "05:15 PM", total: "8h 20m", status: "PRESENT" },
-    { date: "2026-07-22", clockIn: "09:05 AM", clockOut: "05:00 PM", total: "7h 55m", status: "PRESENT" },
-  ];
+  const handleClockAction = () => {
+    const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const dateStr = new Date().toISOString().split("T")[0];
+
+    if (!clockedIn) {
+      // Clock In
+      setClockedIn(true);
+      setClockInTime(timeStr);
+      toast.success("Successfully clocked in for today's shift.");
+    } else {
+      // Clock Out
+      const newLog = {
+        date: dateStr,
+        clockIn: clockInTime || "09:00 AM",
+        clockOut: timeStr,
+        total: "8h 00m", // Standard total hours indicator
+        status: "PRESENT"
+      };
+
+      setHistory([newLog, ...history]);
+      setClockedIn(false);
+      setOnBreak(false);
+      setClockInTime(null);
+      toast.info("Successfully clocked out. Today's shift logged.");
+    }
+  };
+
+  const handleBreakAction = () => {
+    setOnBreak(!onBreak);
+    if (!onBreak) {
+      toast.info("Break interval started.");
+    } else {
+      toast.success("Returned from break.");
+    }
+  };
 
   return (
     <div className="space-y-8 text-white">
@@ -28,14 +61,18 @@ export default function EmployeeAttendancePage() {
       {/* Action Clock Card */}
       <div className="p-8 rounded-3xl bg-slate-900 border border-slate-800 space-y-6 text-center max-w-xl mx-auto shadow-xl">
         <div className="space-y-1">
-          <div className="text-4xl font-extrabold text-white font-mono">04 : 32 : 18</div>
-          <p className="text-xs text-slate-400">Shift Started: 09:00 AM (EST)</p>
+          <div className="text-4xl font-extrabold text-white font-mono">
+            {clockedIn ? (onBreak ? "ON BREAK" : "ACTIVE") : "00 : 00 : 00"}
+          </div>
+          <p className="text-xs text-slate-400">
+            {clockedIn ? `Shift Started: ${clockInTime}` : "Not Clocked In"}
+          </p>
         </div>
 
         <div className="flex items-center justify-center gap-3">
           <button
-            onClick={() => setClockedIn(!clockedIn)}
-            className={`px-6 py-3 rounded-xl font-bold text-xs flex items-center gap-2 ${
+            onClick={handleClockAction}
+            className={`px-6 py-3 rounded-xl font-bold text-xs flex items-center gap-2 transition-all ${
               clockedIn ? "bg-rose-600 hover:bg-rose-500 text-white" : "bg-emerald-600 hover:bg-emerald-500 text-white"
             }`}
           >
@@ -44,9 +81,9 @@ export default function EmployeeAttendancePage() {
           </button>
 
           <button
-            onClick={() => setOnBreak(!onBreak)}
+            onClick={handleBreakAction}
             disabled={!clockedIn}
-            className={`px-6 py-3 rounded-xl font-bold text-xs flex items-center gap-2 ${
+            className={`px-6 py-3 rounded-xl font-bold text-xs flex items-center gap-2 transition-all disabled:opacity-40 ${
               onBreak ? "bg-amber-600 text-white animate-pulse" : "bg-slate-800 text-slate-300 hover:text-white"
             }`}
           >
@@ -71,19 +108,27 @@ export default function EmployeeAttendancePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800">
-              {history.map((row) => (
-                <tr key={row.date}>
-                  <td className="p-3 font-mono">{row.date}</td>
-                  <td className="p-3 text-slate-300">{row.clockIn}</td>
-                  <td className="p-3 text-slate-300">{row.clockOut}</td>
-                  <td className="p-3 font-bold text-blue-400">{row.total}</td>
-                  <td className="p-3">
-                    <span className="px-2.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400">
-                      {row.status}
-                    </span>
+              {history.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-8 text-center text-slate-500">
+                    No attendance logs recorded for this pay cycle. Use the work clock above to log shift hours.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                history.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-slate-850/20 transition-all">
+                    <td className="p-3 font-mono">{row.date}</td>
+                    <td className="p-3 text-slate-300">{row.clockIn}</td>
+                    <td className="p-3 text-slate-300">{row.clockOut}</td>
+                    <td className="p-3 font-bold text-blue-400">{row.total}</td>
+                    <td className="p-3">
+                      <span className="px-2.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400">
+                        {row.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

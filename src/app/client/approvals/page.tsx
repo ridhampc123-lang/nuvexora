@@ -21,9 +21,11 @@ import {
   useRequestChangesMutation 
 } from "@/hooks/use-api-queries";
 import { toast } from "sonner";
+import { useAuth } from "@/providers/auth-provider";
 
 export default function DeliverableApprovalsPage() {
   const { data: approvals = [], isLoading } = useClientApprovalsQuery();
+  const { user } = useAuth();
   const approveMutation = useApproveDeliverableMutation();
   const requestChangesMutation = useRequestChangesMutation();
 
@@ -66,6 +68,32 @@ export default function DeliverableApprovalsPage() {
       }
     );
   };
+  if (approvals.length === 0 && !isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto space-y-8 pb-12 text-slate-800 dark:text-slate-200">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 text-xs font-bold border border-blue-200 dark:border-blue-800 mb-2">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Deliverables & Stage Gates</span>
+            </div>
+            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Design & Stage Approvals</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
+              Review architectural specifications, design prototypes, and engineering milestone deliverables.
+            </p>
+          </div>
+        </div>
+
+        <div className="p-12 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 max-w-xl mx-auto">
+          <CheckCircle2 className="w-12 h-12 text-slate-450 mx-auto opacity-55" />
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Pending Approvals</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+            There are no deliverables or milestones awaiting your sign-off at this stage. You will be notified as soon as engineers submit items for review.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-12">
@@ -244,7 +272,7 @@ export default function DeliverableApprovalsPage() {
                 <div className="space-y-3 text-xs">
                   <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 dark:text-white">Marcus Vance (Client Lead)</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{user?.name || "Client"} (Client Lead)</span>
                       <span className="text-[10px] text-slate-400">Jul 23, 2:14 PM</span>
                     </div>
                     <p className="text-slate-600 dark:text-slate-300">
@@ -359,7 +387,7 @@ export default function DeliverableApprovalsPage() {
                 type="text"
                 value={digitalSignature}
                 onChange={(e) => setDigitalSignature(e.target.value)}
-                placeholder="e.g. Marcus Vance"
+                placeholder={`e.g. ${user?.name || "Marcus Vance"}`}
                 className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100 font-mono font-bold focus:outline-none focus:border-emerald-500"
               />
             </div>

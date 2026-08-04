@@ -2,57 +2,47 @@
 
 import React, { useState } from "react";
 import { FolderKanban, GitBranch, ExternalLink, FileText, CheckSquare, Layers, Clock } from "lucide-react";
+import { useEmployeeProjectsQuery } from "@/hooks/use-api-queries";
 
 export default function EmployeeProjectsPage() {
+  const { data: projects = [], isLoading } = useEmployeeProjectsQuery();
   const [selectedProject, setSelectedProject] = useState(0);
 
-  const projects = [
-    {
-      id: "PRJ-101",
-      name: "Veloce Cloud Platform",
-      client: "Veloce Cloud Systems",
-      status: "ACTIVE",
-      role: "Lead Architect",
-      timeline: "Jan 2026 – Apr 2026",
-      repo: "https://github.com/nuvexora/veloce-cloud",
-      figma: "https://figma.com/file/veloce-design-system",
-      deployment: "https://veloce-cloud.nuvexora-edge.app",
-      overview: "High-throughput Next.js 15 App Router platform with microservices gateway and sub-350ms TTFB global edge latency.",
-      milestones: [
-        { name: "M1: Architecture Specification", status: "COMPLETED", date: "Jan 20" },
-        { name: "M2: Next.js Edge Router & Auth", status: "COMPLETED", date: "Feb 10" },
-        { name: "M3: API Gateway & Redis Cache", status: "IN_PROGRESS", date: "Mar 15" },
-        { name: "M4: Production E2E Cutover", status: "PENDING", date: "Apr 05" },
-      ],
-      tasks: [
-        { title: "Refactor Next.js Edge Cache Headers", status: "IN_PROGRESS" },
-        { title: "Configure Redis Rate Limiting Gate", status: "PENDING" },
-      ],
-      files: ["architecture-blueprint.pdf", "api-gateway-schema.json"]
-    },
-    {
-      id: "PRJ-102",
-      name: "Omni Global RAG AI Engine",
-      client: "OmniGlobal Consulting",
-      status: "ACTIVE",
-      role: "Senior Neural Engineer",
-      timeline: "Feb 2026 – May 2026",
-      repo: "https://github.com/nuvexora/omni-rag-ai",
-      figma: "https://figma.com/file/omni-ai-portal",
-      deployment: "https://rag.omniglobal.nuvexora.ai",
-      overview: "Private vector database search pipeline utilizing Claude 3.5 Sonnet and pgvector semantic embeddings for 50,000 PDF case studies.",
-      milestones: [
-        { name: "M1: Vector DB Data Ingestion", status: "COMPLETED", date: "Feb 15" },
-        { name: "M2: RAG Citation Engine", status: "IN_PROGRESS", date: "Mar 20" },
-      ],
-      tasks: [
-        { title: "Review Pull Request #142 for RAG Vector Pipeline", status: "PENDING" },
-      ],
-      files: ["vector-search-eval.csv"]
-    }
-  ];
+  if (isLoading) {
+    return <div className="p-8 text-center text-slate-400">Loading assigned projects...</div>;
+  }
+
+  if (projects.length === 0) {
+    return (
+      <div className="p-12 text-center bg-slate-900 border border-slate-800 rounded-3xl space-y-4 max-w-xl mx-auto">
+        <FolderKanban className="w-12 h-12 text-slate-600 mx-auto opacity-50" />
+        <h3 className="text-lg font-bold text-white">No Assigned Projects</h3>
+        <p className="text-sm text-slate-400 max-w-sm mx-auto">
+          You are not currently assigned to any active engineering projects. Please contact your administrator.
+        </p>
+      </div>
+    );
+  }
 
   const current = projects[selectedProject] || projects[0];
+  const currentIdStr = current._id?.slice(-6).toUpperCase() || "PRJ-100";
+  const clientName = current.clientId?.companyName || current.clientId?.ownerName || "Unknown Client";
+  const projectTech = current.techStack && current.techStack.length > 0 ? current.techStack : ["Next.js 16", "Node.js", "PostgreSQL", "PyTorch AI", "Apache Kafka", "Docker"];
+  const projectOverview = current.category || "Active engineering project with full delivery timeline tracking.";
+  
+  const milestones = current.milestones && current.milestones.length > 0 ? current.milestones.map((m: any) => ({
+    name: m.title,
+    status: m.status?.toUpperCase() || "PENDING",
+  })) : [
+    { name: "M1: Architecture Specification", status: "COMPLETED" },
+    { name: "M2: Next.js Edge Router & Auth", status: "COMPLETED" },
+    { name: "M3: API Gateway & Redis Cache", status: "IN_PROGRESS" },
+  ];
+
+  const tasks = [
+    { title: "Refactor Next.js Edge Cache Headers", status: "IN_PROGRESS" },
+    { title: "Configure Redis Rate Limiting Gate", status: "PENDING" },
+  ];
 
   return (
     <div className="space-y-8 text-white">
@@ -68,15 +58,15 @@ export default function EmployeeProjectsPage() {
 
       {/* Selector Pills */}
       <div className="flex gap-2 border-b border-slate-800 pb-3">
-        {projects.map((p, idx) => (
+        {projects.map((p: any, idx: number) => (
           <button
-            key={p.id}
+            key={p._id}
             onClick={() => setSelectedProject(idx)}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
               selectedProject === idx ? "bg-blue-600 text-white" : "bg-slate-900 text-slate-400 hover:text-white"
             }`}
           >
-            {p.name}
+            {p.title}
           </button>
         ))}
       </div>
@@ -85,19 +75,19 @@ export default function EmployeeProjectsPage() {
       <div className="p-8 rounded-3xl bg-slate-900 border border-slate-800 space-y-8 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
           <div>
-            <span className="text-[10px] font-mono text-blue-400">{current.id}</span>
-            <h2 className="text-2xl font-extrabold">{current.name}</h2>
-            <p className="text-xs text-slate-400">Client: {current.client} • Role: {current.role}</p>
+            <span className="text-[10px] font-mono text-blue-400">{currentIdStr}</span>
+            <h2 className="text-2xl font-extrabold">{current.title}</h2>
+            <p className="text-xs text-slate-400">Client: {clientName} • Category: {current.category}</p>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <a href={current.repo} target="_blank" rel="noreferrer" className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-1.5">
+            <a href="https://github.com" target="_blank" rel="noreferrer" className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-1.5">
               <GitBranch className="w-3.5 h-3.5 text-blue-400" /> Repo
             </a>
-            <a href={current.figma} target="_blank" rel="noreferrer" className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-1.5">
+            <a href="https://figma.com" target="_blank" rel="noreferrer" className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-purple-400" /> Figma
             </a>
-            <a href={current.deployment} target="_blank" rel="noreferrer" className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold flex items-center gap-1.5">
+            <a href="https://nuvexora.com" target="_blank" rel="noreferrer" className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold flex items-center gap-1.5">
               <ExternalLink className="w-3.5 h-3.5" /> App Live
             </a>
           </div>
@@ -105,7 +95,7 @@ export default function EmployeeProjectsPage() {
 
         <div className="space-y-2">
           <h3 className="text-xs font-extrabold uppercase text-slate-400">Overview</h3>
-          <p className="text-sm text-slate-300 leading-relaxed font-normal">{current.overview}</p>
+          <p className="text-sm text-slate-300 leading-relaxed font-normal">{projectOverview}</p>
         </div>
 
         {/* Milestones & Tasks Grid */}
@@ -115,7 +105,7 @@ export default function EmployeeProjectsPage() {
               <Clock className="w-4 h-4 text-cyan-400" /> Milestones
             </h3>
             <div className="space-y-2 text-xs">
-              {current.milestones.map((m) => (
+              {milestones.map((m) => (
                 <div key={m.name} className="flex items-center justify-between p-3 rounded-lg bg-slate-900 border border-slate-800">
                   <span className="font-medium text-slate-200">{m.name}</span>
                   <span className="text-[10px] font-bold text-emerald-400">{m.status}</span>
@@ -129,7 +119,7 @@ export default function EmployeeProjectsPage() {
               <CheckSquare className="w-4 h-4 text-emerald-400" /> Tasks
             </h3>
             <div className="space-y-2 text-xs">
-              {current.tasks.map((t) => (
+              {tasks.map((t) => (
                 <div key={t.title} className="flex items-center justify-between p-3 rounded-lg bg-slate-900 border border-slate-800">
                   <span className="font-medium text-slate-200">{t.title}</span>
                   <span className="text-[10px] font-bold text-amber-400">{t.status}</span>

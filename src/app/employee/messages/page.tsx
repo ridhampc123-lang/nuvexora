@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { MessageSquare, Send, Paperclip, CheckCheck, Users, ShieldAlert } from "lucide-react";
+import { useAuth } from "@/providers/auth-provider";
 
 interface ChatMessage {
   id: string;
@@ -12,11 +13,13 @@ interface ChatMessage {
 }
 
 export default function EmployeeMessagesPage() {
+  const { user } = useAuth();
+  const userName = user?.name || "Employee";
+
   const [activeChannel, setActiveChannel] = useState("Engineering Guild");
   const [inputMessage, setInputMessage] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: "1", sender: "Marcus Vance (Manager)", text: "Hey Alexander, did we finalize the Next.js edge caching headers?", time: "10:14 AM", isSelf: false },
-    { id: "2", sender: "Alexander Vance", text: "Yes! Benchmark shows 320ms TTFB across US-East and EU-Central edge locations.", time: "10:15 AM", isSelf: true },
+    { id: "1", sender: "System Bot", text: `Welcome to the Nuvexora Engineering Workspace. Start chatting live with your guild team.`, time: "Just now", isSelf: false },
   ]);
 
   const sendMessage = (e: React.FormEvent) => {
@@ -24,9 +27,9 @@ export default function EmployeeMessagesPage() {
     if (!inputMessage.trim()) return;
     const newMsg: ChatMessage = {
       id: Date.now().toString(),
-      sender: "Alexander Vance",
+      sender: userName,
       text: inputMessage,
-      time: "Just now",
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       isSelf: true
     };
     setMessages([...messages, newMsg]);

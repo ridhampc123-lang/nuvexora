@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/providers/auth-provider";
 import { 
   LayoutDashboard, 
   FolderKanban, 
@@ -35,6 +36,9 @@ const clientNavItems = [
 export function ClientSidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { user } = useAuth();
+  
+  const initials = user?.name ? user.name.split(" ").map((n: string) => n.charAt(0)).join("").toUpperCase().slice(0, 2) : "CP";
 
   return (
     <aside
@@ -93,11 +97,11 @@ export function ClientSidebar() {
       <div className="p-4 border-t border-slate-800/80 bg-slate-950/40">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
-            VF
+            {initials}
           </div>
           {!isCollapsed && (
             <div className="truncate">
-              <div className="text-xs font-bold text-white truncate">Marcus Vance</div>
+              <div className="text-xs font-bold text-white truncate">{user?.name || "Client"}</div>
               <div className="text-[10px] text-emerald-400 font-semibold">99.999% SLA Active</div>
             </div>
           )}
