@@ -11,7 +11,7 @@ export default function BlogPage() {
 
   return (
     <>
-      <Section className="pb-12 bg-slate-950">
+      <Section className="pb-12 bg-slate-950 text-white">
         <SectionTitle 
           eyebrow="Blog" 
           title="Insights on strategy, engineering, and scale." 
