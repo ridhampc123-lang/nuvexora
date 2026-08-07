@@ -23,19 +23,28 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let socketUrl = "http://localhost:5000";
-    if (typeof window !== "undefined") {
-      const hostname = window.location.hostname;
-      if (hostname && hostname !== "localhost" && hostname !== "127.0.0.1") {
-        socketUrl = `http://${hostname}:5000`;
-      }
-    }
     if (process.env.NEXT_PUBLIC_SOCKET_URL) {
       socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+    } else if (process.env.NEXT_PUBLIC_API_URL) {
+      socketUrl = process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/v1\/?$/, "");
+    } else if (typeof window !== "undefined") {
+      const { hostname, protocol } = window.location;
+      if (hostname === "localhost" || hostname === "127.0.0.1") {
+        socketUrl = "http://localhost:5000";
+      } else if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
+        socketUrl = `http://${hostname}:5000`;
+      } else if (protocol === "https:") {
+        socketUrl = window.location.origin;
+      } else {
+        socketUrl = `http://${hostname}:5000`;
+      }
     }
 
     const socketInstance = io(socketUrl, {
       withCredentials: true,
       autoConnect: true,
+      transports: ["websocket", "polling"],
+      reconnectionAttempts: 5,
     });
 
     socketInstance.on("connect", () => {

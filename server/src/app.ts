@@ -16,10 +16,31 @@ app.use(helmet());
 app.use(compression());
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, server-side Next.js rewrites)
+      if (!origin) return callback(null, true);
+
+      const clientUrl = process.env.CLIENT_URL;
+      const isVercel = origin.endsWith(".vercel.app");
+      const isLocal =
+        origin.startsWith("http://localhost:") ||
+        origin.startsWith("http://127.0.0.1:") ||
+        /^http:\/\/(192\.168|10|172\.(1[6-9]|2[0-9]|3[0-1]))\./.test(origin);
+
+      if (
+        isVercel ||
+        isLocal ||
+        !clientUrl ||
+        origin === clientUrl ||
+        process.env.NODE_ENV !== "production"
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
   })
 );
 

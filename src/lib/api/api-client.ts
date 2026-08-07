@@ -1,14 +1,29 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios from "axios";
 
 export const getApiBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL;
   }
   if (typeof window !== "undefined") {
-    const hostname = window.location.hostname;
-    if (hostname && hostname !== "localhost" && hostname !== "127.0.0.1") {
+    const { hostname, protocol } = window.location;
+
+    // 1. Localhost development
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return "http://localhost:5000/api/v1";
+    }
+
+    // 2. Mobile device connected on local LAN IP (e.g. 192.168.x.x)
+    if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
       return `http://${hostname}:5000/api/v1`;
     }
+
+    // 3. Deployed production web (Vercel, custom domain with HTTPS)
+    // Relative /api/v1 prevents Mixed Content errors on mobile browsers
+    if (protocol === "https:") {
+      return "/api/v1";
+    }
+
+    return `http://${hostname}:5000/api/v1`;
   }
   return "http://localhost:5000/api/v1";
 };
@@ -26,7 +41,9 @@ apiClient.interceptors.request.use(
   (config) => {
     config.baseURL = getApiBaseUrl();
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("nuvexora_access_token");
+      const token =
+        localStorage.getItem("nuvexora_access_token") ||
+        localStorage.getItem("nuvexora_token");
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -81,6 +98,7 @@ apiClient.interceptors.response.use(
         const newAccessToken = data.data.accessToken;
         if (typeof window !== "undefined") {
           localStorage.setItem("nuvexora_access_token", newAccessToken);
+          localStorage.setItem("nuvexora_token", newAccessToken);
         }
 
         apiClient.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
@@ -92,6 +110,8 @@ apiClient.interceptors.response.use(
         processQueue(refreshError, null);
         if (typeof window !== "undefined") {
           localStorage.removeItem("nuvexora_access_token");
+          localStorage.removeItem("nuvexora_token");
+          localStorage.removeItem("nuvexora_user");
           window.location.href = "/login";
         }
         return Promise.reject(refreshError);

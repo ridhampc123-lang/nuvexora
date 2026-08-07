@@ -41,7 +41,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       try {
         const storedUser = localStorage.getItem("nuvexora_user");
-        const storedToken = localStorage.getItem("nuvexora_token");
+        const storedToken =
+          localStorage.getItem("nuvexora_access_token") ||
+          localStorage.getItem("nuvexora_token");
 
         if (storedUser && storedToken) {
           setUser(JSON.parse(storedUser));
@@ -61,6 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       localStorage.setItem("nuvexora_user", JSON.stringify(userData));
       localStorage.setItem("nuvexora_token", tokenStr);
+      localStorage.setItem("nuvexora_access_token", tokenStr);
     }
   };
 
@@ -70,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== "undefined") {
       localStorage.removeItem("nuvexora_user");
       localStorage.removeItem("nuvexora_token");
+      localStorage.removeItem("nuvexora_access_token");
     }
   };
 

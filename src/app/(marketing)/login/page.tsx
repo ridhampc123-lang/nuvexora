@@ -56,7 +56,17 @@ function LoginFormContent() {
         setError(response.data?.message || "Invalid email or password.");
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Network error. Please try again later.");
+      console.error("Login authentication error:", err);
+      const serverMessage = err.response?.data?.message;
+      if (serverMessage) {
+        setError(serverMessage);
+      } else if (err.code === "ERR_NETWORK" || err.message === "Network Error") {
+        setError(
+          "Unable to connect to authentication server. Please check your network connection or ensure the API server URL is configured."
+        );
+      } else {
+        setError("Authentication failed. Please check your credentials and try again.");
+      }
     } finally {
       setLoading(false);
     }
