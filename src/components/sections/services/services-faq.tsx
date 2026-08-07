@@ -119,15 +119,17 @@ export function ServicesFAQ() {
           </p>
 
           {/* Search Bar */}
-          <div className="pt-4 max-w-md mx-auto relative">
-            <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search 15 enterprise FAQs..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-            />
+          <div className="pt-4 max-w-md mx-auto">
+            <div className="relative flex items-center">
+              <Search className="w-4 h-4 text-slate-400 absolute left-4 pointer-events-none shrink-0" />
+              <input
+                type="text"
+                placeholder="Search 15 enterprise FAQs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              />
+            </div>
           </div>
 
           {/* Filter Pills */}

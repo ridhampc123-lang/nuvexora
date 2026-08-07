@@ -14,6 +14,11 @@ interface PortfolioItem {
   metric: string;
   metricLabel: string;
   coverImage: string;
+  summary: string;
+  challenge?: string;
+  solution?: string;
+  results?: string;
+  liveUrl?: string;
   isFeatured: boolean;
 }
 
@@ -41,6 +46,11 @@ export default function PortfolioCMSPage() {
           metric: item.metric,
           metricLabel: item.metricLabel,
           coverImage: item.coverImage || "",
+          summary: item.summary || "",
+          challenge: item.challenge || "",
+          solution: item.solution || "",
+          results: item.results || "",
+          liveUrl: item.liveUrl || "",
           isFeatured: item.isFeatured,
         }))
       );
@@ -58,6 +68,12 @@ export default function PortfolioCMSPage() {
     metric: "",
     metricLabel: "",
     coverImage: "",
+    summary: "",
+    challenge: "",
+    solution: "",
+    results: "",
+    liveUrl: "",
+    isFeatured: true,
   });
 
   const handleOpenModal = (item?: PortfolioItem) => {
@@ -70,10 +86,29 @@ export default function PortfolioCMSPage() {
         metric: item.metric,
         metricLabel: item.metricLabel,
         coverImage: item.coverImage || "",
+        summary: item.summary || "",
+        challenge: item.challenge || "",
+        solution: item.solution || "",
+        results: item.results || "",
+        liveUrl: item.liveUrl || "",
+        isFeatured: item.isFeatured,
       });
     } else {
       setEditingItem(null);
-      setFormData({ title: "", clientName: "", category: "Fintech", metric: "", metricLabel: "", coverImage: "" });
+      setFormData({
+        title: "",
+        clientName: "",
+        category: "Fintech",
+        metric: "",
+        metricLabel: "",
+        coverImage: "",
+        summary: "",
+        challenge: "",
+        solution: "",
+        results: "",
+        liveUrl: "",
+        isFeatured: true,
+      });
     }
     setIsModalOpen(true);
   };
@@ -103,7 +138,12 @@ export default function PortfolioCMSPage() {
         metric: formData.metric,
         metricLabel: formData.metricLabel,
         coverImage: formData.coverImage,
-        isFeatured: true,
+        summary: formData.summary || "Case study detailing enterprise technical transformation and execution.",
+        challenge: formData.challenge || "Overcoming legacy infrastructure limitations and scalability bottlenecks.",
+        solution: formData.solution || "Architected custom cloud-native microservices with real-time pipelines.",
+        results: formData.results || "Achieved significant velocity, latency reductions, and cost efficiency.",
+        liveUrl: formData.liveUrl,
+        isFeatured: formData.isFeatured,
       };
 
       if (editingItem) {
@@ -145,6 +185,14 @@ export default function PortfolioCMSPage() {
     { header: "Case Study Title", accessorKey: "title" },
     { header: "Client", accessorKey: "clientName" },
     {
+      header: "Description / Summary",
+      cell: (row) => (
+        <span className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 max-w-xs">
+          {row.summary || "No description provided."}
+        </span>
+      ),
+    },
+    {
       header: "Category",
       cell: (row) => (
         <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-semibold">
@@ -185,7 +233,7 @@ export default function PortfolioCMSPage() {
     <div className="space-y-6 max-w-7xl mx-auto">
       <AdminDataTable
         title="Portfolio & Case Studies"
-        description="Manage corporate case studies, images, metrics, client results, and technical showcases."
+        description="Manage corporate case studies, descriptions, metrics, client results, and technical showcases."
         columns={columns}
         data={portfolio}
         searchPlaceholder="Search case studies..."
@@ -204,9 +252,23 @@ export default function PortfolioCMSPage() {
             <input
               type="text"
               required
+              placeholder="e.g. Next-Gen Algorithmic Trading Core"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-950 focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          {/* Project Summary / Description */}
+          <div>
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Project Description & Overview</label>
+            <textarea
+              rows={3}
+              required
+              placeholder="Describe the case study, project scope, tech transformation, and client impact..."
+              value={formData.summary}
+              onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-950 focus:border-blue-500 outline-none leading-relaxed"
             />
           </div>
 
@@ -240,6 +302,7 @@ export default function PortfolioCMSPage() {
               <input
                 type="text"
                 required
+                placeholder="e.g. Apex Global Bank"
                 value={formData.clientName}
                 onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-950 focus:border-blue-500 outline-none"
@@ -250,6 +313,7 @@ export default function PortfolioCMSPage() {
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Category</label>
               <input
                 type="text"
+                placeholder="e.g. Fintech / AI Pipelines"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-950 focus:border-blue-500 outline-none"
@@ -279,6 +343,17 @@ export default function PortfolioCMSPage() {
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-950 focus:border-blue-500 outline-none"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Live Project / Website Link (Optional)</label>
+            <input
+              type="url"
+              placeholder="https://client-project.com"
+              value={formData.liveUrl}
+              onChange={(e) => setFormData({ ...formData, liveUrl: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-950 focus:border-blue-500 outline-none font-mono"
+            />
           </div>
 
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">

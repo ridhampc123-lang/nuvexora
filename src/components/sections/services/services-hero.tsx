@@ -94,13 +94,13 @@ export function ServicesHero() {
               return (
                 <div
                   key={stat.label}
-                  className="p-5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800/80 backdrop-blur-sm shadow-sm flex flex-col items-center justify-center text-center space-y-1.5"
+                  className="p-4 sm:p-5 rounded-2xl bg-white/60 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800/80 backdrop-blur-sm shadow-sm flex flex-col items-center justify-center text-center space-y-1.5 min-w-0 overflow-hidden"
                 >
                   <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400 mb-1" />
-                  <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                  <span className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight break-words max-w-full leading-tight">
                     {stat.value}
                   </span>
-                  <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-normal break-words max-w-full">
                     {stat.label}
                   </span>
                 </div>

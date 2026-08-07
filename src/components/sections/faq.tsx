@@ -75,15 +75,17 @@ export function FAQSection() {
           </p>
 
           {/* Search Bar */}
-          <div className="relative max-w-md mx-auto pt-4">
-            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-7 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search questions or keywords..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-950 text-sm text-slate-900 dark:text-white transition-all outline-none"
-            />
+          <div className="max-w-md mx-auto pt-4">
+            <div className="relative flex items-center">
+              <Search className="w-4 h-4 text-slate-400 absolute left-4 pointer-events-none shrink-0" />
+              <input
+                type="text"
+                placeholder="Search questions or keywords..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-blue-500 focus:bg-white dark:focus:bg-slate-950 text-sm text-slate-900 dark:text-white transition-all outline-none"
+              />
+            </div>
           </div>
 
           {/* Category Tabs */}

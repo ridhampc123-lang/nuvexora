@@ -123,11 +123,15 @@ export function ServiceDetailView({ service }: { service: Service }) {
 
             {/* Hero Stats */}
             {service.stats && service.stats.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-10 border-t border-slate-800/80">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-10 border-t border-slate-800/80">
                 {service.stats.map((st) => (
-                  <div key={st.label} className="p-4 rounded-2xl bg-slate-800/50 border border-slate-700/60 text-center space-y-1">
-                    <div className="text-2xl sm:text-3xl font-extrabold text-blue-400">{st.value}</div>
-                    <div className="text-xs text-slate-400 font-medium">{st.label}</div>
+                  <div key={st.label} className="p-4 sm:p-5 rounded-2xl bg-slate-800/50 border border-slate-700/60 flex flex-col items-center justify-center text-center space-y-1.5 min-w-0 overflow-hidden">
+                    <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-blue-400 tracking-tight break-words max-w-full leading-tight">
+                      {st.value}
+                    </div>
+                    <div className="text-xs sm:text-sm text-slate-400 font-medium leading-normal break-words max-w-full">
+                      {st.label}
+                    </div>
                   </div>
                 ))}
               </div>

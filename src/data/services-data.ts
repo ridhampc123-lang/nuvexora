@@ -669,7 +669,7 @@ export const servicesData: Service[] = [
     stats: [
       { label: "Brand Equity Value Lift", value: "3x" },
       { label: "Brand Asset Consistency", value: "100%" },
-      { label: "Brand Style Guide Extensibility", value: "Comprehensive" },
+      { label: "Style Guide Extensibility", value: "100%" },
     ],
     overview: "In a crowded market, your brand identity is your ultimate differentiator. Nuvexora Technologies designs enterprise brand identities that articulate authority, innovation, and trust. We develop complete visual identity systems including logo architecture, typography pairings, color systems, brand story positioning, and comprehensive digital brand guidelines.",
     businessChallenges: [
