@@ -3,6 +3,7 @@ import {
   getAdminDashboardMetrics,
   getAllUsers,
   updateUser,
+  deleteUser,
   getAllLeads,
   updateLeadStatus,
   deleteLead,
@@ -115,6 +116,7 @@ router.get("/metrics", getAdminDashboardMetrics);
 // Users Management
 router.get("/users", getAllUsers);
 router.patch("/users/:id", updateUser);
+router.delete("/users/:id", deleteUser);
 
 // Leads Management
 router.get("/leads", getAllLeads);

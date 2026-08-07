@@ -10,6 +10,7 @@ import clientRoutes from "./client.routes.js";
 import businessRoutes from "./business.routes.js";
 import employeeRoutes from "./employee.routes.js";
 import serviceRoutes from "./service.routes.js";
+import chatRoutes from "./chat.routes.js";
 
 const router = Router();
 
@@ -24,5 +25,6 @@ router.use("/leads", leadRoutes);
 router.use("/projects", projectRoutes);
 router.use("/blogs", blogRoutes);
 router.use("/services", serviceRoutes);
+router.use("/chat", chatRoutes);
 
 export default router;

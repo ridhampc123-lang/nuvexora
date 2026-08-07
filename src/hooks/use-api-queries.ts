@@ -1,10 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getHomepageData, bookConsultationMeeting, subscribeNewsletter, getPublicBlogs, getPublicPortfolio } from "@/lib/api/public-api";
 import { getEmployeeProjects, getEmployeeTasks } from "@/lib/api/employee-api";
+import { getChannelMessages, sendChatMessageApi, getChatChannelsApi, getAssignedTeamMembersApi } from "@/lib/api/chat-api";
 import { 
   getAdminMetrics, 
   getAdminUsers, 
   updateAdminUser, 
+  deleteAdminUser,
   getAdminLeads, 
   updateAdminLeadStatus,
   deleteAdminLead,
@@ -155,6 +157,18 @@ export const useUpdateUserMutation = () => {
     },
   });
 };
+
+export const useDeleteUserMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAdminUser,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+      queryClient.invalidateQueries({ queryKey: ["adminMetrics"] });
+    },
+  });
+};
+
 
 export const useAdminLeadsQuery = () => {
   return useQuery({
@@ -682,6 +696,42 @@ export const useDeleteAdminContractMutation = () => {
 };
 
 // --- MESSAGE HOOKS ---
+export const useChannelMessagesQuery = (channelId: string) => {
+  return useQuery({
+    queryKey: ["chatMessages", channelId],
+    queryFn: () => getChannelMessages(channelId),
+    enabled: !!channelId,
+    refetchInterval: 3000, // Fallback polling if socket drops
+  });
+};
+
+export const useSendChatMessageMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: sendChatMessageApi,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["chatMessages", data.channelId] });
+      queryClient.invalidateQueries({ queryKey: ["chatChannels"] });
+    },
+  });
+};
+
+export const useChatChannelsQuery = () => {
+  return useQuery({
+    queryKey: ["chatChannels"],
+    queryFn: getChatChannelsApi,
+    refetchInterval: 5000,
+  });
+};
+
+export const useTeamMembersQuery = () => {
+  return useQuery({
+    queryKey: ["teamMembers"],
+    queryFn: getAssignedTeamMembersApi,
+  });
+};
+
+
 export const useAdminMessagesQuery = () => {
   return useQuery({
     queryKey: ["adminMessages"],

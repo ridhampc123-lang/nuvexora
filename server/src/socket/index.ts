@@ -19,6 +19,16 @@ export const initSocketIO = (httpServer: HttpServer): Server => {
       console.log(`[Socket.IO] Socket ${socket.id} joined project room: project_${projectId}`);
     });
 
+    socket.on("join_channel", (channelId: string) => {
+      socket.join(channelId);
+      console.log(`[Socket.IO] Socket ${socket.id} joined chat channel: ${channelId}`);
+    });
+
+    socket.on("leave_channel", (channelId: string) => {
+      socket.leave(channelId);
+      console.log(`[Socket.IO] Socket ${socket.id} left chat channel: ${channelId}`);
+    });
+
     socket.on("disconnect", () => {
       console.log(`[Socket.IO] Client disconnected: ${socket.id}`);
     });

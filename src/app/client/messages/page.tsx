@@ -1,80 +1,97 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   Send, 
   Paperclip, 
   ShieldCheck, 
-  User, 
-  Wifi, 
-  CheckCheck, 
   Sparkles, 
-  FileText, 
-  Smile,
-  Circle
+  Loader2,
+  Users
 } from "lucide-react";
 import { useSocket } from "@/providers/socket-provider";
 import { toast } from "sonner";
 import { useAuth } from "@/providers/auth-provider";
+import { useChannelMessagesQuery, useSendChatMessageMutation, useTeamMembersQuery } from "@/hooks/use-api-queries";
+import { useQueryClient } from "@tanstack/react-query";
 
-interface ChatMessage {
+interface TeamMember {
   id: string;
-  sender: string;
+  channelId: string;
+  name: string;
   role: string;
-  text: string;
-  time: string;
-  isSelf: boolean;
-  attachmentName?: string;
+  online: boolean;
+  avatar: string;
 }
-
-const initialTeam = [
-  { id: "tm-1", name: "Alexander Vance", role: "Lead Systems Architect", online: true, avatar: "AV" },
-  { id: "tm-2", name: "Elena Rostova", role: "Principal Product Designer", online: true, avatar: "ER" },
-  { id: "tm-3", name: "Dr. Aris Thorne", role: "AI & ML Specialist", online: false, avatar: "AT" },
-  { id: "tm-4", name: "DevOps & SLA Team", role: "Infrastructure Lead", online: true, avatar: "DO" },
-];
-
-const initialMessages: ChatMessage[] = [];
 
 export default function ClientMessagesPage() {
   const { socket, isConnected } = useSocket();
   const { user } = useAuth();
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const queryClient = useQueryClient();
+
+  const { data: teamMembers = [], isLoading: isLoadingTeam } = useTeamMembersQuery();
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [inputText, setInputText] = useState("");
-  const [selectedMember, setSelectedMember] = useState(initialTeam[0]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Set default selected member when dynamic list loads
+  useEffect(() => {
+    if (teamMembers.length > 0 && !selectedMember) {
+      setSelectedMember(teamMembers[0]);
+    }
+  }, [teamMembers, selectedMember]);
+
+  const channelId = selectedMember?.channelId || "";
+  const { data: dbMessages = [], isLoading: isLoadingMessages } = useChannelMessagesQuery(channelId);
+  const sendMutation = useSendChatMessageMutation();
+
+  // Socket room connection & real-time listener
+  useEffect(() => {
+    if (!socket || !channelId) return;
+
+    socket.emit("join_channel", channelId);
+
+    const handleNewMessage = (msg: any) => {
+      if (msg.channelId === channelId) {
+        queryClient.invalidateQueries({ queryKey: ["chatMessages", channelId] });
+        queryClient.invalidateQueries({ queryKey: ["chatChannels"] });
+      }
+    };
+
+    socket.on("new_chat_message", handleNewMessage);
+
+    return () => {
+      socket.emit("leave_channel", channelId);
+      socket.off("new_chat_message", handleNewMessage);
+    };
+  }, [socket, channelId, queryClient]);
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [dbMessages]);
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || sendMutation.isPending || !channelId) return;
 
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      sender: user?.name || "Client",
-      role: "Client Lead",
-      text: inputText,
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      isSelf: true,
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
-    if (socket) {
-      socket.emit("send_message", { text: inputText });
-    }
-    const currentInput = inputText;
+    const text = inputText.trim();
     setInputText("");
 
-    // Simulate instant Nuvexora Team Response after 1.2s
-    setTimeout(() => {
-      const autoReply: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        sender: selectedMember.name,
-        role: selectedMember.role,
-        text: `Got your note regarding "${currentInput.slice(0, 30)}...". Our engineering team is on it!`,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        isSelf: false,
-      };
-      setMessages((prev) => [...prev, autoReply]);
-    }, 1200);
+    sendMutation.mutate(
+      {
+        channelId,
+        senderId: user?.id || "client-user",
+        senderName: user?.name || "Marcus Vance (Client)",
+        senderRole: "Client CTO",
+        text,
+      },
+      {
+        onError: () => {
+          toast.error("Failed to send message. Please check connection.");
+        },
+      }
+    );
   };
 
   const handleAttachFile = () => {
@@ -83,47 +100,59 @@ export default function ClientMessagesPage() {
 
   return (
     <div className="h-[calc(100vh-8.5rem)] max-w-7xl mx-auto flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-3xl shadow-sm overflow-hidden">
-      {/* Left Sidebar: Team Directory */}
+      {/* Left Sidebar: Dynamic Team Directory */}
       <div className="w-80 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-slate-50/50 dark:bg-slate-950/40 shrink-0 hidden md:flex">
         <div className="p-4 border-b border-slate-200/80 dark:border-slate-800">
-          <h2 className="text-sm font-extrabold text-slate-900 dark:text-white">Nuvexora Assigned Team</h2>
+          <h2 className="text-sm font-extrabold text-slate-900 dark:text-white">Assigned Team Members</h2>
           <p className="text-[11px] text-slate-400 mt-0.5">Real-time collaboration channel</p>
         </div>
 
         <div className="flex-1 overflow-y-auto p-3 space-y-1.5" data-lenis-prevent>
-          {initialTeam.map((tm) => {
-            const isSelected = tm.id === selectedMember.id;
+          {isLoadingTeam ? (
+            <div className="p-6 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+              <span>Loading team members...</span>
+            </div>
+          ) : teamMembers.length === 0 ? (
+            <div className="p-6 text-center text-xs text-slate-400 space-y-1">
+              <Users className="w-6 h-6 mx-auto stroke-1 text-slate-400" />
+              <p>No active team members assigned yet.</p>
+            </div>
+          ) : (
+            teamMembers.map((tm: TeamMember) => {
+              const isSelected = selectedMember?.id === tm.id;
 
-            return (
-              <div
-                key={tm.id}
-                onClick={() => setSelectedMember(tm)}
-                className={`p-3 rounded-2xl flex items-center gap-3 cursor-pointer transition-all ${
-                  isSelected
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
-                    : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
-                }`}
-              >
-                <div className="relative shrink-0">
-                  <div className={`w-9 h-9 rounded-xl font-bold text-xs flex items-center justify-center ${
-                    isSelected ? "bg-white text-blue-600" : "bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
-                  }`}>
-                    {tm.avatar}
+              return (
+                <div
+                  key={tm.id}
+                  onClick={() => setSelectedMember(tm)}
+                  className={`p-3 rounded-2xl flex items-center gap-3 cursor-pointer transition-all ${
+                    isSelected
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
+                      : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                  }`}
+                >
+                  <div className="relative shrink-0">
+                    <div className={`w-9 h-9 rounded-xl font-bold text-xs flex items-center justify-center ${
+                      isSelected ? "bg-white text-blue-600" : "bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+                    }`}>
+                      {tm.avatar}
+                    </div>
+                    {tm.online && (
+                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
+                    )}
                   </div>
-                  {tm.online && (
-                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
-                  )}
-                </div>
 
-                <div className="truncate">
-                  <div className="text-xs font-bold truncate">{tm.name}</div>
-                  <div className={`text-[10px] truncate ${isSelected ? "text-blue-100" : "text-slate-400"}`}>
-                    {tm.role}
+                  <div className="truncate">
+                    <div className="text-xs font-bold truncate">{tm.name}</div>
+                    <div className={`text-[10px] truncate ${isSelected ? "text-blue-100" : "text-slate-400"}`}>
+                      {tm.role}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
 
@@ -133,12 +162,14 @@ export default function ClientMessagesPage() {
         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/40 dark:bg-slate-950/40">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-extrabold flex items-center justify-center text-sm shadow-md">
-              {selectedMember.avatar}
+              {selectedMember?.avatar || "N"}
             </div>
             <div>
               <div className="font-extrabold text-slate-900 dark:text-white text-sm flex items-center gap-2">
-                <span>{selectedMember.name}</span>
-                <span className="text-[10px] font-semibold text-slate-400">({selectedMember.role})</span>
+                <span>{selectedMember?.name || "Select Team Member"}</span>
+                {selectedMember && (
+                  <span className="text-[10px] font-semibold text-slate-400">({selectedMember.role})</span>
+                )}
               </div>
               <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -155,31 +186,47 @@ export default function ClientMessagesPage() {
 
         {/* Messages Stream */}
         <div className="flex-1 p-6 overflow-y-auto space-y-4 font-sans" data-lenis-prevent>
-          {messages.length === 0 ? (
+          {!selectedMember ? (
+            <div className="h-full flex flex-col items-center justify-center text-slate-400 text-xs">
+              Select a team member to open chat stream
+            </div>
+          ) : isLoadingMessages ? (
+            <div className="h-full flex flex-col items-center justify-center text-slate-400 text-xs gap-2">
+              <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+              <span>Loading encrypted message stream...</span>
+            </div>
+          ) : dbMessages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-2 text-slate-400 text-xs">
               <Sparkles className="w-8 h-8 text-blue-500" />
               <div className="font-bold text-slate-700 dark:text-slate-300 text-sm">Start a Conversation</div>
-              <p className="max-w-xs text-[11px] text-slate-500">Send a message to start communicating directly with {selectedMember.name} and the engineering team.</p>
+              <p className="max-w-xs text-[11px] text-slate-500">Send a message to start communicating directly with {selectedMember.name}.</p>
             </div>
           ) : (
-            messages.map((m) => (
-              <div key={m.id} className={`flex flex-col ${m.isSelf ? "items-end" : "items-start"}`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{m.sender}</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">({m.role}) • {m.time}</span>
+            dbMessages.map((m: any) => {
+              const clientUserName = user?.name || "Marcus Vance";
+              const isSelf = m.senderName?.toLowerCase().includes(clientUserName.toLowerCase()) || m.senderRole?.toLowerCase().includes("client");
+              const timeStr = new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+              return (
+                <div key={m._id} className={`flex flex-col ${isSelf ? "items-end" : "items-start"}`}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{m.senderName}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">({m.senderRole}) • {timeStr}</span>
+                  </div>
+                  <div
+                    className={`max-w-md p-4 rounded-3xl text-xs font-medium leading-relaxed shadow-sm ${
+                      isSelf
+                        ? "bg-blue-600 text-white rounded-tr-none shadow-blue-600/20"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-200/60 dark:border-slate-700/60"
+                    }`}
+                  >
+                    {m.text}
+                  </div>
                 </div>
-                <div
-                  className={`max-w-md p-4 rounded-3xl text-xs font-medium leading-relaxed shadow-sm ${
-                    m.isSelf
-                      ? "bg-blue-600 text-white rounded-tr-none shadow-blue-600/20"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-200/60 dark:border-slate-700/60"
-                  }`}
-                >
-                  {m.text}
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Input Box */}
@@ -194,7 +241,8 @@ export default function ClientMessagesPage() {
 
           <input
             type="text"
-            placeholder={`Message ${selectedMember.name} and Nuvexora team...`}
+            placeholder={selectedMember ? `Message ${selectedMember.name}...` : "Select a team member to chat..."}
+            disabled={!selectedMember}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             className="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-500 transition-all outline-none"
@@ -202,10 +250,17 @@ export default function ClientMessagesPage() {
 
           <button
             type="submit"
-            className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
+            disabled={sendMutation.isPending || !inputText.trim() || !selectedMember}
+            className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs shadow-md shadow-blue-600/20 flex items-center gap-1.5 transition-all cursor-pointer"
           >
-            <span>Send</span>
-            <Send className="w-3.5 h-3.5" />
+            {sendMutation.isPending ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <>
+                <span>Send</span>
+                <Send className="w-3.5 h-3.5" />
+              </>
+            )}
           </button>
         </form>
       </div>

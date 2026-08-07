@@ -32,3 +32,4 @@ export * from "./attendance.model.js";
 export * from "./leave-request.model.js";
 export * from "./ticket.model.js";
 export * from "./department.model.js";
+export * from "./chat-message.model.js";

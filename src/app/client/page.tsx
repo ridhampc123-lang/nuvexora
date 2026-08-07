@@ -49,7 +49,7 @@ export default function ClientDashboardOverviewPage() {
     },
     { 
       label: "Outstanding Balance", 
-      value: isLoading ? "..." : (dashboard?.outstandingInvoicesTotal ?? "$0"), 
+      value: isLoading ? "..." : (dashboard?.outstandingInvoicesTotal ?? "₹0"), 
       subtext: "Unpaid invoices", 
       icon: CreditCard, 
       color: "text-amber-600 bg-amber-50 dark:bg-amber-950/80" 

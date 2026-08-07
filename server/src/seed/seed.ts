@@ -38,7 +38,7 @@ export const seedDatabase = async () => {
     const existingClient = await User.findOne({ email: clientEmail });
 
     if (!existingClient) {
-      await User.create({
+      const createdUser = await User.create({
         name: "Marcus Vance",
         email: clientEmail,
         password: "Client@2026!",
@@ -48,6 +48,41 @@ export const seedDatabase = async () => {
         jobTitle: "CTO",
       });
       console.log(`✅ Default Client created: ${clientEmail}`);
+
+      const { ClientAccount } = await import("../models/client.model.js");
+      await ClientAccount.create({
+        userId: createdUser._id,
+        companyName: "Veloce Financial",
+        ownerName: "Marcus Vance",
+        email: clientEmail,
+        industry: "FinTech & Banking",
+        tier: "Enterprise",
+        contractValue: 1500000,
+        slaUptimeTarget: "99.99%",
+        status: "active",
+      });
+      console.log(`✅ Default ClientAccount created with contractValue ₹15,00,000: ${clientEmail}`);
+    } else {
+      const { ClientAccount } = await import("../models/client.model.js");
+      let ca = await ClientAccount.findOne({ email: clientEmail });
+      if (!ca) {
+        await ClientAccount.create({
+          userId: existingClient._id,
+          companyName: "Veloce Financial",
+          ownerName: "Marcus Vance",
+          email: clientEmail,
+          industry: "FinTech & Banking",
+          tier: "Enterprise",
+          contractValue: 1500000,
+          slaUptimeTarget: "99.99%",
+          status: "active",
+        });
+        console.log(`✅ Linked missing ClientAccount for: ${clientEmail}`);
+      } else if (!ca.contractValue || ca.contractValue === 0) {
+        ca.contractValue = 1500000;
+        await ca.save();
+        console.log(`✅ Updated contractValue for ${clientEmail} to ₹15,00,000`);
+      }
     }
 
     // 3. Seed Enterprise Demo Employee

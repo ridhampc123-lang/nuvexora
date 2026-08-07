@@ -3,12 +3,14 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 export interface UserSession {
+  id?: string;
   email: string;
   name: string;
   role: "SUPER_ADMIN" | "ADMIN" | "CLIENT" | "EMPLOYEE";
   avatar?: string;
   companyName?: string;
   department?: string;
+  jobTitle?: string;
 }
 
 interface AuthContextType {

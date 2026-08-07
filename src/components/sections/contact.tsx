@@ -50,7 +50,7 @@ export function ContactSection() {
   };
 
   return (
-    <section className="py-12 sm:py-16 lg:py-20 bg-slate-950 relative overflow-hidden">
+    <section className="py-12 sm:py-16 lg:py-20 bg-slate-950 text-white relative overflow-hidden">
       {/* Dynamic Ambient Glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-blue-600/10 dark:bg-blue-600/15 blur-[120px] rounded-full pointer-events-none" />
 
@@ -59,6 +59,8 @@ export function ContactSection() {
           eyebrow="Contact & Project Inquiry"
           title="Let’s map the right engagement."
           description="Share your product goals and we’ll shape the delivery model around scope, team size, and timeline."
+          titleClassName="text-white font-extrabold"
+          descriptionClassName="text-slate-400"
         />
 
         <div className="mt-10 sm:mt-12 max-w-4xl mx-auto">

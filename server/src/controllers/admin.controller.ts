@@ -125,6 +125,25 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
   return res.status(200).json(new ApiResponse(200, user, "User updated successfully"));
 });
 
+export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const user = await User.findByIdAndDelete(id);
+  if (user) {
+    const { ClientAccount } = await import("../models/client.model.js");
+    const { Employee } = await import("../models/employee.model.js");
+    await ClientAccount.deleteMany({ $or: [{ userId: id }, { email: user.email }] });
+    await Employee.deleteMany({ $or: [{ userId: id }, { email: user.email }] });
+  }
+
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
+
+  return res.status(200).json(new ApiResponse(200, null, "User permanently deleted from root database"));
+});
+
+
 export const getAllLeads = asyncHandler(async (_req: Request, res: Response) => {
   const leads = await Lead.find().sort({ createdAt: -1 });
   return res.status(200).json(new ApiResponse(200, leads, "Leads list retrieved successfully"));

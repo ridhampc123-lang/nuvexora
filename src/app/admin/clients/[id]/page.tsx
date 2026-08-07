@@ -292,7 +292,7 @@ export default function ClientProfilePage() {
             <ul className="space-y-4 text-sm">
               <li className="flex items-center justify-between">
                 <span className="text-slate-500">Contract Value</span>
-                <span className="font-bold text-slate-900 dark:text-white">${client.contractValue?.toLocaleString() || 0}</span>
+                <span className="font-bold text-slate-900 dark:text-white">₹{client.contractValue?.toLocaleString("en-IN") || 0}</span>
               </li>
               <li className="flex items-center justify-between">
                 <span className="text-slate-500">Uptime SLA</span>
@@ -522,7 +522,7 @@ export default function ClientProfilePage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Contract Value ($)</label>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Contract Value (₹ INR)</label>
               <input
                 type="number"
                 value={clientForm.contractValue}

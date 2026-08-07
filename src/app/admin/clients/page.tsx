@@ -35,6 +35,7 @@ export default function AdminClientManagement() {
     gstNumber: "",
     notes: "",
     tier: "Scaleup" as "Startup" | "Scaleup" | "Enterprise",
+    contractValue: 0,
   });
 
   const handleCreateClient = (e: React.FormEvent) => {
@@ -45,7 +46,7 @@ export default function AdminClientManagement() {
         setShowDrawer(false);
         setFormData({
           companyName: "", ownerName: "", email: "", phone: "", website: "",
-          industry: "", address: "", gstNumber: "", notes: "", tier: "Scaleup"
+          industry: "", address: "", gstNumber: "", notes: "", tier: "Scaleup", contractValue: 0
         });
       },
       onError: (err: any) => {
@@ -174,7 +175,7 @@ export default function AdminClientManagement() {
 
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                 <span className="text-slate-500">
-                  Value: <strong className="text-slate-800 dark:text-slate-200">${client.contractValue.toLocaleString()}</strong>
+                  Value: <strong className="text-slate-800 dark:text-slate-200">₹{(client.contractValue || 0).toLocaleString("en-IN")}</strong>
                 </span>
                 <div className="flex items-center gap-1">
                   <button
@@ -301,6 +302,17 @@ export default function AdminClientManagement() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Contract Value (₹ INR)</label>
+                    <input
+                      type="number"
+                      required
+                      value={formData.contractValue}
+                      onChange={(e) => setFormData({ ...formData, contractValue: parseFloat(e.target.value) || 0 })}
+                      className="w-full mt-1.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold"
+                      placeholder="e.g. 500000"
+                    />
+                  </div>
+                  <div>
                     <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Tier</label>
                     <select
                       value={formData.tier}
@@ -312,16 +324,17 @@ export default function AdminClientManagement() {
                       <option value="Enterprise">Enterprise</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">GST / Tax Number</label>
-                    <input
-                      type="text"
-                      value={formData.gstNumber}
-                      onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
-                      className="w-full mt-1.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                      placeholder="TAX-12345678"
-                    />
-                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">GST / Tax Number</label>
+                  <input
+                    type="text"
+                    value={formData.gstNumber}
+                    onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
+                    className="w-full mt-1.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="TAX-12345678"
+                  />
                 </div>
 
                 <div>

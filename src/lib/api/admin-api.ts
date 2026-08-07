@@ -128,6 +128,12 @@ export const updateAdminUser = async ({ id, role, status }: { id: string; role?:
   }
 };
 
+export const deleteAdminUser = async (id: string) => {
+  const { data } = await apiClient.delete(`/admin/users/${id}`);
+  return data.data;
+};
+
+
 export const getAdminLeads = async () => {
   try {
     const { data } = await apiClient.get("/admin/leads");

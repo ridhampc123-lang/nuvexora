@@ -7,13 +7,11 @@ import {
   CheckCircle2, 
   Clock, 
   ShieldCheck, 
-  DollarSign, 
-  ArrowUpRight, 
   X, 
   Lock, 
-  Sparkles
+  Receipt
 } from "lucide-react";
-import { useClientInvoicesQuery, usePayInvoiceMutation } from "@/hooks/use-api-queries";
+import { useClientInvoicesQuery, usePayInvoiceMutation, useClientDashboardQuery } from "@/hooks/use-api-queries";
 import { toast } from "sonner";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -24,13 +22,15 @@ interface InvoiceItem {
   invoiceNumber?: string;
   description?: string;
   amount: string | number;
+  totalAmount?: number;
   status: "paid" | "issued" | "overdue" | "pending";
-  dueDate: string;
+  dueDate?: string;
   paidAt?: string;
 }
 
 export default function ClientInvoicesPage() {
-  const { data: invoices = [], isLoading } = useClientInvoicesQuery();
+  const { data: invoices = [], isLoading: isLoadingInvoices } = useClientInvoicesQuery();
+  const { data: dashboard } = useClientDashboardQuery();
   const payInvoiceMutation = usePayInvoiceMutation();
   const { user } = useAuth();
 
@@ -39,7 +39,28 @@ export default function ClientInvoicesPage() {
   const [cardExpiry, setCardExpiry] = useState("12/28");
   const [cardCvc, setCardCvc] = useState("888");
 
-  const invoiceList: InvoiceItem[] = isLoading ? [] : invoices;
+  const invoiceList: InvoiceItem[] = isLoadingInvoices ? [] : invoices;
+
+  // Calculate dynamic metric values directly from real invoice data
+  const paidInvoices = invoiceList.filter((inv) => inv.status === "paid");
+  const pendingInvoices = invoiceList.filter((inv) => inv.status !== "paid");
+
+  const getAmountNum = (inv: InvoiceItem): number => {
+    if (typeof inv.totalAmount === "number") return inv.totalAmount;
+    if (typeof inv.amount === "number") return inv.amount;
+    if (typeof inv.amount === "string") {
+      const parsed = parseFloat(inv.amount.replace(/[^0-9.]/g, ""));
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    return 0;
+  };
+
+  const totalPaidAmount = paidInvoices.reduce((sum, inv) => sum + getAmountNum(inv), 0);
+  const totalPendingAmount = pendingInvoices.reduce((sum, inv) => sum + getAmountNum(inv), 0);
+  const totalContractVal = totalPaidAmount + totalPendingAmount;
+  const displayContractVal = dashboard?.contractValue || totalContractVal;
+
+  const primaryProjectName = dashboard?.primaryProject || user?.companyName || "Active Deliverables Workspace";
 
   const handlePayConfirm = (id: string) => {
     payInvoiceMutation.mutate(id, {
@@ -51,10 +72,12 @@ export default function ClientInvoicesPage() {
   };
 
   const handleDownloadInvoicePDF = (inv: InvoiceItem) => {
-    const invNum = inv.invoiceNumber || inv.number || "INV-2026-089";
+    const invNum = inv.invoiceNumber || inv.number || (inv._id ? `INV-${inv._id.substring(0, 8).toUpperCase()}` : "INV-REC");
     const clientName = user?.name || "Client";
     const companyName = user?.companyName || (user as any)?.company || "Organization";
-    const content = `%PDF-1.4 NUVEXORA TECHNOLOGIES OFFICIAL INVOICE RECEIPT\nInvoice Number: ${invNum}\nClient: ${clientName} (${companyName})\nDescription: ${inv.description || "Sprint Deliverable"}\nAmount: ${typeof inv.amount === "number" ? `$${inv.amount.toLocaleString()}` : inv.amount}\nStatus: ${inv.status.toUpperCase()}\nPayment Gateway: Stripe Encrypted Settlement`;
+    const amtStr = `₹${getAmountNum(inv).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    
+    const content = `%PDF-1.4 NUVEXORA TECHNOLOGIES OFFICIAL INVOICE RECEIPT\nInvoice Number: ${invNum}\nClient: ${clientName} (${companyName})\nDescription: ${inv.description || "Sprint Deliverable"}\nAmount: ${amtStr}\nStatus: ${inv.status.toUpperCase()}\nPayment Gateway: Encrypted Settlement`;
     
     const blob = new Blob([content], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
@@ -91,24 +114,34 @@ export default function ClientInvoicesPage() {
         </div>
       </div>
 
-      {/* Metrics Row */}
+      {/* Dynamic Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
           <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Contract Value</div>
-          <div className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">$150,000.00</div>
-          <div className="text-[11px] text-slate-400 font-medium mt-1">Veloce Financial Banking Engine v4</div>
+          <div className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1 font-sans">
+            ₹{displayContractVal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+          <div className="text-[11px] text-slate-400 font-medium mt-1 truncate">{primaryProjectName}</div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
           <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Paid To Date</div>
-          <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">$137,500.00</div>
-          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1">11 Sprints Settled</div>
+          <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1 font-sans">
+            ₹{totalPaidAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1">
+            {paidInvoices.length} {paidInvoices.length === 1 ? "Invoice" : "Invoices"} Settled
+          </div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
           <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Outstanding Balance</div>
-          <div className="text-3xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">$12,500.00</div>
-          <div className="text-[11px] text-amber-700 dark:text-amber-300 font-semibold mt-1">1 Invoice Pending (Due Aug 01)</div>
+          <div className="text-3xl font-extrabold text-amber-600 dark:text-amber-400 mt-1 font-sans">
+            ₹{totalPendingAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+          <div className="text-[11px] text-amber-700 dark:text-amber-300 font-semibold mt-1">
+            {pendingInvoices.length} {pendingInvoices.length === 1 ? "Invoice" : "Invoices"} Pending
+          </div>
         </div>
       </div>
 
@@ -116,71 +149,83 @@ export default function ClientInvoicesPage() {
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-3xl shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Itemized Billing Statements</h2>
-          <span className="text-xs text-slate-400">All amounts in USD</span>
+          <span className="text-xs text-slate-400">All amounts in INR (₹)</span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200/80 dark:border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
-              <tr>
-                <th className="px-6 py-4">Invoice #</th>
-                <th className="px-6 py-4">Sprint Description</th>
-                <th className="px-6 py-4">Amount</th>
-                <th className="px-6 py-4">Payment Status</th>
-                <th className="px-6 py-4">Due / Paid Date</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-              {invoiceList.map((inv) => {
-                const invId = inv._id || inv.id || "";
-                const invNum = inv.invoiceNumber || inv.number || "INV-2026-089";
-                const invAmt = typeof inv.amount === "number" ? `$${inv.amount.toLocaleString()}` : inv.amount;
-                const isPaid = inv.status === "paid";
+        {invoiceList.length === 0 ? (
+          <div className="p-12 text-center space-y-3">
+            <Receipt className="w-10 h-10 text-slate-400 mx-auto stroke-1" />
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">No invoices found</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">There are currently no billing statements or invoices associated with your account.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200/80 dark:border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
+                <tr>
+                  <th className="px-6 py-4">Invoice #</th>
+                  <th className="px-6 py-4">Sprint Description</th>
+                  <th className="px-6 py-4">Amount</th>
+                  <th className="px-6 py-4">Payment Status</th>
+                  <th className="px-6 py-4">Due / Paid Date</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                {invoiceList.map((inv) => {
+                  const invId = inv._id || inv.id || "";
+                  const invNum = inv.invoiceNumber || inv.number || (inv._id ? `INV-${inv._id.substring(0, 8).toUpperCase()}` : "INV-REC");
+                  const amtNum = getAmountNum(inv);
+                  const invAmt = `₹${amtNum.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                  const isPaid = inv.status === "paid";
+                  const dateStr = isPaid 
+                    ? (inv.paidAt ? `Paid ${new Date(inv.paidAt).toLocaleDateString()}` : "Paid")
+                    : (inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "Pending");
 
-                return (
-                  <tr key={invId} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="px-6 py-4 font-extrabold text-slate-900 dark:text-white font-mono text-xs">{invNum}</td>
-                    <td className="px-6 py-4 text-slate-700 dark:text-slate-300 font-semibold">{inv.description || "Sprint #14 Core AI Development"}</td>
-                    <td className="px-6 py-4 font-extrabold text-slate-900 dark:text-white">{invAmt}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase inline-flex items-center gap-1.5 ${
-                        isPaid 
-                          ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" 
-                          : "bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
-                      }`}>
-                        {isPaid ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Clock className="w-3 h-3 text-amber-500" />}
-                        <span>{inv.status}</span>
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-slate-500">{isPaid ? `Paid ${inv.paidAt || "Jul 15, 2026"}` : inv.dueDate}</td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleDownloadInvoicePDF(inv)}
-                          className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
-                          title="Download PDF Invoice"
-                        >
-                          <Download className="w-4 h-4" />
-                        </button>
-
-                        {!isPaid && (
+                  return (
+                    <tr key={invId} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
+                      <td className="px-6 py-4 font-extrabold text-slate-900 dark:text-white font-mono text-xs">{invNum}</td>
+                      <td className="px-6 py-4 text-slate-700 dark:text-slate-300 font-semibold">{inv.description || "Client Service Deliverable"}</td>
+                      <td className="px-6 py-4 font-extrabold text-slate-900 dark:text-white">{invAmt}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase inline-flex items-center gap-1.5 ${
+                          isPaid 
+                            ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" 
+                            : "bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                        }`}>
+                          {isPaid ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Clock className="w-3 h-3 text-amber-500" />}
+                          <span>{inv.status}</span>
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-slate-500">{dateStr}</td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => setPaymentModalInvoice(inv)}
-                            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all cursor-pointer flex items-center gap-1.5"
+                            onClick={() => handleDownloadInvoicePDF(inv)}
+                            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
+                            title="Download PDF Invoice"
                           >
-                            <CreditCard className="w-3.5 h-3.5" />
-                            <span>Pay Now</span>
+                            <Download className="w-4 h-4" />
                           </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+
+                          {!isPaid && (
+                            <button
+                              onClick={() => setPaymentModalInvoice(inv)}
+                              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all cursor-pointer flex items-center gap-1.5"
+                            >
+                              <CreditCard className="w-3.5 h-3.5" />
+                              <span>Pay Now</span>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Stripe Payment Simulation Modal */}
@@ -208,12 +253,12 @@ export default function ClientInvoicesPage() {
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
               <div>
                 <div className="text-xs font-bold text-slate-900 dark:text-white">
-                  {paymentModalInvoice.invoiceNumber || paymentModalInvoice.number || "INV-2026-089"}
+                  {paymentModalInvoice.invoiceNumber || paymentModalInvoice.number || (paymentModalInvoice._id ? `INV-${paymentModalInvoice._id.substring(0, 8).toUpperCase()}` : "INV-REC")}
                 </div>
                 <div className="text-[11px] text-slate-500">{paymentModalInvoice.description || "Sprint Deliverable"}</div>
               </div>
               <div className="text-lg font-extrabold text-blue-600 dark:text-blue-400">
-                {typeof paymentModalInvoice.amount === "number" ? `$${paymentModalInvoice.amount.toLocaleString()}` : paymentModalInvoice.amount}
+                ₹{getAmountNum(paymentModalInvoice).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
 
