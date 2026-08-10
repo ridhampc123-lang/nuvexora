@@ -1,6 +1,7 @@
+"use client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getHomepageData, bookConsultationMeeting, subscribeNewsletter, getPublicBlogs, getPublicPortfolio } from "@/lib/api/public-api";
-import { getEmployeeProjects, getEmployeeTasks } from "@/lib/api/employee-api";
+import { getEmployeeProjects, getEmployeeTasks, getMyAttendance, checkInEmployee, checkOutEmployee, getMyLeaveRequests, createEmployeeLeaveRequest } from "@/lib/api/employee-api";
 import { getChannelMessages, sendChatMessageApi, getChatChannelsApi, getAssignedTeamMembersApi } from "@/lib/api/chat-api";
 import { 
   getAdminMetrics, 
@@ -379,10 +380,60 @@ export const useDeleteAdminAttendanceMutation = () => {
   });
 };
 
+export const useMyAttendanceQuery = () => {
+  return useQuery({
+    queryKey: ["myAttendance"],
+    queryFn: () => getMyAttendance(),
+  });
+};
+
+export const useCheckInMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data?: any) => checkInEmployee(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["myAttendance"] });
+      queryClient.invalidateQueries({ queryKey: ["adminAttendance"] });
+      queryClient.invalidateQueries({ queryKey: ["adminMetrics"] });
+    },
+  });
+};
+
+export const useCheckOutMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data?: any) => checkOutEmployee(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["myAttendance"] });
+      queryClient.invalidateQueries({ queryKey: ["adminAttendance"] });
+      queryClient.invalidateQueries({ queryKey: ["adminMetrics"] });
+    },
+  });
+};
+
+export const useMyLeaveRequestsQuery = () => {
+  return useQuery({
+    queryKey: ["myLeaveRequests"],
+    queryFn: () => getMyLeaveRequests(),
+  });
+};
+
+export const useCreateEmployeeLeaveRequestMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { type: string; startDate: string; endDate: string; reason: string }) => createEmployeeLeaveRequest(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["myLeaveRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["adminLeaveRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["adminMetrics"] });
+    },
+  });
+};
+
 export const useAdminLeaveRequestsQuery = () => {
   return useQuery({
     queryKey: ["adminLeaveRequests"],
-    queryFn: getAdminLeaveRequests,
+    queryFn: () => getAdminLeaveRequests(),
   });
 };
 

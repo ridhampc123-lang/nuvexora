@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { AdminDataTable, Column } from "@/components/admin/admin-data-table";
 import { useAdminLeaveRequestsQuery, useUpdateAdminLeaveRequestMutation, useDeleteAdminLeaveRequestMutation, useCreateAdminLeaveRequestMutation, useAdminEmployeesQuery } from "@/hooks/use-api-queries";
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarOff, X, Plus, Clock, FileText, CheckCircle2, XCircle } from "lucide-react";
+import { CalendarOff, X, Plus, Clock, FileText, CheckCircle2, XCircle, Filter, CalendarDays, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 
 interface LeaveRequest {
   _id: string;
@@ -14,6 +15,7 @@ interface LeaveRequest {
   endDate: string;
   reason: string;
   status: "pending" | "approved" | "rejected";
+  declineReason?: string;
   reviewedBy?: { _id: string; name: string };
   createdAt: string;
 }
@@ -29,13 +31,23 @@ export default function LeaveRequestsPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingLeave, setEditingLeave] = useState<LeaveRequest | null>(null);
 
+  // Filters
+  const [selectedMonth, setSelectedMonth] = useState<string>("ALL");
+  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+
+  // Reject / Decline Modal State
+  const [declineModalOpen, setDeclineModalOpen] = useState(false);
+  const [declineTargetId, setDeclineTargetId] = useState<string | null>(null);
+  const [declineReasonText, setDeclineReasonText] = useState("");
+
   const [formData, setFormData] = useState({
     employeeId: "",
     type: "casual",
     startDate: new Date().toISOString().split("T")[0],
     endDate: new Date().toISOString().split("T")[0],
     reason: "",
-    status: "pending"
+    status: "pending",
+    declineReason: ""
   });
 
   const openDrawer = (leave?: LeaveRequest) => {
@@ -47,7 +59,8 @@ export default function LeaveRequestsPage() {
         startDate: new Date(leave.startDate).toISOString().split("T")[0],
         endDate: new Date(leave.endDate).toISOString().split("T")[0],
         reason: leave.reason,
-        status: leave.status
+        status: leave.status,
+        declineReason: leave.declineReason || ""
       });
     } else {
       setEditingLeave(null);
@@ -57,7 +70,8 @@ export default function LeaveRequestsPage() {
         startDate: new Date().toISOString().split("T")[0],
         endDate: new Date().toISOString().split("T")[0],
         reason: "",
-        status: "pending"
+        status: "pending",
+        declineReason: ""
       });
     }
     setIsDrawerOpen(true);
@@ -75,9 +89,55 @@ export default function LeaveRequestsPage() {
     }
   };
 
-  const handleApproveReject = (id: string, newStatus: "approved" | "rejected") => {
-    updateLeave.mutate({ id, status: newStatus });
+  const handleApprove = (id: string) => {
+    updateLeave.mutate({ id, status: "approved" }, {
+      onSuccess: () => toast.success("Leave request approved successfully.")
+    });
   };
+
+  const openDeclineModal = (id: string) => {
+    setDeclineTargetId(id);
+    setDeclineReasonText("");
+    setDeclineModalOpen(true);
+  };
+
+  const handleConfirmDecline = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!declineTargetId) return;
+    if (!declineReasonText.trim()) {
+      toast.error("Please enter a reason for declining this request.");
+      return;
+    }
+
+    updateLeave.mutate(
+      { id: declineTargetId, status: "rejected", declineReason: declineReasonText },
+      {
+        onSuccess: () => {
+          toast.info("Leave request declined with reason provided.");
+          setDeclineModalOpen(false);
+          setDeclineTargetId(null);
+          setDeclineReasonText("");
+        }
+      }
+    );
+  };
+
+  // Filtered Leave Records
+  const filteredLeaveRequests = useMemo(() => {
+    return leaveRequests.filter((leave: LeaveRequest) => {
+      // Month Filter
+      if (selectedMonth !== "ALL") {
+        const leaveDate = new Date(leave.startDate || leave.createdAt);
+        const monthKey = `${leaveDate.getFullYear()}-${String(leaveDate.getMonth() + 1).padStart(2, "0")}`;
+        if (monthKey !== selectedMonth) return false;
+      }
+      // Status Filter
+      if (selectedStatus !== "ALL" && leave.status.toLowerCase() !== selectedStatus.toLowerCase()) {
+        return false;
+      }
+      return true;
+    });
+  }, [leaveRequests, selectedMonth, selectedStatus]);
 
   const columns: Column<LeaveRequest>[] = [
     {
@@ -99,26 +159,34 @@ export default function LeaveRequestsPage() {
       cell: (row) => (
         <div>
           <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-            row.type === 'sick' ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10' :
-            row.type === 'casual' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10' :
-            row.type === 'vacation' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10' :
+            row.type === 'sick' ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-900/30' :
+            row.type === 'casual' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-900/30' :
+            row.type === 'vacation' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-900/30' :
             'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
           }`}>
             {row.type} Leave
           </span>
-          <div className="mt-1 text-xs text-slate-500 flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {new Date(row.startDate).toLocaleDateString()} - {new Date(row.endDate).toLocaleDateString()}
+          <div className="mt-1 text-xs text-slate-500 flex items-center gap-1 font-mono">
+            <Clock className="w-3 h-3 text-slate-400" />
+            {new Date(row.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })} - {new Date(row.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
           </div>
         </div>
       ),
     },
     {
-      header: "Reason",
+      header: "Reason & Notes",
       cell: (row) => (
-        <div className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-400 max-w-[200px]">
-          <FileText className="w-3.5 h-3.5 shrink-0 mt-0.5 opacity-50" />
-          <span className="truncate" title={row.reason}>{row.reason}</span>
+        <div className="space-y-1 max-w-[240px]">
+          <div className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+            <FileText className="w-3.5 h-3.5 shrink-0 mt-0.5 opacity-50" />
+            <span className="truncate" title={row.reason}>{row.reason}</span>
+          </div>
+          {row.status === "rejected" && row.declineReason && (
+            <div className="text-[10px] text-rose-500 dark:text-rose-400 font-medium bg-rose-50 dark:bg-rose-950/40 p-1.5 rounded-md border border-rose-200 dark:border-rose-900/40 flex items-start gap-1">
+              <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" />
+              <span><strong>Declined:</strong> {row.declineReason}</span>
+            </div>
+          )}
         </div>
       ),
     },
@@ -146,7 +214,7 @@ export default function LeaveRequestsPage() {
           {row.status === "pending" && (
             <>
               <button
-                onClick={() => handleApproveReject(row._id, "approved")}
+                onClick={() => handleApprove(row._id)}
                 disabled={updateLeave.isPending}
                 className="p-1.5 rounded-lg text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 transition-colors"
                 title="Approve Request"
@@ -154,10 +222,10 @@ export default function LeaveRequestsPage() {
                 <CheckCircle2 className="w-4 h-4" />
               </button>
               <button
-                onClick={() => handleApproveReject(row._id, "rejected")}
+                onClick={() => openDeclineModal(row._id)}
                 disabled={updateLeave.isPending}
                 className="p-1.5 rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 transition-colors"
-                title="Reject Request"
+                title="Decline Request"
               >
                 <XCircle className="w-4 h-4" />
               </button>
@@ -182,11 +250,56 @@ export default function LeaveRequestsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Month & Status Filter Header Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center font-bold">
+            <Filter className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Leave Organization & Filters</h3>
+            <p className="text-[11px] text-slate-500">Filter requests by month date ranges and status</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Month Selector */}
+          <div className="flex items-center gap-1.5 text-xs bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl">
+            <CalendarDays className="w-3.5 h-3.5 text-slate-400" />
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="bg-transparent font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer"
+            >
+              <option value="ALL">All Months</option>
+              <option value="2026-08">August 2026</option>
+              <option value="2026-07">July 2026</option>
+              <option value="2026-06">June 2026</option>
+              <option value="2026-05">May 2026</option>
+            </select>
+          </div>
+
+          {/* Status Selector */}
+          <div className="flex items-center gap-1.5 text-xs bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl">
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="bg-transparent font-semibold text-slate-700 dark:text-slate-200 outline-none cursor-pointer"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected / Declined</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <AdminDataTable
         title="Leave Requests"
-        description="Review and manage employee time-off, vacations, and sick leave requests."
+        description="Review, approve, or decline employee time-off requests with decline reasons."
         columns={columns}
-        data={isLoading ? [] : leaveRequests}
+        data={isLoading ? [] : filteredLeaveRequests}
         searchPlaceholder="Search requests..."
         actionButton={
           <button
@@ -199,6 +312,71 @@ export default function LeaveRequestsPage() {
         }
       />
 
+      {/* Decline Reason Modal */}
+      <AnimatePresence>
+        {declineModalOpen && (
+          <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-3">
+                <h3 className="text-base font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                  <XCircle className="w-5 h-5" />
+                  <span>Decline Leave Request</span>
+                </h3>
+                <button
+                  onClick={() => setDeclineModalOpen(false)}
+                  className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleConfirmDecline} className="space-y-4">
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  Please specify the reason for declining this leave request. The reason will be stored and visible to the employee.
+                </p>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                    Decline Reason <span className="text-rose-500">*</span>
+                  </label>
+                  <textarea
+                    required
+                    rows={3}
+                    value={declineReasonText}
+                    onChange={(e) => setDeclineReasonText(e.target.value)}
+                    placeholder="e.g. Overlapping project milestone deployment week or insufficient coverage..."
+                    className="w-full p-3 rounded-xl text-xs border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-rose-500/50 resize-none"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setDeclineModalOpen(false)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updateLeave.isPending}
+                    className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-600/20 disabled:opacity-50"
+                  >
+                    Confirm Decline
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Drawer */}
       <AnimatePresence>
         {isDrawerOpen && (
           <>
@@ -321,13 +499,28 @@ export default function LeaveRequestsPage() {
                     </label>
                     <textarea
                       required
-                      rows={4}
+                      rows={3}
                       value={formData.reason}
                       onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
                       className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-orange-500/50 transition-all resize-none"
                       placeholder="Explain reason for leave..."
                     />
                   </div>
+
+                  {formData.status === "rejected" && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-rose-500 uppercase tracking-wider">
+                        Decline Reason
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={formData.declineReason}
+                        onChange={(e) => setFormData({ ...formData, declineReason: e.target.value })}
+                        className="w-full px-4 py-2.5 rounded-xl text-sm border border-rose-300 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/30 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-rose-500/50 transition-all resize-none"
+                        placeholder="Reason for declining request..."
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">

@@ -85,12 +85,12 @@ export const seedDatabase = async () => {
       }
     }
 
-    // 3. Seed Enterprise Demo Employee
+    // 3. Seed Enterprise Demo Employee & Employee Document
     const employeeEmail = "employee@nuvexora.com";
-    const existingEmployee = await User.findOne({ email: employeeEmail });
+    let existingEmployeeUser = await User.findOne({ email: employeeEmail });
 
-    if (!existingEmployee) {
-      await User.create({
+    if (!existingEmployeeUser) {
+      existingEmployeeUser = await User.create({
         name: "Alexander Vance",
         email: employeeEmail,
         password: "Employee@2026!",
@@ -99,7 +99,66 @@ export const seedDatabase = async () => {
         department: "Engineering",
         jobTitle: "Lead Systems Architect",
       });
-      console.log(`✅ Default Employee created: ${employeeEmail}`);
+      console.log(`✅ Default Employee User created: ${employeeEmail}`);
+    }
+
+    const { Employee: EmployeeModel } = await import("../models/employee.model.js");
+    let employeeDoc = await EmployeeModel.findOne({ email: employeeEmail });
+    if (!employeeDoc) {
+      employeeDoc = await EmployeeModel.create({
+        userId: existingEmployeeUser._id,
+        employeeId: "EMP-1001",
+        name: "Alexander Vance",
+        email: employeeEmail,
+        department: "Engineering",
+        role: "Lead Systems Architect",
+        designation: "Principal Architect",
+        employmentType: "FULL_TIME",
+        status: "active",
+      });
+      console.log(`✅ Default Employee Document created (EMP-1001): ${employeeEmail}`);
+    } else if (!employeeDoc.userId) {
+      employeeDoc.userId = existingEmployeeUser._id;
+      await employeeDoc.save();
+    }
+
+    // 4. Seed Initial Attendance Records if empty
+    const { Attendance: AttendanceModel } = await import("../models/attendance.model.js");
+    const countAttendance = await AttendanceModel.countDocuments();
+    if (countAttendance === 0 && employeeDoc) {
+      const today = new Date();
+      const recordsToSeed = [];
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        d.setHours(0, 0, 0, 0);
+
+        // Skip weekends
+        if (d.getDay() === 0 || d.getDay() === 6) continue;
+
+        const checkIn = new Date(d);
+        checkIn.setHours(9, 0 + Math.floor(Math.random() * 15), 0);
+
+        const checkOut = new Date(d);
+        checkOut.setHours(17, 30 + Math.floor(Math.random() * 30), 0);
+
+        const totalMins = Math.round((checkOut.getTime() - checkIn.getTime()) / 60000);
+
+        recordsToSeed.push({
+          employeeId: employeeDoc._id,
+          date: d,
+          checkIn,
+          checkOut: i === 0 ? undefined : checkOut, // If today, keep shift active for check-out demonstration
+          totalWorkingMinutes: i === 0 ? 0 : totalMins,
+          status: i === 2 ? "late" : "present",
+        });
+      }
+
+      if (recordsToSeed.length > 0) {
+        await AttendanceModel.insertMany(recordsToSeed);
+        console.log(`✅ Seeded ${recordsToSeed.length} attendance records for EMP-1001`);
+      }
     }
 
     console.log("✨ Database seeding completed successfully!");

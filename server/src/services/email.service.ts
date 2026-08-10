@@ -8,32 +8,42 @@ export const sendEmail = async ({
   to: string;
   subject: string;
   html: string;
-}): Promise<void> => {
+}): Promise<boolean> => {
   try {
-    if (!process.env.SMTP_USER) {
-      console.log(`[Email Mock Service] Email to ${to} with subject "${subject}" logged.`);
-      return;
+    const smtpUser = process.env.SMTP_USER?.trim();
+    const smtpPass = process.env.SMTP_PASS?.trim();
+
+    if (!smtpUser || !smtpPass || smtpUser.includes("example.com") || smtpPass === "your-password" || smtpPass === "xxxx") {
+      console.log(`[Email Service (Mock Mode)] Skipped live delivery to ${to}. Subject: "${subject}".`);
+      return false;
     }
 
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || "smtp.gmail.com",
       port: parseInt(process.env.SMTP_PORT || "587", 10),
-      secure: false,
+      secure: process.env.SMTP_SECURE === "true",
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: smtpUser,
+        pass: smtpPass,
       },
     });
 
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || "Nuvexora Technologies <no-reply@nuvexora.com>",
+      from: process.env.SMTP_FROM || `Nuvexora Technologies <${smtpUser}>`,
       to,
       subject,
       html,
     });
+
     console.log(`[Email Service] Email sent successfully to ${to}`);
-  } catch (error) {
-    console.error(`[Email Error] Failed to send email to ${to}:`, error);
+    return true;
+  } catch (error: any) {
+    if (error?.code === "EAUTH" || error?.responseCode === 535 || error?.message?.includes("Invalid login")) {
+      console.warn(`[Email Service Warning] Could not send email to ${to} due to invalid SMTP credentials (SMTP_USER/SMTP_PASS in .env). System flow continued normally.`);
+    } else {
+      console.warn(`[Email Service Warning] Failed to send email to ${to}: ${error?.message || error}. System flow continued normally.`);
+    }
+    return false;
   }
 };
 

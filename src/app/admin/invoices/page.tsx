@@ -102,7 +102,7 @@ export default function InvoicesPage() {
       header: "Amount",
       cell: (row) => (
         <div className="text-sm font-extrabold text-slate-900 dark:text-white font-mono">
-          ${row.totalAmount.toLocaleString()}
+          ₹{row.totalAmount.toLocaleString("en-IN")}
         </div>
       )
     },

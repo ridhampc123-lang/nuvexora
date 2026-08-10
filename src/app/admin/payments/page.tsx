@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { AdminDataTable, Column } from "@/components/admin/admin-data-table";
 import { useAdminPaymentsQuery, useCreateAdminPaymentMutation, useUpdateAdminPaymentMutation, useDeleteAdminPaymentMutation, useAdminInvoicesQuery, useAdminClientsQuery } from "@/hooks/use-api-queries";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, CreditCard, Banknote, Clock } from "lucide-react";
+import { X, Plus, CreditCard, Banknote, Clock, Receipt } from "lucide-react";
 
 export default function PaymentsPage() {
   const { data: payments = [], isLoading } = useAdminPaymentsQuery();
@@ -91,7 +91,7 @@ export default function PaymentsPage() {
       header: "Amount",
       cell: (row) => (
         <div className="text-sm font-extrabold text-slate-900 dark:text-white font-mono">
-          ${row.amount.toLocaleString()}
+          ₹{row.amount.toLocaleString("en-IN")}
         </div>
       )
     },
@@ -139,11 +139,11 @@ export default function PaymentsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <AdminDataTable
-        title="Payments"
-        description="Track all incoming payments and transactions."
+        title="Payment Transactions"
+        description="Audit received client payments, transaction hashes, and revenue breakdown."
         columns={columns}
         data={isLoading ? [] : payments}
-        searchPlaceholder="Search transactions..."
+        searchPlaceholder="Search payments..."
         actionButton={
           <button
             onClick={() => openDrawer()}
@@ -175,13 +175,13 @@ export default function PaymentsPage() {
               <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/20">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                    <Banknote className="w-5 h-5" />
+                    <Receipt className="w-5 h-5" />
                   </div>
                   <div>
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                       {editingPayment ? "Edit Payment" : "Record Payment"}
                     </h2>
-                    <p className="text-xs text-slate-500">Transaction details</p>
+                    <p className="text-xs text-slate-500">Log incoming client transaction</p>
                   </div>
                 </div>
                 <button onClick={() => setIsDrawerOpen(false)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors">
@@ -192,6 +192,16 @@ export default function PaymentsPage() {
               <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
                 <div className="space-y-4">
                   
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Invoice</label>
+                    <select required value={formData.invoiceId} onChange={e => setFormData({...formData, invoiceId: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/50">
+                      <option value="">-- Select Invoice --</option>
+                      {invoices.map((inv: any) => (
+                        <option key={inv._id} value={inv._id}>{inv.invoiceNumber} (₹{inv.totalAmount?.toLocaleString("en-IN")})</option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Transaction ID</label>
                     <input required type="text" value={formData.transactionId} onChange={e => setFormData({...formData, transactionId: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/50 font-mono" />

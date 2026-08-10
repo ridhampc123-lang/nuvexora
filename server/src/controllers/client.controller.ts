@@ -6,6 +6,7 @@ import { Invoice } from "../models/invoice.model.js";
 import { Task } from "../models/task.model.js";
 import { ClientAccount } from "../models/client.model.js";
 import { AuthenticatedRequest } from "../types/index.js";
+import { getIO } from "../socket/index.js";
 
 const findClientOrHeal = async (userId: any, email?: string) => {
   let client = await ClientAccount.findOne({ userId });
@@ -94,6 +95,10 @@ export const updateClientTask = asyncHandler(async (req: Request, res: Response)
   const { status } = req.body;
 
   const task = await Task.findByIdAndUpdate(id, { status }, { new: true });
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
+
   return res.status(200).json(new ApiResponse(200, task, "Task updated successfully"));
 });
 
@@ -108,6 +113,10 @@ export const getClientInvoices = asyncHandler(async (req: AuthenticatedRequest, 
 export const payClientInvoice = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const invoice = await Invoice.findByIdAndUpdate(id, { status: "paid" }, { new: true });
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
+
   return res.status(200).json(new ApiResponse(200, invoice, "Invoice paid successfully"));
 });
 

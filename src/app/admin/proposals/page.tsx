@@ -99,7 +99,7 @@ export default function ProposalsPage() {
       header: "Value",
       cell: (row) => (
         <div className="text-sm font-extrabold text-slate-900 dark:text-white font-mono">
-          ${row.amount.toLocaleString()}
+          ₹{row.amount.toLocaleString("en-IN")}
         </div>
       )
     },

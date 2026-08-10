@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { NuvexoraLogoMark } from "@/components/common/nuvexora-logo-mark";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -76,10 +77,8 @@ export default function EmployeeLayout({ children }: { children: React.ReactNode
       <aside className="hidden lg:flex flex-col w-72 bg-slate-900 border-r border-slate-800 h-screen sticky top-0 shrink-0">
         {/* Brand */}
         <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-          <Link href="/employee" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-600/30">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
+          <Link href="/employee" className="group flex items-center gap-3">
+            <NuvexoraLogoMark size={38} />
             <div>
               <div className="font-extrabold text-sm text-white tracking-tight leading-none">Nuvexora OS</div>
               <div className="text-[10px] text-blue-400 font-mono tracking-widest uppercase mt-1">Employee Portal</div>

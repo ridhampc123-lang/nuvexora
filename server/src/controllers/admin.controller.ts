@@ -327,30 +327,50 @@ export const deleteDepartment = asyncHandler(async (req: Request, res: Response)
 // --- ATTENDANCE MANAGEMENT ---
 
 export const getAllAttendance = asyncHandler(async (_req: Request, res: Response) => {
-  const attendanceRecords = await Attendance.find().populate({
-    path: "employeeId",
-    select: "name email employeeId",
-  }).sort({ date: -1 });
+  const attendanceRecords = await Attendance.find()
+    .populate({
+      path: "employeeId",
+      select: "name email employeeId department designation",
+    })
+    .sort({ date: -1 });
   return res.status(200).json(new ApiResponse(200, attendanceRecords, "Attendance records retrieved successfully"));
 });
 
 export const createAttendance = asyncHandler(async (req: Request, res: Response) => {
-  const attendance = await Attendance.create(req.body);
-  getIO().emit("dashboard_update");
+  const data = { ...req.body };
+  if (data.checkIn && data.checkOut) {
+    const checkInMs = new Date(data.checkIn).getTime();
+    const checkOutMs = new Date(data.checkOut).getTime();
+    data.totalWorkingMinutes = Math.max(0, Math.round((checkOutMs - checkInMs) / 60000));
+  }
+  const attendance = await Attendance.create(data);
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
   return res.status(201).json(new ApiResponse(201, attendance, "Attendance record created successfully"));
 });
 
 export const updateAttendance = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const attendance = await Attendance.findByIdAndUpdate(id, req.body, { new: true });
-  getIO().emit("dashboard_update");
+  const data = { ...req.body };
+  if (data.checkIn && data.checkOut) {
+    const checkInMs = new Date(data.checkIn).getTime();
+    const checkOutMs = new Date(data.checkOut).getTime();
+    data.totalWorkingMinutes = Math.max(0, Math.round((checkOutMs - checkInMs) / 60000));
+  }
+  const attendance = await Attendance.findByIdAndUpdate(id, data, { new: true });
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
   return res.status(200).json(new ApiResponse(200, attendance, "Attendance record updated successfully"));
 });
 
 export const deleteAttendance = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   await Attendance.findByIdAndDelete(id);
-  getIO().emit("dashboard_update");
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
   return res.status(200).json(new ApiResponse(200, null, "Attendance record deleted successfully"));
 });
 
@@ -849,15 +869,18 @@ export const deleteCareer = asyncHandler(async (req: Request, res: Response) => 
 
 // --- ANALYTICS & TELEMETRY ---
 export const getAdminAnalyticsData = asyncHandler(async (_req: Request, res: Response) => {
-  const [totalPayments, totalInvoices, totalClients, totalTasks, totalProjects] = await Promise.all([
+  const [totalPayments, totalInvoices, totalClients, totalTasks, totalProjects, totalInvoicesAmount] = await Promise.all([
     Payment.aggregate([{ $group: { _id: null, total: { $sum: "$amount" } } }]),
     Invoice.countDocuments(),
     ClientAccount.countDocuments({ status: "active" }),
     Task.countDocuments(),
-    Project.countDocuments()
+    Project.countDocuments(),
+    Invoice.aggregate([{ $group: { _id: null, total: { $sum: "$totalAmount" } } }])
   ]);
 
-  const totalRevenue = totalPayments[0]?.total || 0;
+  const paymentsSum = totalPayments[0]?.total || 0;
+  const invoicesSum = totalInvoicesAmount[0]?.total || 0;
+  const totalRevenue = paymentsSum > 0 ? paymentsSum : invoicesSum;
 
   return res.status(200).json(
     new ApiResponse(200, {

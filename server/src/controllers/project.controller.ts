@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/async-handler.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { ApiError } from "../utils/api-error.js";
 import { AuthenticatedRequest } from "../types/index.js";
+import { getIO } from "../socket/index.js";
 
 export const createProject = asyncHandler(async (req: Request, res: Response) => {
   const { title, clientId, category, status, progressPercentage, techStack, estimatedCompletion } = req.body;
@@ -17,6 +18,10 @@ export const createProject = asyncHandler(async (req: Request, res: Response) =>
     techStack: techStack || [],
     estimatedCompletion,
   });
+
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
 
   return res.status(201).json(new ApiResponse(201, project, "Project created successfully"));
 });
@@ -43,6 +48,10 @@ export const updateProjectProgress = asyncHandler(async (req: Request, res: Resp
   if (!project) {
     throw new ApiError(404, "Project not found");
   }
+
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
 
   return res.status(200).json(new ApiResponse(200, project, "Project progress updated successfully"));
 });

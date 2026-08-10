@@ -47,15 +47,29 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       reconnectionAttempts: 5,
     });
 
+    const handleRealtimeUpdate = () => {
+      console.log("[Socket.IO] Real-time mutation event received! Refreshing active queries...");
+      queryClient.invalidateQueries();
+      queryClient.refetchQueries({ type: "active" });
+    };
+
     socketInstance.on("connect", () => {
       setIsConnected(true);
       console.log("[Socket.IO] Real-time engine connected:", socketInstance.id);
+      handleRealtimeUpdate();
     });
 
-    socketInstance.on("dashboard_update", () => {
-      console.log("[Socket.IO] Real-time mutation event received! Refreshing active queries...");
+    socketInstance.on("dashboard_update", handleRealtimeUpdate);
+    socketInstance.on("new_lead", handleRealtimeUpdate);
+    socketInstance.on("attendance_update", handleRealtimeUpdate);
+    socketInstance.on("leave_update", handleRealtimeUpdate);
+    socketInstance.on("task_update", handleRealtimeUpdate);
+    socketInstance.on("project_update", handleRealtimeUpdate);
+
+    // Fallback periodic background sync every 12 seconds to guarantee automated refresh across tabs
+    const autoRefreshInterval = setInterval(() => {
       queryClient.invalidateQueries();
-    });
+    }, 12000);
 
     socketInstance.on("disconnect", () => {
       setIsConnected(false);
@@ -65,6 +79,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     setSocket(socketInstance);
 
     return () => {
+      clearInterval(autoRefreshInterval);
       socketInstance.disconnect();
     };
   }, [queryClient]);

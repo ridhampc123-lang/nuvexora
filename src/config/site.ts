@@ -6,7 +6,7 @@ export const siteConfig = {
     "Premium engineering, design, cloud, and AI delivery for modern enterprises.",
   url: "https://nuvexora.com",
   locale: "en_US",
-  contactEmail: "hello@nuvexora.com",
-  contactPhone: "+1 (555) 010-2048",
+  contactEmail: "nuvexora@gmail.com",
+  contactPhone: "+91 9213612847",
   address: "Global delivery studio",
 } as const;

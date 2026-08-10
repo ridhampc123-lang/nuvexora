@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { NuvexoraLogoMark } from "@/components/common/nuvexora-logo-mark";
 import { 
   LayoutDashboard, Users, UserPlus, Briefcase, FolderKanban, CheckSquare,
   Milestone, Building2, Landmark, Clock, CalendarDays, Video, Calendar,
@@ -102,14 +103,12 @@ export function AdminSidebar() {
     >
       {/* Brand Header */}
       <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
-        <Link href="/admin" className="flex items-center gap-3 overflow-hidden">
-          <div className="w-10 h-10 rounded-xl bg-slate-950 p-1 flex items-center justify-center shrink-0 shadow-md ring-1 ring-white/10 overflow-hidden">
-            <img src="/logos/logo.png" alt="Nuvexora Logo" className="w-full h-full object-cover rounded-lg" />
-          </div>
+        <Link href="/admin" className="group flex items-center gap-3 overflow-hidden">
+          <NuvexoraLogoMark size={38} />
           {!isCollapsed && (
             <div className="flex flex-col leading-none">
               <span className="font-extrabold text-white text-base tracking-tight">Nuvexora</span>
-              <span className="text-[10px] text-blue-400 font-semibold uppercase tracking-widest mt-0.5">Admin Studio</span>
+              <span className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mt-0.5">Admin Studio</span>
             </div>
           )}
         </Link>

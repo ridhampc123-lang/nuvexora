@@ -7,8 +7,10 @@ export interface ILeaveRequest extends Document {
   endDate: Date;
   reason: string;
   status: "pending" | "approved" | "rejected";
+  declineReason?: string;
   reviewedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const LeaveRequestSchema = new Schema<ILeaveRequest>(
@@ -19,6 +21,7 @@ const LeaveRequestSchema = new Schema<ILeaveRequest>(
     endDate: { type: Date, required: true },
     reason: { type: String, required: true },
     status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+    declineReason: { type: String, default: "" },
     reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }

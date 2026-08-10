@@ -226,8 +226,8 @@ export const navigationConfig = {
     { label: "GitHub", href: "https://github.com", icon: Code2Icon },
   ] satisfies SocialLink[],
   contact: {
-    email: "hello@nuvexora.com",
-    phone: "+1 (555) 010-2048",
+    email: "nuvexora@gmail.com",
+    phone: "+91 9213612847",
     address: "Global delivery studio",
   },
   featuredService: {

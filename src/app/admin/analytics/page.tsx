@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { 
-  LineChart, TrendingUp, Users, Cpu, DollarSign, Activity, RefreshCw, FolderKanban
+  LineChart, TrendingUp, Users, Cpu, IndianRupee, Activity, RefreshCw, FolderKanban
 } from "lucide-react";
 import { useAdminAnalyticsQuery } from "@/hooks/use-api-queries";
 
@@ -11,7 +11,7 @@ export default function AnalyticsPage() {
   const { data: analytics, isLoading, refetch } = useAdminAnalyticsQuery();
 
   const metrics = [
-    { title: "Total Platform Revenue", value: isLoading ? "..." : `$${(analytics?.totalRevenue ?? 0).toLocaleString()}`, icon: DollarSign, subtext: "Recorded invoices total" },
+    { title: "Total Platform Revenue", value: isLoading ? "..." : `₹${(analytics?.totalRevenue ?? 0).toLocaleString("en-IN")}`, icon: IndianRupee, subtext: "Recorded invoices total" },
     { title: "Active Projects", value: isLoading ? "..." : String(analytics?.totalProjects ?? 0), icon: FolderKanban, subtext: "Database count" },
     { title: "Active Client Accounts", value: isLoading ? "..." : String(analytics?.activeClients ?? 0), icon: Users, subtext: "Active client status" },
     { title: "System Uptime SLA", value: isLoading ? "..." : (analytics?.systemUptimeSla ?? "99.99%"), icon: Cpu, subtext: "Multi-region cluster SLA" }
