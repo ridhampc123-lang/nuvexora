@@ -21,7 +21,7 @@ const SiteSettingsSchema = new Schema<ISiteSettings>(
   {
     siteName: { type: String, default: "Nuvexora Technologies" },
     tagline: { type: String, default: "Innovate. Build. Elevate." },
-    contactEmail: { type: String, default: "contact@nuvexora.com" },
+    contactEmail: { type: String, default: "nuvexoratech@gmail.com" },
     contactPhone: { type: String, default: "+1 (800) 555-0199" },
     address: { type: String, default: "San Francisco, CA & London, UK" },
     socialLinks: {

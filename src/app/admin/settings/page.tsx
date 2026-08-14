@@ -8,7 +8,7 @@ export default function SiteSettingsCMSPage() {
   const [settings, setSettings] = useState({
     siteName: "Nuvexora Technologies",
     tagline: "Innovate. Build. Elevate.",
-    contactEmail: "nuvexora@gmail.com",
+    contactEmail: "nuvexoratech@gmail.com",
     contactPhone: "+91 9213612847",
     address: "San Francisco, CA & London, UK",
     seoTitle: "Nuvexora Technologies — Enterprise Digital Engineering & AI Solutions",
