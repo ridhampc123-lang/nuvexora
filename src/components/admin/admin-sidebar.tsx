@@ -166,7 +166,7 @@ export function AdminSidebar() {
           {!isCollapsed && (
             <div className="truncate">
               <div className="text-xs font-bold text-white truncate">Super Admin</div>
-              <div className="text-[10px] text-slate-400 truncate">admin@nuvexora.com</div>
+              <div className="text-[10px] text-slate-400 truncate">nuvexoratech@gmail.com</div>
             </div>
           )}
         </div>

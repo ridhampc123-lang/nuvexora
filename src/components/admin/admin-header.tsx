@@ -141,7 +141,7 @@ export function AdminHeader() {
               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 text-xs text-slate-900 dark:text-slate-100">
                 <div className="p-2 border-b border-slate-100 dark:border-slate-800">
                   <div className="font-bold text-slate-900 dark:text-slate-100">Super Admin</div>
-                  <div className="text-[10px] text-slate-400">admin@nuvexora.com</div>
+                  <div className="text-[10px] text-slate-400">nuvexoratech@gmail.com</div>
                 </div>
                 <Link href="/admin/settings" className="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl text-slate-700 dark:text-slate-200 font-medium">
                   <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />

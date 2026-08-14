@@ -61,7 +61,7 @@ export function BusinessHeader() {
             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 text-xs text-slate-900 dark:text-slate-100">
               <div className="p-2 border-b border-slate-100 dark:border-slate-800">
                 <div className="font-bold text-slate-900 dark:text-slate-100 font-sans">Business Executive</div>
-                <div className="text-[10px] text-slate-400">exec@nuvexora.com</div>
+                <div className="text-[10px] text-slate-400">nuvexoratech@gmail.com</div>
               </div>
               <Link href="/" className="flex items-center gap-2 p-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-xl font-medium">
                 <LogOut className="w-4 h-4 text-rose-500" />
