@@ -167,3 +167,84 @@ export const sendMeetingInviteEmail = async (
   });
 };
 
+export const sendLeadMeetingLinkEmail = async ({
+  toEmail,
+  clientName,
+  meetingLink,
+  meetingTime,
+  adminNote,
+}: {
+  toEmail: string;
+  clientName: string;
+  meetingLink: string;
+  meetingTime?: string;
+  adminNote?: string;
+}) => {
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 620px; margin: 0 auto; padding: 0; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+      <!-- Header -->
+      <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 32px; text-align: center;">
+        <div style="width: 54px; height: 54px; background: rgba(37, 99, 235, 0.2); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+          <span style="font-size: 26px;">🎥</span>
+        </div>
+        <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Strategy Call & Meeting Link</h1>
+        <p style="color: #94a3b8; margin: 6px 0 0; font-size: 14px;">Nuvexora Technologies Team</p>
+      </div>
+
+      <!-- Body -->
+      <div style="background: #ffffff; padding: 32px;">
+        <p style="color: #334155; font-size: 15px; margin: 0 0 20px;">Hello <strong style="color: #0f172a;">${clientName}</strong>,</p>
+        <p style="color: #475569; font-size: 15px; margin: 0 0 24px; line-height: 1.6;">
+          Thank you for reaching out to Nuvexora Technologies regarding your project. Our team has reviewed your inquiry and scheduled a strategy session to discuss your roadmap, architecture, and scope.
+        </p>
+
+        <!-- Meeting Details Box -->
+        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 14px; padding: 22px; margin-bottom: 28px;">
+          <h3 style="color: #1e293b; font-size: 15px; font-weight: 700; margin: 0 0 14px; text-transform: uppercase; tracking: 0.5px;">Meeting Overview</h3>
+          
+          ${meetingTime ? `
+          <div style="margin-bottom: 12px; display: flex; align-items: center;">
+            <span style="color: #64748b; font-size: 13px; font-weight: 600; width: 120px;">🗓️ SCHEDULED:</span>
+            <span style="color: #0f172a; font-size: 14px; font-weight: 700;">${meetingTime}</span>
+          </div>
+          ` : ''}
+
+          ${adminNote ? `
+          <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+            <span style="color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 4px;">Note from Our Team:</span>
+            <p style="color: #334155; font-size: 13px; margin: 0; line-height: 1.5; font-style: italic; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">"${adminNote}"</p>
+          </div>
+          ` : ''}
+        </div>
+
+        <!-- Call to Action Button -->
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${meetingLink}" 
+             target="_blank"
+             style="display: inline-block; padding: 16px 36px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 16px; letter-spacing: 0.3px; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);">
+            🎥 Click Here to Join Meeting
+          </a>
+        </div>
+
+        <div style="background: #f1f5f9; border-radius: 10px; padding: 14px 16px; margin-top: 24px; text-align: center;">
+          <p style="color: #64748b; font-size: 12px; margin: 0 0 6px;">Direct Link URL (if button doesn't open):</p>
+          <a href="${meetingLink}" style="color: #2563eb; font-size: 13px; word-break: break-all; font-weight: 600;">${meetingLink}</a>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 32px; text-align: center;">
+        <p style="color: #64748b; font-size: 13px; font-weight: 600; margin: 0 0 4px;">Nuvexora Technologies Private Limited</p>
+        <p style="color: #94a3b8; font-size: 12px; margin: 0;">Need to reschedule? Reply directly to this email.</p>
+      </div>
+    </div>
+  `;
+
+  return await sendEmail({
+    to: toEmail,
+    subject: `🎥 Google Meet & Strategy Session Invitation - Nuvexora Technologies`,
+    html,
+  });
+};
+
+

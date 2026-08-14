@@ -10,6 +10,9 @@ export interface ILead extends Document {
   timeline?: string;
   message: string;
   status: "new" | "contacted" | "qualified" | "converted" | "closed";
+  meetingLink?: string;
+  meetingTime?: string;
+  adminNote?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +32,9 @@ const LeadSchema = new Schema<ILead>(
       enum: ["new", "contacted", "qualified", "converted", "closed"],
       default: "new",
     },
+    meetingLink: { type: String, default: "" },
+    meetingTime: { type: String, default: "" },
+    adminNote: { type: String, default: "" },
   },
   { timestamps: true }
 );

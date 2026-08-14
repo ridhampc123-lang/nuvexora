@@ -3,8 +3,35 @@
 import React, { useState } from "react";
 import { AdminDataTable, Column } from "@/components/admin/admin-data-table";
 import { AdminModal } from "@/components/admin/admin-modal";
-import { useAdminLeadsQuery, useUpdateLeadStatusMutation, useDeleteLeadMutation } from "@/hooks/use-api-queries";
-import { Mail, User, Building2, Phone, Calendar, IndianRupee, Tag, MessageSquare, Trash2, Eye, ExternalLink, Clock, Sparkles } from "lucide-react";
+import {
+  useAdminLeadsQuery,
+  useUpdateLeadStatusMutation,
+  useDeleteLeadMutation,
+  useSendLeadMeetingLinkMutation,
+} from "@/hooks/use-api-queries";
+import {
+  Mail,
+  User,
+  Building2,
+  Phone,
+  Calendar,
+  IndianRupee,
+  Tag,
+  MessageSquare,
+  Trash2,
+  Eye,
+  ExternalLink,
+  Clock,
+  Sparkles,
+  Video,
+  Send,
+  Check,
+  Copy,
+  Loader2,
+  Link as LinkIcon,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 
 interface LeadItem {
   _id?: string;
@@ -21,6 +48,9 @@ interface LeadItem {
   timeline?: string;
   message?: string;
   status: "new" | "contacted" | "qualified" | "converted" | "closed";
+  meetingLink?: string;
+  meetingTime?: string;
+  adminNote?: string;
   createdAt: string;
 }
 
@@ -28,14 +58,23 @@ export default function LeadsCRMPage() {
   const { data: leads = [], isLoading } = useAdminLeadsQuery();
   const updateStatusMutation = useUpdateLeadStatusMutation();
   const deleteLeadMutation = useDeleteLeadMutation();
+  const sendMeetingMutation = useSendLeadMeetingLinkMutation();
 
   const [selectedLead, setSelectedLead] = useState<LeadItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Meeting Link Form state inside Modal
+  const [meetingLink, setMeetingLink] = useState("");
+  const [meetingTime, setMeetingTime] = useState("");
+  const [adminNote, setAdminNote] = useState("");
+  const [sendSuccessMsg, setSendSuccessMsg] = useState("");
+  const [sendErrorMsg, setSendErrorMsg] = useState("");
+  const [copiedLink, setCopiedLink] = useState(false);
+
   const handleStatusChange = (id: string, newStatus: string) => {
     updateStatusMutation.mutate({ id, status: newStatus });
     if (selectedLead && (selectedLead._id === id || selectedLead.id === id)) {
-      setSelectedLead((prev) => prev ? { ...prev, status: newStatus as any } : null);
+      setSelectedLead((prev) => (prev ? { ...prev, status: newStatus as any } : null));
     }
   };
 
@@ -50,7 +89,67 @@ export default function LeadsCRMPage() {
 
   const openLeadModal = (lead: LeadItem) => {
     setSelectedLead(lead);
+    setMeetingLink(lead.meetingLink || "");
+    setMeetingTime(lead.meetingTime || "");
+    setAdminNote(lead.adminNote || "");
+    setSendSuccessMsg("");
+    setSendErrorMsg("");
+    setCopiedLink(false);
     setIsModalOpen(true);
+  };
+
+  const handleGenerateMeetLink = () => {
+    const code1 = Math.random().toString(36).substring(2, 5);
+    const code2 = Math.random().toString(36).substring(2, 6);
+    const code3 = Math.random().toString(36).substring(2, 5);
+    setMeetingLink(`https://meet.google.com/${code1}-${code2}-${code3}`);
+  };
+
+  const handleCopyLink = () => {
+    if (!meetingLink) return;
+    navigator.clipboard.writeText(meetingLink);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  const handleSendMeetingLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedLead) return;
+
+    const leadId = selectedLead._id || selectedLead.id || "";
+    if (!meetingLink.trim()) {
+      setSendErrorMsg("Please enter or generate a valid Google Meet link.");
+      return;
+    }
+
+    setSendErrorMsg("");
+    setSendSuccessMsg("");
+
+    try {
+      await sendMeetingMutation.mutateAsync({
+        id: leadId,
+        meetingLink,
+        meetingTime,
+        adminNote,
+      });
+
+      setSendSuccessMsg(`Google Meet link successfully emailed to ${selectedLead.email}!`);
+      setSelectedLead((prev) =>
+        prev
+          ? {
+              ...prev,
+              meetingLink,
+              meetingTime,
+              adminNote,
+              status: prev.status === "new" ? "contacted" : prev.status,
+            }
+          : null
+      );
+    } catch (err: any) {
+      setSendErrorMsg(
+        err?.response?.data?.message || "Failed to send meeting link email. Please check server settings."
+      );
+    }
   };
 
   const totalCount = leads.length;
@@ -74,6 +173,14 @@ export default function LeadsCRMPage() {
                 {row.status === "new" && (
                   <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse inline-block" title="New Inquiry" />
                 )}
+                {row.meetingLink && (
+                  <span
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20"
+                    title="Google Meet Sent"
+                  >
+                    <Video className="w-2.5 h-2.5" /> Meet Sent
+                  </span>
+                )}
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5">
                 <span className="font-mono">{row.email}</span>
@@ -92,7 +199,10 @@ export default function LeadsCRMPage() {
             {row.serviceCategory || row.service || "General Inquiry"}
           </span>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
-            Est. Budget: <span className="font-bold text-emerald-600 dark:text-emerald-400">{row.budgetRange || row.budget || "Undisclosed"}</span>
+            Est. Budget:{" "}
+            <span className="font-bold text-emerald-600 dark:text-emerald-400">
+              {row.budgetRange || row.budget || "Undisclosed"}
+            </span>
           </div>
         </div>
       ),
@@ -137,7 +247,13 @@ export default function LeadsCRMPage() {
       header: "Submitted",
       cell: (row) => (
         <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-          {row.createdAt ? new Date(row.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Recent"}
+          {row.createdAt
+            ? new Date(row.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : "Recent"}
         </div>
       ),
     },
@@ -149,10 +265,11 @@ export default function LeadsCRMPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => openLeadModal(row)}
-              className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
-              title="View Full Scope Details"
+              className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors flex items-center gap-1 font-semibold text-xs px-2.5"
+              title="View Scope & Send Google Meet"
             >
-              <Eye className="w-4 h-4" />
+              <Video className="w-3.5 h-3.5" />
+              <span>Respond</span>
             </button>
             <button
               onClick={() => handleDelete(leadId)}
@@ -173,7 +290,9 @@ export default function LeadsCRMPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Inquiries</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              Total Inquiries
+            </p>
             <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">{totalCount}</h3>
           </div>
           <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
@@ -183,7 +302,9 @@ export default function LeadsCRMPage() {
 
         <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">New Inquiries</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              New Inquiries
+            </p>
             <h3 className="text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-1">{newCount}</h3>
           </div>
           <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
@@ -193,8 +314,12 @@ export default function LeadsCRMPage() {
 
         <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">In Discussion</p>
-            <h3 className="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">{inProgressCount}</h3>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              In Discussion
+            </p>
+            <h3 className="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">
+              {inProgressCount}
+            </h3>
           </div>
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
             <Clock className="w-5 h-5" />
@@ -203,8 +328,12 @@ export default function LeadsCRMPage() {
 
         <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Converted Clients</p>
-            <h3 className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">{convertedCount}</h3>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              Converted Clients
+            </p>
+            <h3 className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
+              {convertedCount}
+            </h3>
           </div>
           <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <Building2 className="w-5 h-5" />
@@ -215,18 +344,18 @@ export default function LeadsCRMPage() {
       {/* Main Data Table */}
       <AdminDataTable
         title="Inbound Project Inquiries & Leads CRM"
-        description="Review, analyze detailed project scopes, change inquiry statuses, and convert client requests into active projects."
+        description="Review, analyze detailed project scopes, change inquiry statuses, and send Google Meet strategy links directly to prospects."
         columns={columns}
         data={isLoading ? [] : leads}
         searchPlaceholder="Search leads by prospect name, email, or company..."
       />
 
-      {/* Full Scope Details Modal */}
+      {/* Full Scope & Google Meet Response Modal */}
       {selectedLead && (
         <AdminModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          title="Project Inquiry & Scope Details"
+          title="Project Inquiry & Google Meet Response"
         >
           <div className="space-y-6 text-xs text-slate-700 dark:text-slate-300">
             {/* Lead Prospect Info Header */}
@@ -240,19 +369,25 @@ export default function LeadsCRMPage() {
                     {selectedLead.fullName || selectedLead.name}
                   </h4>
                   <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 text-xs mt-0.5">
-                    <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5 text-blue-500" /> {selectedLead.email}</span>
-                    {selectedLead.phone && <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5 text-blue-500" /> {selectedLead.phone}</span>}
+                    <span className="flex items-center gap-1">
+                      <Mail className="w-3.5 h-3.5 text-blue-500" /> {selectedLead.email}
+                    </span>
+                    {selectedLead.phone && (
+                      <span className="flex items-center gap-1">
+                        <Phone className="w-3.5 h-3.5 text-blue-500" /> {selectedLead.phone}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
                 <a
-                  href={`mailto:${selectedLead.email}?subject=Nuvexora%20Technologies%20-%20Project%20Inquiry%20Response&body=Hi%20${encodeURIComponent(selectedLead.fullName || selectedLead.name || '')},`}
-                  className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm transition-all"
+                  href={`mailto:${selectedLead.email}?subject=Nuvexora%20Technologies%20-%20Project%20Inquiry%20Response`}
+                  className="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold text-xs inline-flex items-center gap-1.5 transition-all"
                 >
                   <Mail className="w-3.5 h-3.5" />
-                  <span>Reply via Email</span>
+                  <span>Manual Email</span>
                 </a>
               </div>
             </div>
@@ -268,7 +403,9 @@ export default function LeadsCRMPage() {
               </div>
 
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Service Category</span>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                  Service Category
+                </span>
                 <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1">
                   <Tag className="w-3.5 h-3.5 text-blue-500" />
                   {selectedLead.serviceCategory || selectedLead.service || "General Inquiry"}
@@ -284,7 +421,9 @@ export default function LeadsCRMPage() {
               </div>
 
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Target Timeline</span>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                  Target Timeline
+                </span>
                 <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-blue-500" />
                   {selectedLead.timeline || "Flexible"}
@@ -300,6 +439,136 @@ export default function LeadsCRMPage() {
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-xs leading-relaxed whitespace-pre-wrap font-sans">
                 {selectedLead.message || "No detailed message provided."}
               </div>
+            </div>
+
+            {/* Google Meet & Meeting Dispatch Section */}
+            <div className="p-5 rounded-2xl bg-blue-50/60 dark:bg-slate-900/80 border border-blue-200/80 dark:border-slate-800 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-blue-200/60 dark:border-slate-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-sm">
+                    <Video className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                      Send Strategy Session & Google Meet Link
+                    </h4>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                      Dispatches a clean meeting invite email directly to <span className="font-semibold text-blue-600 dark:text-blue-400">{selectedLead.email}</span>.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleGenerateMeetLink}
+                  className="px-3 py-1.5 rounded-xl bg-blue-600/10 text-blue-700 dark:text-blue-300 hover:bg-blue-600/20 border border-blue-300/60 dark:border-blue-700/60 text-xs font-bold transition-all flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Auto-Generate Meet Link</span>
+                </button>
+              </div>
+
+              {sendSuccessMsg && (
+                <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-700/80 text-emerald-800 dark:text-emerald-300 flex items-center gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="font-semibold text-xs">{sendSuccessMsg}</span>
+                </div>
+              )}
+
+              {sendErrorMsg && (
+                <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/70 border border-rose-200 dark:border-rose-700/80 text-rose-800 dark:text-rose-300 flex items-center gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                  <span className="font-semibold text-xs">{sendErrorMsg}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSendMeetingLink} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1 flex items-center gap-1">
+                      <LinkIcon className="w-3 h-3 text-blue-600 dark:text-blue-400" /> Google Meet URL <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="url"
+                        required
+                        placeholder="https://meet.google.com/abc-defg-hij"
+                        value={meetingLink}
+                        onChange={(e) => setMeetingLink(e.target.value)}
+                        className="w-full pl-3 pr-9 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder-slate-400 text-xs font-mono outline-none focus:border-blue-500 transition-all shadow-xs"
+                      />
+                      {meetingLink && (
+                        <button
+                          type="button"
+                          onClick={handleCopyLink}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+                          title="Copy Link"
+                        >
+                          {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1 flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-blue-600 dark:text-blue-400" /> Scheduled Date & Time
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Tomorrow at 3:00 PM EST"
+                      value={meetingTime}
+                      onChange={(e) => setMeetingTime(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder-slate-400 text-xs outline-none focus:border-blue-500 transition-all shadow-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <MessageSquare className="w-3 h-3 text-blue-600 dark:text-blue-400" /> Note / Message to Client <span className="text-[10px] text-slate-500 font-normal lowercase">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Looking forward to discussing your AI roadmap. Please join using the Google Meet link above."
+                    value={adminNote}
+                    onChange={(e) => setAdminNote(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder-slate-400 text-xs outline-none focus:border-blue-500 transition-all shadow-xs"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
+                  {selectedLead.meetingLink && (
+                    <a
+                      href={selectedLead.meetingLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-mono font-semibold"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      Open Active Meeting Link
+                    </a>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={sendMeetingMutation.isPending}
+                    className="ml-auto px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 inline-flex items-center gap-2 transition-all disabled:opacity-50"
+                  >
+                    {sendMeetingMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Sending Invitation Email...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-3.5 h-3.5" />
+                        <span>{selectedLead.meetingLink ? "Resend Google Meet Link Email" : "Send Google Meet Link via Email"}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
 
             {/* Status Update & Modal Actions */}
@@ -333,4 +602,3 @@ export default function LeadsCRMPage() {
     </div>
   );
 }
-

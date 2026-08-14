@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { motion } from "framer-motion"
-import { SearchIcon } from "lucide-react"
+import { MailIcon } from "lucide-react"
 import { usePathname } from "next/navigation"
 
 import { navigationConfig } from "@/config/navigation"
@@ -107,6 +107,20 @@ function Navbar() {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <ThemeToggle />
+          <Link
+            href="/contact"
+            className={cn(
+              buttonVariants({
+                variant: pathname === "/contact" ? "secondary" : "ghost",
+                size: "icon-sm",
+              }),
+              "rounded-xl text-foreground hover:bg-hover hover:text-primary transition-colors"
+            )}
+            title="Contact Us"
+            aria-label="Contact Us"
+          >
+            <MailIcon className="size-4" aria-hidden="true" />
+          </Link>
           <Link href="/book-consultation" className={cn(buttonVariants({ size: "sm" }), "hidden sm:inline-flex")}>
             Book consultation
           </Link>

@@ -8,7 +8,7 @@ import { ClientAccount } from "../models/client.model.js";
 import { AuthenticatedRequest } from "../types/index.js";
 import { getIO } from "../socket/index.js";
 
-const findClientOrHeal = async (userId: any, email?: string) => {
+export const findClientOrHeal = async (userId: any, email?: string) => {
   let client = await ClientAccount.findOne({ userId });
   if (!client && email) {
     client = await ClientAccount.findOne({ email: email.toLowerCase() });
@@ -22,19 +22,22 @@ const findClientOrHeal = async (userId: any, email?: string) => {
   return client;
 };
 
+export const getClientIds = (client: any, userId: any) => {
+  const ids: any[] = [];
+  if (client?._id) ids.push(client._id);
+  if (client?.userId) ids.push(client.userId);
+  if (userId) ids.push(userId);
+  return ids;
+};
+
 export const getClientDashboardData = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user?.userId;
   const client = await findClientOrHeal(userId, req.user?.email);
-
-  if (!client) {
-    return res.status(404).json(new ApiResponse(404, null, "Client profile not found"));
-  }
-
-  const clientId = client._id;
+  const clientIds = getClientIds(client, userId);
 
   const [projects, invoices] = await Promise.all([
-    Project.find({ clientId }).sort({ createdAt: -1 }),
-    Invoice.find({ clientId }).sort({ createdAt: -1 }),
+    Project.find({ clientId: { $in: clientIds } }).sort({ createdAt: -1 }),
+    Invoice.find({ clientId: { $in: clientIds } }).sort({ createdAt: -1 }),
   ]);
 
   const projectIds = projects.map(p => p._id);
@@ -53,8 +56,8 @@ export const getClientDashboardData = asyncHandler(async (req: AuthenticatedRequ
     new ApiResponse(
       200,
       {
-        clientName: client.ownerName,
-        companyName: client.companyName,
+        clientName: client?.ownerName || client?.name || req.user?.email || "Client",
+        companyName: client?.companyName || client?.company || "Organization",
         primaryProject,
         deliveryProgress,
         projects,
@@ -63,9 +66,9 @@ export const getClientDashboardData = asyncHandler(async (req: AuthenticatedRequ
         activeProjectsCount,
         pendingTasksCount,
         outstandingInvoicesTotal: `₹${outstandingInvoicesTotal.toLocaleString("en-IN")}`,
-        contractValue: client.contractValue || 0,
-        slaUptimeTarget: client.slaUptimeTarget,
-        notes: client.notes, 
+        contractValue: client?.contractValue || 0,
+        slaUptimeTarget: client?.slaUptimeTarget || "99.9%",
+        notes: client?.notes || "", 
       },
       "Client dashboard overview retrieved successfully"
     )
@@ -75,16 +78,16 @@ export const getClientDashboardData = asyncHandler(async (req: AuthenticatedRequ
 export const getClientProjects = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user?.userId;
   const client = await findClientOrHeal(userId, req.user?.email);
-  if (!client) return res.status(200).json(new ApiResponse(200, [], "Client not found"));
-  const projects = await Project.find({ clientId: client._id }).sort({ createdAt: -1 });
+  const clientIds = getClientIds(client, userId);
+  const projects = await Project.find({ clientId: { $in: clientIds } }).sort({ createdAt: -1 });
   return res.status(200).json(new ApiResponse(200, projects, "Client projects retrieved successfully"));
 });
 
 export const getClientTasks = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user?.userId;
   const client = await findClientOrHeal(userId, req.user?.email);
-  if (!client) return res.status(200).json(new ApiResponse(200, [], "Client not found"));
-  const projects = await Project.find({ clientId: client._id });
+  const clientIds = getClientIds(client, userId);
+  const projects = await Project.find({ clientId: { $in: clientIds } });
   const projectIds = projects.map(p => p._id);
   const tasks = await Task.find({ projectId: { $in: projectIds } }).sort({ createdAt: -1 });
   return res.status(200).json(new ApiResponse(200, tasks, "Client tasks retrieved successfully"));
@@ -105,8 +108,8 @@ export const updateClientTask = asyncHandler(async (req: Request, res: Response)
 export const getClientInvoices = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user?.userId;
   const client = await findClientOrHeal(userId, req.user?.email);
-  if (!client) return res.status(200).json(new ApiResponse(200, [], "Client not found"));
-  const invoices = await Invoice.find({ clientId: client._id }).sort({ createdAt: -1 });
+  const clientIds = getClientIds(client, userId);
+  const invoices = await Invoice.find({ clientId: { $in: clientIds } }).sort({ createdAt: -1 });
   return res.status(200).json(new ApiResponse(200, invoices, "Client invoices retrieved successfully"));
 });
 
@@ -119,5 +122,3 @@ export const payClientInvoice = asyncHandler(async (req: Request, res: Response)
 
   return res.status(200).json(new ApiResponse(200, invoice, "Invoice paid successfully"));
 });
-
-

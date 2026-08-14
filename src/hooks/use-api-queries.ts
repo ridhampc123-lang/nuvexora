@@ -11,6 +11,7 @@ import {
   getAdminLeads, 
   updateAdminLeadStatus,
   deleteAdminLead,
+  sendAdminLeadMeetingLink,
   getAdminClients,
   createAdminClient,
   updateAdminClient,
@@ -193,6 +194,17 @@ export const useDeleteLeadMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteAdminLead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminLeads"] });
+      queryClient.invalidateQueries({ queryKey: ["adminMetrics"] });
+    },
+  });
+};
+
+export const useSendLeadMeetingLinkMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: sendAdminLeadMeetingLink,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["adminLeads"] });
       queryClient.invalidateQueries({ queryKey: ["adminMetrics"] });

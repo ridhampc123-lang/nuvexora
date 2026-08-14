@@ -29,8 +29,8 @@ import { Permission } from "../models/permission.model.js";
 import { Role } from "../models/role.model.js";
 import { Service } from "../models/service.model.js";
 import { Career } from "../models/career.model.js";
-import { Notification } from "../models/notification.model.js";
-import { sendMeetingInviteEmail } from "../services/email.service.js";
+import { Notification as NotificationModel } from "../models/notification.model.js";
+import { sendMeetingInviteEmail, sendLeadMeetingLinkEmail } from "../services/email.service.js";
 
 
 export const uploadMediaImage = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
@@ -161,6 +161,41 @@ export const deleteLead = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   await Lead.findByIdAndDelete(id);
   return res.status(200).json(new ApiResponse(200, null, "Lead deleted successfully"));
+});
+
+export const sendLeadMeetingLink = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { meetingLink, meetingTime, adminNote } = req.body;
+
+  if (!meetingLink) {
+    throw new ApiError(400, "Meeting link is required");
+  }
+
+  const lead = await Lead.findById(id);
+  if (!lead) {
+    throw new ApiError(404, "Lead inquiry not found");
+  }
+
+  lead.meetingLink = meetingLink;
+  if (meetingTime) lead.meetingTime = meetingTime;
+  if (adminNote !== undefined) lead.adminNote = adminNote;
+  if (lead.status === "new") lead.status = "contacted";
+
+  await lead.save();
+
+  await sendLeadMeetingLinkEmail({
+    toEmail: lead.email,
+    clientName: lead.fullName || "Valued Client",
+    meetingLink,
+    meetingTime: meetingTime || "As scheduled",
+    adminNote,
+  });
+
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
+
+  return res.status(200).json(new ApiResponse(200, lead, "Google Meet / Meeting link sent to client email successfully"));
 });
 
 
@@ -709,7 +744,7 @@ export const createMeeting = asyncHandler(async (req: Request, res: Response) =>
     await Promise.all(
       users.map(async (u: any) => {
         // In-app notification
-        await Notification.create({
+        await NotificationModel.create({
           recipientId: u._id,
           title: `📅 Meeting Scheduled: ${meeting.title}`,
           message: `You have been invited to "${meeting.title}" on ${new Date(meeting.meetingDate).toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" })} at ${meeting.timeSlot} (${meeting.timezone}).`,

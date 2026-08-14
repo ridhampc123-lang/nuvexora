@@ -7,6 +7,7 @@ import {
   getAllLeads,
   updateLeadStatus,
   deleteLead,
+  sendLeadMeetingLink,
 
   getAllClients,
   createClient,
@@ -121,6 +122,7 @@ router.delete("/users/:id", deleteUser);
 // Leads Management
 router.get("/leads", getAllLeads);
 router.patch("/leads/:id", updateLeadStatus);
+router.post("/leads/:id/send-meeting", sendLeadMeetingLink);
 router.delete("/leads/:id", deleteLead);
 
 

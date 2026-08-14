@@ -156,6 +156,25 @@ export const deleteAdminLead = async (id: string) => {
   return data.data;
 };
 
+export const sendAdminLeadMeetingLink = async ({
+  id,
+  meetingLink,
+  meetingTime,
+  adminNote,
+}: {
+  id: string;
+  meetingLink: string;
+  meetingTime?: string;
+  adminNote?: string;
+}) => {
+  const { data } = await apiClient.post(`/admin/leads/${id}/send-meeting`, {
+    meetingLink,
+    meetingTime,
+    adminNote,
+  });
+  return data.data;
+};
+
 
 
 export const getAdminClients = async () => {
