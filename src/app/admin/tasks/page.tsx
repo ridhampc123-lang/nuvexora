@@ -282,7 +282,7 @@ export default function TasksPage() {
                       className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
                     >
                       <option value="">-- Unassigned --</option>
-                      {users.filter((u: any) => u.role !== 'client').map((user: any) => (
+                      {users.filter((u: any) => u.role?.toUpperCase() !== 'CLIENT').map((user: any) => (
                         <option key={user._id} value={user._id}>
                           {user.name} ({user.role})
                         </option>
