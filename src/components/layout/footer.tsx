@@ -75,7 +75,7 @@ function Footer() {
               <ul className="space-y-2">
                 {column.items.map((item) => (
                   <li key={`${column.title}-${item.label}`}>
-                    <Link href={item.href} className="text-sm text-slate-300 transition-all hover:pl-1 hover:text-blue-400">
+                    <Link href={item.href} className="text-sm text-slate-300 transition-colors hover:text-blue-400">
                       {item.label}
                     </Link>
                   </li>
