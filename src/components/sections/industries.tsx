@@ -18,42 +18,42 @@ const industries = [
     title: "Fintech & Banking",
     description: "PCI-DSS compliant payment gateways, algorithmic trading platforms, and automated fraud detection systems.",
     icon: Landmark,
-    metric: "$4.2B+ Processed",
+    focus: "Security & Compliance",
     color: "from-blue-500/10 via-indigo-500/5 to-transparent",
   },
   {
     title: "Healthcare & MedTech",
     description: "HIPAA compliant telehealth systems, electronic health records, and AI diagnostic imaging pipelines.",
     icon: Stethoscope,
-    metric: "HIPAA & GDPR Ready",
+    focus: "HIPAA Compliant",
     color: "from-cyan-500/10 via-blue-500/5 to-transparent",
   },
   {
     title: "SaaS & Scaleups",
     description: "Multi-tenant cloud platforms, automated recurring billing, and scalable microservice architectures.",
     icon: Globe2,
-    metric: "10M+ Active Users",
+    focus: "High Availability",
     color: "from-indigo-500/10 via-sky-500/5 to-transparent",
   },
   {
     title: "E-Commerce & Retail",
     description: "Headless commerce, real-time inventory synchronization, and personalized AI product recommendations.",
     icon: ShoppingBag,
-    metric: "Sub-second Checkout",
+    focus: "Scalable Architecture",
     color: "from-sky-500/10 via-blue-500/5 to-transparent",
   },
   {
     title: "Logistics & Supply Chain",
     description: "Real-time IoT fleet tracking, predictive route optimization, and automated warehouse management.",
     icon: Truck,
-    metric: "35% Cost Reduction",
+    focus: "Real-time Processing",
     color: "from-blue-600/10 via-indigo-500/5 to-transparent",
   },
   {
     title: "AI & Deep Technology",
     description: "Vector database integration, fine-tuned neural models, and high-throughput inference API clusters.",
     icon: Cpu,
-    metric: "15ms Inference",
+    focus: "High Performance",
     color: "from-cyan-600/10 via-blue-500/5 to-transparent",
   },
 ];
@@ -97,7 +97,7 @@ export function IndustriesSection() {
                       <Icon className="w-6 h-6" />
                     </div>
                     <span className="text-xs font-bold text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full bg-blue-50/80 dark:bg-blue-950/80 border border-blue-200/50 dark:border-blue-800/50">
-                      {ind.metric}
+                      {ind.focus}
                     </span>
                   </div>
 

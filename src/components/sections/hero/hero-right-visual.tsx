@@ -2,16 +2,16 @@
 
 import React, { useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { 
-  Terminal, 
-  Cpu, 
-  Cloud, 
-  Activity, 
-  ShieldCheck, 
-  Zap, 
-  BrainCircuit, 
-  Layers, 
-  Check, 
+import {
+  Terminal,
+  Cpu,
+  Cloud,
+  Activity,
+  ShieldCheck,
+  Zap,
+  BrainCircuit,
+  Layers,
+  Check,
   Play,
   TrendingUp,
   Server
@@ -83,7 +83,7 @@ def process_stream(payload):
   };
 
   return (
-    <div 
+    <div
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       className="relative w-full aspect-[4/3.8] sm:aspect-[4/3] lg:aspect-auto lg:h-[620px] flex items-center justify-center p-2 sm:p-4 perspective-1000 select-none"
@@ -102,20 +102,20 @@ def process_stream(payload):
           </linearGradient>
         </defs>
         {/* Animated Connecting Nodes Lines */}
-        <motion.path 
-          d="M 60 120 Q 180 200 240 280 T 420 400" 
-          fill="none" 
-          stroke="url(#beamGrad)" 
+        <motion.path
+          d="M 60 120 Q 180 200 240 280 T 420 400"
+          fill="none"
+          stroke="url(#beamGrad)"
           strokeWidth="2"
           strokeDasharray="6 6"
           initial={{ strokeDashoffset: 100 }}
           animate={{ strokeDashoffset: 0 }}
           transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
         />
-        <motion.path 
-          d="M 400 100 Q 300 240 200 350" 
-          fill="none" 
-          stroke="#60a5fa" 
+        <motion.path
+          d="M 400 100 Q 300 240 200 350"
+          fill="none"
+          stroke="#60a5fa"
           strokeWidth="1.5"
           strokeDasharray="4 4"
           initial={{ strokeDashoffset: 0 }}
@@ -144,31 +144,28 @@ def process_stream(payload):
           <div className="flex items-center bg-slate-100/90 p-1 rounded-xl gap-1 border border-slate-200/60">
             <button
               onClick={() => setActiveTab("cloud")}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                activeTab === "cloud"
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${activeTab === "cloud"
                   ? "bg-white text-blue-700 shadow-sm font-semibold"
                   : "text-slate-600 hover:text-slate-900"
-              }`}
+                }`}
             >
               CloudEngine.ts
             </button>
             <button
               onClick={() => setActiveTab("ai")}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                activeTab === "ai"
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${activeTab === "ai"
                   ? "bg-white text-blue-700 shadow-sm font-semibold"
                   : "text-slate-600 hover:text-slate-900"
-              }`}
+                }`}
             >
               AIModel.py
             </button>
             <button
               onClick={() => setActiveTab("metrics")}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                activeTab === "metrics"
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${activeTab === "metrics"
                   ? "bg-white text-blue-700 shadow-sm font-semibold"
                   : "text-slate-600 hover:text-slate-900"
-              }`}
+                }`}
             >
               Metrics.json
             </button>

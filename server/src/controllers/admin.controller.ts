@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 import { asyncHandler } from "../utils/async-handler.js";
 import { ApiResponse } from "../utils/api-response.js";
 import { ApiError } from "../utils/api-error.js";
@@ -274,7 +275,10 @@ export const deleteClient = asyncHandler(async (req: Request, res: Response) => 
 // --- EMPLOYEE HR MANAGEMENT ---
 
 export const getAllEmployees = asyncHandler(async (_req: Request, res: Response) => {
-  const employees = await Employee.find({ status: { $ne: "terminated" } }).populate("manager", "name email").sort({ createdAt: -1 });
+  const employees = await Employee.find({ status: { $ne: "terminated" } })
+    .populate("userId", "name email role")
+    .populate("manager", "name email")
+    .sort({ createdAt: -1 });
   return res.status(200).json(new ApiResponse(200, employees, "Employees retrieved successfully"));
 });
 
@@ -728,28 +732,86 @@ export const deleteMessage = asyncHandler(async (req: Request, res: Response) =>
 
 export const getAllMeetings = asyncHandler(async (_req: Request, res: Response) => {
   const meetings = await Meeting.find()
-    .populate("invitedEmployees", "name email")
+    .populate("invitedEmployees", "name email role")
     .sort({ meetingDate: 1 });
   return res.status(200).json(new ApiResponse(200, meetings, "Meetings retrieved successfully"));
 });
 
+// Helper to normalize attendee IDs to valid User ObjectIds
+const normalizeInvitedAttendees = async (rawList: any[]) => {
+  const userIds: mongoose.Types.ObjectId[] = [];
+  const notifications: { _id: any; name: string; email: string }[] = [];
+
+  for (const raw of rawList) {
+    if (!raw) continue;
+    const strId = typeof raw === "object" ? (raw._id || raw.id || raw.userId || "").toString() : raw.toString();
+    if (!strId || !mongoose.isValidObjectId(strId)) continue;
+
+    // Check if directly a User
+    const user = await User.findById(strId);
+    if (user) {
+      if (!userIds.some((id) => id.toString() === user._id.toString())) {
+        userIds.push(user._id as any);
+      }
+      notifications.push({ _id: user._id, name: user.name, email: user.email });
+      continue;
+    }
+
+    // Check if an Employee document
+    const emp = await Employee.findById(strId);
+    if (emp) {
+      // Find or link User
+      let linkedUser = emp.userId ? await User.findById(emp.userId) : null;
+      if (!linkedUser && emp.email) {
+        linkedUser = await User.findOne({ email: emp.email });
+        if (linkedUser) {
+          emp.userId = linkedUser._id as any;
+          await emp.save();
+        }
+      }
+      if (linkedUser) {
+        if (!userIds.some((id) => id.toString() === linkedUser!._id.toString())) {
+          userIds.push(linkedUser._id as any);
+        }
+        notifications.push({ _id: linkedUser._id, name: linkedUser.name, email: linkedUser.email });
+      } else {
+        // Fallback store emp._id
+        if (!userIds.some((id) => id.toString() === emp._id.toString())) {
+          userIds.push(emp._id as any);
+        }
+      }
+    }
+  }
+
+  return { userIds, notifications };
+};
+
 export const createMeeting = asyncHandler(async (req: Request, res: Response) => {
-  const { invitedEmployees, ...rest } = req.body;
-  const meeting = await Meeting.create({ ...rest, invitedEmployees: invitedEmployees || [] });
+  const { invitedEmployees, meetingLink, ...rest } = req.body;
+
+  const { userIds, notifications } = await normalizeInvitedAttendees(invitedEmployees || []);
+
+  const safeMeetingLink = (meetingLink && meetingLink.trim())
+    ? meetingLink.trim()
+    : `https://meet.jit.si/nuvexora-${Date.now().toString(36)}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  const meeting = await Meeting.create({
+    ...rest,
+    meetingLink: safeMeetingLink,
+    invitedEmployees: userIds,
+  });
 
   // Notify each invited employee
-  if (invitedEmployees && invitedEmployees.length > 0) {
-    const users = await User.find({ _id: { $in: invitedEmployees } }).select("name email").lean();
-
-    await Promise.all(
-      users.map(async (u: any) => {
+  if (notifications.length > 0) {
+    await Promise.allSettled(
+      notifications.map(async (u) => {
         // In-app notification
         await NotificationModel.create({
           recipientId: u._id,
           title: `📅 Meeting Scheduled: ${meeting.title}`,
           message: `You have been invited to "${meeting.title}" on ${new Date(meeting.meetingDate).toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" })} at ${meeting.timeSlot} (${meeting.timezone}).`,
           type: "info",
-          link: "/employee",
+          link: "/employee/meetings",
         });
 
         // Email notification
@@ -766,17 +828,27 @@ export const createMeeting = asyncHandler(async (req: Request, res: Response) =>
     );
   }
 
+  const populatedMeeting = await Meeting.findById(meeting._id).populate("invitedEmployees", "name email role");
+
   // Emit real-time update to all clients
   getIO().emit("dashboard_update");
-  getIO().emit("meeting_scheduled", { meeting });
+  getIO().emit("meeting_scheduled", { meeting: populatedMeeting || meeting });
 
-  return res.status(201).json(new ApiResponse(201, meeting, "Meeting created and employees notified successfully"));
+  return res.status(201).json(new ApiResponse(201, populatedMeeting || meeting, "Meeting created and employees notified successfully"));
 });
 
 export const updateMeeting = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const meeting = await Meeting.findByIdAndUpdate(id, req.body, { new: true })
-    .populate("invitedEmployees", "name email");
+  const updatePayload = { ...req.body };
+
+  if (Array.isArray(updatePayload.invitedEmployees)) {
+    const { userIds } = await normalizeInvitedAttendees(updatePayload.invitedEmployees);
+    updatePayload.invitedEmployees = userIds;
+  }
+
+  const meeting = await Meeting.findByIdAndUpdate(id, updatePayload, { new: true })
+    .populate("invitedEmployees", "name email role");
+
   getIO().emit("dashboard_update");
   getIO().emit("meeting_updated", { meeting });
   return res.status(200).json(new ApiResponse(200, meeting, "Meeting updated successfully"));
@@ -786,6 +858,7 @@ export const deleteMeeting = asyncHandler(async (req: Request, res: Response) =>
   const { id } = req.params;
   await Meeting.findByIdAndDelete(id);
   getIO().emit("dashboard_update");
+  getIO().emit("meeting_deleted", { id });
   return res.status(200).json(new ApiResponse(200, null, "Meeting deleted successfully"));
 });
 

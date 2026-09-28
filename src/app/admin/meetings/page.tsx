@@ -2,9 +2,28 @@
 
 import React, { useState } from "react";
 import { AdminDataTable, Column } from "@/components/admin/admin-data-table";
-import { useAdminMeetingsQuery, useCreateAdminMeetingMutation, useUpdateAdminMeetingMutation, useDeleteAdminMeetingMutation, useAdminEmployeesQuery } from "@/hooks/use-api-queries";
+import {
+  useAdminMeetingsQuery,
+  useCreateAdminMeetingMutation,
+  useUpdateAdminMeetingMutation,
+  useDeleteAdminMeetingMutation,
+  useAdminEmployeesQuery,
+} from "@/hooks/use-api-queries";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Video, Calendar, Clock, Globe, Users } from "lucide-react";
+import {
+  X,
+  Plus,
+  Video,
+  Calendar,
+  Clock,
+  Globe,
+  Users,
+  ExternalLink,
+  Sparkles,
+  Link as LinkIcon,
+} from "lucide-react";
+import { MeetingRoomModal } from "@/components/common/meeting-room-modal";
+import { toast } from "sonner";
 
 export default function MeetingsPage() {
   const { data: meetings = [], isLoading } = useAdminMeetingsQuery();
@@ -15,11 +34,13 @@ export default function MeetingsPage() {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState<any>(null);
+  const [selectedMeetingForRoom, setSelectedMeetingForRoom] = useState<any>(null);
+  const [isRoomOpen, setIsRoomOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "Technical Strategy Consultation",
-    organizerName: "",
-    organizerEmail: "",
+    organizerName: "Nuvexora Admin",
+    organizerEmail: "admin@nuvexora.com",
     companyName: "",
     meetingDate: "",
     timeSlot: "",
@@ -44,34 +65,40 @@ export default function MeetingsPage() {
         topic: meeting.topic,
         status: meeting.status,
         meetingLink: meeting.meetingLink || "",
-        invitedEmployees: (meeting.invitedEmployees || []).map((e: any) => e._id || e),
+        invitedEmployees: (meeting.invitedEmployees || []).map((e: any) => String(e._id || e.id || e)),
       });
     } else {
       setEditingMeeting(null);
       setFormData({
         title: "Technical Strategy Consultation",
-        organizerName: "",
-        organizerEmail: "",
-        companyName: "",
+        organizerName: "Nuvexora Admin",
+        organizerEmail: "admin@nuvexora.com",
+        companyName: "Nuvexora Technologies",
         meetingDate: new Date().toISOString().split("T")[0],
         timeSlot: "10:00 AM - 11:00 AM",
         timezone: "UTC",
         topic: "",
         status: "scheduled",
-        meetingLink: "",
+        meetingLink: `https://meet.jit.si/nuvexora-${Date.now().toString(36)}`,
         invitedEmployees: [],
       });
     }
     setIsDrawerOpen(true);
   };
 
-  const toggleEmployee = (userId: string) => {
-    setFormData(prev => ({
+  const toggleEmployee = (uid: string) => {
+    setFormData((prev) => ({
       ...prev,
-      invitedEmployees: prev.invitedEmployees.includes(userId)
-        ? prev.invitedEmployees.filter(id => id !== userId)
-        : [...prev.invitedEmployees, userId],
+      invitedEmployees: prev.invitedEmployees.includes(uid)
+        ? prev.invitedEmployees.filter((id) => id !== uid)
+        : [...prev.invitedEmployees, uid],
     }));
+  };
+
+  const generateInstantRoom = () => {
+    const link = `https://meet.jit.si/nuvexora-${Date.now().toString(36)}-${Math.floor(1000 + Math.random() * 9000)}`;
+    setFormData((prev) => ({ ...prev, meetingLink: link }));
+    toast.success("Instant secure room link generated!");
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -84,13 +111,22 @@ export default function MeetingsPage() {
     if (editingMeeting) {
       updateMeeting.mutate(
         { id: editingMeeting._id, ...payload },
-        { onSuccess: () => setIsDrawerOpen(false) }
+        {
+          onSuccess: () => {
+            setIsDrawerOpen(false);
+            toast.success("Meeting updated successfully");
+          },
+        }
       );
     } else {
-      createMeeting.mutate(payload, { onSuccess: () => setIsDrawerOpen(false) });
+      createMeeting.mutate(payload, {
+        onSuccess: () => {
+          setIsDrawerOpen(false);
+          toast.success("Meeting scheduled and employees notified!");
+        },
+      });
     }
   };
-
 
   const columns: Column<any>[] = [
     {
@@ -102,10 +138,10 @@ export default function MeetingsPage() {
           </div>
           <div>
             <div className="font-bold text-slate-900 dark:text-white">{row.title}</div>
-            <div className="text-[10px] text-slate-500">{row.topic || 'General Discussion'}</div>
+            <div className="text-[10px] text-slate-500">{row.topic || "General Discussion"}</div>
           </div>
         </div>
-      )
+      ),
     },
     {
       header: "Organizer",
@@ -114,7 +150,7 @@ export default function MeetingsPage() {
           <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">{row.organizerName}</div>
           <div className="text-[10px] text-slate-500">{row.companyName || row.organizerEmail}</div>
         </div>
-      )
+      ),
     },
     {
       header: "Schedule",
@@ -129,30 +165,56 @@ export default function MeetingsPage() {
             {row.timeSlot} ({row.timezone})
           </div>
         </div>
-      )
+      ),
+    },
+    {
+      header: "Attendees",
+      cell: (row) => {
+        const list = Array.isArray(row.invitedEmployees) ? row.invitedEmployees : [];
+        if (list.length === 0) {
+          return <span className="text-[11px] text-slate-400">Open Session</span>;
+        }
+        return (
+          <div className="flex items-center gap-1">
+            <Users className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              {list.length} Employee{list.length > 1 ? "s" : ""}
+            </span>
+          </div>
+        );
+      },
     },
     {
       header: "Status",
       cell: (row) => (
-        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-          row.status === "completed" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30" :
-          row.status === "cancelled" ? "bg-rose-50 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30" :
-          "bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30"
-        }`}>
+        <span
+          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+            row.status === "completed"
+              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30"
+              : row.status === "cancelled"
+              ? "bg-rose-50 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30"
+              : "bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30"
+          }`}
+        >
           {row.status}
         </span>
-      )
+      ),
     },
     {
-      header: "Link",
+      header: "Join Room",
       cell: (row) => (
-        row.meetingLink ? (
-          <a href={row.meetingLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
-            <Globe className="w-3.5 h-3.5" />
-            Join Meeting
-          </a>
-        ) : <span className="text-xs text-slate-400">No link</span>
-      )
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedMeetingForRoom(row);
+            setIsRoomOpen(true);
+          }}
+          className="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 flex items-center gap-1.5 transition-colors"
+        >
+          <Video className="w-3.5 h-3.5 text-indigo-500" />
+          <span>Launch Room</span>
+        </button>
+      ),
     },
     {
       header: "Actions",
@@ -165,28 +227,32 @@ export default function MeetingsPage() {
             Edit
           </button>
           <button
-            onClick={() => deleteMeeting.mutate(row._id)}
+            onClick={() => {
+              if (confirm(`Are you sure you want to cancel and delete "${row.title}"?`)) {
+                deleteMeeting.mutate(row._id);
+              }
+            }}
             className="px-3 py-1 rounded-lg text-xs font-semibold bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors"
           >
             Delete
           </button>
         </div>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <AdminDataTable
-        title="Meetings"
-        description="Schedule and manage client consultations and meetings."
+        title="Meetings & Conferences"
+        description="Schedule technical reviews, strategy sessions, and coordinate with engineering teams."
         columns={columns}
         data={isLoading ? [] : meetings}
         searchPlaceholder="Search meetings..."
         actionButton={
           <button
             onClick={() => openDrawer()}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-colors shadow-lg shadow-indigo-600/20"
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-colors shadow-lg shadow-indigo-600/20 active:scale-95"
           >
             <Plus className="w-4 h-4" />
             Schedule Meeting
@@ -220,57 +286,124 @@ export default function MeetingsPage() {
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                       {editingMeeting ? "Edit Meeting" : "Schedule Meeting"}
                     </h2>
-                    <p className="text-xs text-slate-500">Meeting details</p>
+                    <p className="text-xs text-slate-500">
+                      {editingMeeting ? "Update consultation details" : "Schedule a new conference session"}
+                    </p>
                   </div>
                 </div>
-                <button onClick={() => setIsDrawerOpen(false)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors">
+                <button
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg transition-colors"
+                >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
                 <div className="space-y-4">
-                  
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Title</label>
-                    <input required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50" />
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Title
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50"
+                    />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Organizer Name</label>
-                      <input required type="text" value={formData.organizerName} onChange={e => setFormData({...formData, organizerName: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50" />
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Organizer Name
+                      </label>
+                      <input
+                        required
+                        type="text"
+                        value={formData.organizerName}
+                        onChange={(e) => setFormData({ ...formData, organizerName: e.target.value })}
+                        className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Email</label>
-                      <input required type="email" value={formData.organizerEmail} onChange={e => setFormData({...formData, organizerEmail: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50" />
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Organizer Email
+                      </label>
+                      <input
+                        required
+                        type="email"
+                        value={formData.organizerEmail}
+                        onChange={(e) => setFormData({ ...formData, organizerEmail: e.target.value })}
+                        className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Company</label>
-                    <input type="text" value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50" />
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Company
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.companyName}
+                      onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50"
+                    />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Date</label>
-                      <input required type="date" value={formData.meetingDate} onChange={e => setFormData({...formData, meetingDate: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono" />
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Date
+                      </label>
+                      <input
+                        required
+                        type="date"
+                        value={formData.meetingDate}
+                        onChange={(e) => setFormData({ ...formData, meetingDate: e.target.value })}
+                        className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono"
+                      />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Time Slot</label>
-                      <input required type="text" placeholder="e.g. 10:00 AM - 11:00 AM" value={formData.timeSlot} onChange={e => setFormData({...formData, timeSlot: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50" />
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Time Slot
+                      </label>
+                      <input
+                        required
+                        type="text"
+                        placeholder="e.g. 10:00 AM - 11:00 AM"
+                        value={formData.timeSlot}
+                        onChange={(e) => setFormData({ ...formData, timeSlot: e.target.value })}
+                        className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Timezone</label>
-                      <input required type="text" value={formData.timezone} onChange={e => setFormData({...formData, timezone: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50" />
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Timezone
+                      </label>
+                      <input
+                        required
+                        type="text"
+                        value={formData.timezone}
+                        onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                        className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Status</label>
-                      <select required value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Status
+                      </label>
+                      <select
+                        required
+                        value={formData.status}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                        className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      >
                         <option value="scheduled">Scheduled</option>
                         <option value="completed">Completed</option>
                         <option value="cancelled">Cancelled</option>
@@ -279,63 +412,123 @@ export default function MeetingsPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Topic</label>
-                    <textarea required rows={2} value={formData.topic} onChange={e => setFormData({...formData, topic: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none" />
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Topic
+                    </label>
+                    <textarea
+                      required
+                      rows={2}
+                      value={formData.topic}
+                      onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
+                    />
                   </div>
 
                   {/* Invite Employees */}
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5" /> Invite Employees
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5" /> Invite Employees
+                      </span>
                       {formData.invitedEmployees.length > 0 && (
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
                           {formData.invitedEmployees.length} selected
                         </span>
                       )}
                     </label>
-                    <p className="text-[10px] text-slate-400">Selected employees will receive an email invite and an in-app notification.</p>
+                    <p className="text-[10px] text-slate-400">
+                      Selected employees will receive an email invite and in-app calendar notification.
+                    </p>
                     <div className="max-h-48 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl divide-y divide-slate-100 dark:divide-slate-800">
                       {(employees as any[]).length === 0 ? (
-                        <div className="p-4 text-center text-xs text-slate-400">No employees found. Add employees first.</div>
-                      ) : (employees as any[]).map((emp: any) => {
-                        const uid = emp.userId?._id || emp.userId || emp._id;
-                        const isSelected = formData.invitedEmployees.includes(uid);
-                        return (
-                          <button
-                            key={emp._id}
-                            type="button"
-                            onClick={() => toggleEmployee(uid)}
-                            className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
-                              isSelected ? "bg-indigo-50 dark:bg-indigo-950/50" : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
-                            }`}
-                          >
-                            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-                              isSelected ? "bg-indigo-600 border-indigo-600" : "border-slate-300 dark:border-slate-600"
-                            }`}>
-                              {isSelected && <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 text-white fill-current"><path d="M10.28 1.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414.013l7-8a1 1 0 00-1.414-1.428z"/></svg>}
-                            </div>
-                            <div>
-                              <div className="text-xs font-semibold text-slate-900 dark:text-white">{emp.name}</div>
-                              <div className="text-[10px] text-slate-400">{emp.designation || emp.position} · {emp.department}</div>
-                            </div>
-                          </button>
-                        );
-                      })}
+                        <div className="p-4 text-center text-xs text-slate-400">
+                          No employees found. Add employees first.
+                        </div>
+                      ) : (
+                        (employees as any[]).map((emp: any) => {
+                          const uid = String(emp.userId?._id || emp.userId || emp._id);
+                          const isSelected = formData.invitedEmployees.includes(uid);
+                          return (
+                            <button
+                              key={emp._id}
+                              type="button"
+                              onClick={() => toggleEmployee(uid)}
+                              className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
+                                isSelected
+                                  ? "bg-indigo-50 dark:bg-indigo-950/50"
+                                  : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                              }`}
+                            >
+                              <div
+                                className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                                  isSelected
+                                    ? "bg-indigo-600 border-indigo-600"
+                                    : "border-slate-300 dark:border-slate-600"
+                                }`}
+                              >
+                                {isSelected && (
+                                  <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 text-white fill-current">
+                                    <path d="M10.28 1.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414.013l7-8a1 1 0 00-1.414-1.428z" />
+                                  </svg>
+                                )}
+                              </div>
+                              <div>
+                                <div className="text-xs font-semibold text-slate-900 dark:text-white">
+                                  {emp.name}
+                                </div>
+                                <div className="text-[10px] text-slate-400">
+                                  {emp.designation || emp.role} · {emp.department}
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Meeting Link</label>
-                    <input type="url" placeholder="https://zoom.us/j/..." value={formData.meetingLink} onChange={e => setFormData({...formData, meetingLink: e.target.value})} className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono" />
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Meeting Link
+                      </label>
+                      <button
+                        type="button"
+                        onClick={generateInstantRoom}
+                        className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold hover:underline flex items-center gap-1"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        <span>Generate Video Room</span>
+                      </button>
+                    </div>
+                    <input
+                      type="url"
+                      placeholder="https://meet.jit.si/nuvexora-..."
+                      value={formData.meetingLink}
+                      onChange={(e) => setFormData({ ...formData, meetingLink: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl text-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono"
+                    />
                   </div>
                 </div>
 
                 <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
-                  <button type="button" onClick={() => setIsDrawerOpen(false)} className="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                  <button
+                    type="button"
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
                     Cancel
                   </button>
-                  <button type="submit" disabled={createMeeting.isPending || updateMeeting.isPending} className="px-6 py-2 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all disabled:opacity-50">
-                    {createMeeting.isPending || updateMeeting.isPending ? "Saving..." : editingMeeting ? "Save Changes" : "Schedule Meeting"}
+                  <button
+                    type="submit"
+                    disabled={createMeeting.isPending || updateMeeting.isPending}
+                    className="px-6 py-2 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all disabled:opacity-50"
+                  >
+                    {createMeeting.isPending || updateMeeting.isPending
+                      ? "Saving..."
+                      : editingMeeting
+                      ? "Save Changes"
+                      : "Schedule Meeting"}
                   </button>
                 </div>
               </form>
@@ -343,6 +536,13 @@ export default function MeetingsPage() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Virtual Meeting Room Modal */}
+      <MeetingRoomModal
+        isOpen={isRoomOpen}
+        onClose={() => setIsRoomOpen(false)}
+        meeting={selectedMeetingForRoom}
+      />
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { HeroRightVisual } from "./hero/hero-right-visual";
 
 export function Hero() {
   return (
-    <section 
+    <section
       aria-label="Nuvexora Technologies Hero"
       className="relative overflow-hidden bg-background text-foreground pt-12 sm:pt-16 pb-12 sm:pb-16 lg:py-20 min-h-[82vh] flex items-center justify-center"
     >

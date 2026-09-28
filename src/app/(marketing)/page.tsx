@@ -17,7 +17,7 @@ export default function MarketingHomePage() {
   return (
     <>
       <Hero />
-      <TrustedCompanies />
+      {/* <TrustedCompanies /> */ }
       <ServicesSection />
       <IndustriesSection />
       <TechnologiesSection />

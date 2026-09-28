@@ -64,7 +64,7 @@ const servicesData = [
   {
     category: "design",
     title: "UI/UX & Brand Identity",
-    description: "Billion-dollar visual design systems, interactive web animations, design tokens, and user research engineered for conversion.",
+    description: "Scalable visual design systems, interactive interfaces, design tokens, and user research focused on enterprise UX.",
     icon: Palette,
     badge: "Award Winning",
     features: ["Design Systems & Component Specs", "Interactive Micro-Animations", "User Research & Usability Audits", "Brand Identity Guidelines"],
@@ -89,10 +89,10 @@ export function ServicesSection() {
             Capabilities & Expertise
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Full-Spectrum Digital Engineering For Market Leaders
+            Enterprise Digital Engineering Services
           </h2>
           <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 font-normal leading-relaxed">
-            From bespoke AI models to cloud infrastructure and scalable web platforms, we engineer end-to-end software designed for market domination.
+            From bespoke AI models to cloud infrastructure and scalable web platforms, we engineer end-to-end software designed for scale and performance.
           </p>
 
           {/* Interactive Category Filter Tabs */}

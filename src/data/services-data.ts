@@ -66,17 +66,7 @@ export const servicesData: Service[] = [
       { step: 5, title: "SLA Support & Continuous Evolution", description: "Proactive uptime monitoring, automated patch updates, and ongoing feature enhancement.", duration: "Ongoing" }
     ],
     targetIndustries: ["SaaS & Software", "FinTech & Banking", "E-Commerce & Retail", "Healthcare & Telehealth", "Enterprise Organizations"],
-    caseStudies: [
-      {
-        title: "Global SaaS Platform Transformation",
-        client: "Veloce Cloud Systems",
-        industry: "Enterprise SaaS",
-        metrics: ["4.2x Faster Page Load", "+240% User Conversion", "99.99% Uptime"],
-        before: "Monolithic legacy web platform taking 4.8 seconds to load, losing 35% of prospective signups.",
-        after: "Re-architected Next.js edge application achieving 350ms TTFB and effortless multi-region scale.",
-        technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Vercel Edge", "Prisma"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "Why do you recommend Next.js for web development?", answer: "Next.js combines server-side rendering, static site generation, and client-side hydration. This gives your website unparalleled SEO performance, instant page transitions, and effortless cloud scaling." },
       { question: "How do you handle website migrations without losing SEO traffic?", answer: "We perform comprehensive 301 redirect mapping, preserve historical URL structures where optimal, test canonical tags, and monitor search console telemetry post-launch to ensure zero organic traffic loss." },
@@ -149,17 +139,7 @@ export const servicesData: Service[] = [
       { step: 5, title: "App Store Submission & Launch", description: "Filing regulatory disclosures, store graphics, and securing store approval.", duration: "Week 15 - 16" }
     ],
     targetIndustries: ["FinTech", "Healthcare & Telehealth", "Logistics & Field Operations", "Fitness & Wellness", "E-Commerce"],
-    caseStudies: [
-      {
-        title: "FinTech Mobile Wallet Launch",
-        client: "Aura Pay",
-        industry: "Financial Technology",
-        metrics: ["1.2M Downloads", "4.9 App Store Rating", "<100ms Biometric Auth"],
-        before: "Slow responsive web wrapper resulting in 2.1-star store rating and frequent authentication failures.",
-        after: "Built custom React Native app with biometric login and instant QR merchant payments.",
-        technologies: ["React Native", "TypeScript", "Node.js", "Redis", "Biometrics"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "Should we build cross-platform or pure native app?", answer: "For 90% of business applications, React Native or Flutter offers native-grade performance with a single unified codebase, cutting development timeline and budget by nearly 40%. For graphics-heavy apps, native Swift/Kotlin is used." },
       { question: "How do you handle App Store submission and updates?", answer: "We take full ownership of the approval lifecycle including screenshot generation, privacy label declarations, and addressing Apple/Google reviewer inquiries." }
@@ -231,17 +211,7 @@ export const servicesData: Service[] = [
       { step: 5, title: "Production Deployment & Monitoring", description: "Deploying inference service with live telemetry monitoring token spend and model drift.", duration: "Week 13 - 14" }
     ],
     targetIndustries: ["Healthcare & Life Sciences", "FinTech & Financial Services", "Legal & Compliance", "Logistics & Supply Chain", "Enterprise SaaS"],
-    caseStudies: [
-      {
-        title: "Enterprise Knowledge Base RAG Assistant",
-        client: "OmniGlobal Consulting",
-        industry: "Management Consulting",
-        metrics: ["90% Faster Document Search", "99.1% Answer Accuracy", "$450k Annual Cost Savings"],
-        before: "Consultants spending 12+ hours weekly searching 50,000+ internal PDF case studies manually.",
-        after: "Deployed private RAG agent with instantaneous vector search returning exact page citations.",
-        technologies: ["Next.js", "Python", "pgvector", "Claude 3.5", "FastAPI"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "Is our proprietary data safe when building custom AI solutions?", answer: "Absoluty. We deploy open-source models inside your own private cloud or use enterprise API tier agreements that legally guarantee your data will never be stored or used to train third-party models." },
       { question: "How do you prevent AI hallucinations?", answer: "We implement Retrieval-Augmented Generation (RAG) with strict temperature limits, citation validation, and fallback mechanisms that require the model to refuse answers unless backed by verified source documentation." }
@@ -313,17 +283,7 @@ export const servicesData: Service[] = [
       { step: 5, title: "Launch & Growth Scaling", description: "Deploying to production, onboarding initial pilot customers, and monitoring funnel conversion.", duration: "Week 14 - 16" }
     ],
     targetIndustries: ["B2B Software", "FinTech", "EdTech", "HR & Talent Tech", "Marketing Technology"],
-    caseStudies: [
-      {
-        title: "B2B Analytics SaaS Scaled to $2M ARR",
-        client: "MetricsFlow",
-        industry: "Marketing Tech",
-        metrics: ["0 to $2M ARR in 14 Months", "99.99% Multi-Tenant Isolation", "Sub-100ms Query Latency"],
-        before: "Prototype built on shared database leaking state between users during concurrent sessions.",
-        after: "Architected PostgreSQL RLS multi-tenant platform with automated Stripe billing and Okta SSO.",
-        technologies: ["Next.js", "TypeScript", "PostgreSQL", "Stripe", "AWS"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "How do you guarantee tenant data privacy in a multi-tenant database?", answer: "We implement PostgreSQL Row-Level Security (RLS) policies at the database layer. Every single database query is automatically scoped with the authenticated tenant ID, rendering cross-tenant data access physically impossible." },
       { question: "Can you help us integrate Stripe for usage-based billing?", answer: "Yes! We specialize in complex Stripe billing logic, including seat-based plans, metered usage events, prorated upgrades, multi-currency support, and dunning management for failed credit cards." }
@@ -395,17 +355,7 @@ export const servicesData: Service[] = [
       { step: 5, title: "Cutover & SLA Governance", description: "Executing final cutover, handing over operational runbooks, and providing 24/7 SLA coverage.", duration: "Week 22 - 24" }
     ],
     targetIndustries: ["Financial Institutions", "Healthcare Networks", "Supply Chain & Logistics", "Government Agencies", "Manufacturing Conglomerates"],
-    caseStudies: [
-      {
-        title: "Legacy Core Banking Modernization",
-        client: "Apex Financial Group",
-        industry: "Banking",
-        metrics: ["99.999% Core System Availability", "10x Faster Account Processing", "$1.8M Annual IT Savings"],
-        before: "30-year-old COBOL mainframe resulting in overnight batch processing delays and security audit warnings.",
-        after: "Engineered high-throughput Go and Event-Driven Kafka microservices platform with live ledger streaming.",
-        technologies: ["Go", "Kafka", "PostgreSQL", "Docker", "AWS"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "How do you ensure zero data loss when migrating legacy enterprise databases?", answer: "We utilize dual-write replication and CDC (Change Data Capture) pipelines. The legacy system and new cloud database run concurrently until 100% data parity and transactional consistency are verified." },
       { question: "Can modern enterprise software integrate with our custom internal APIs?", answer: "Yes! We build custom middleware adapters and API gateways capable of interfacing with legacy SOAP services, mainframes, flat files, or proprietary database protocols." }
@@ -477,17 +427,7 @@ export const servicesData: Service[] = [
       { step: 5, title: "Production Cutover & 24/7 Operations", description: "Migrating live workloads to new infrastructure and activating proactive monitoring alerts.", duration: "Week 10" }
     ],
     targetIndustries: ["SaaS & Software", "Financial Tech & Crypto", "Media & Streaming", "Healthcare Systems", "High-Volume E-Commerce"],
-    caseStudies: [
-      {
-        title: "Multi-Region Kubernetes Migration",
-        client: "CloudStream Media",
-        industry: "Streaming & Media",
-        metrics: ["99.999% SLA Maintained", "45% Cloud Spend Reduction", "Sub-Minute Deployments"],
-        before: "Manual EC2 server configuration causing weekly deployment outages and $80k/mo idle cloud cost.",
-        after: "Migrated to automated EKS Kubernetes cluster with Terraform IaC and ArgoCD continuous delivery.",
-        technologies: ["Terraform", "Kubernetes", "AWS", "Datadog", "GitHub Actions"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "Can you help us reduce our AWS / GCP cloud bills?", answer: "Yes! Our FinOps audit examines idle resources, unattached volumes, database instances, and reserved instance opportunities. We routinely save clients 30% to 50% on their cloud invoices." },
       { question: "What is Infrastructure as Code (IaC) and why do we need it?", answer: "IaC turns server configuration into software code (Terraform). This eliminates manual server setup errors, enables instant environment replication, and provides a full audit trail of infrastructure changes." }

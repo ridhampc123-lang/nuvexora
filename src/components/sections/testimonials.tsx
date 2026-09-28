@@ -5,31 +5,9 @@ import { Container } from "@/components/ui/container";
 import { TestimonialsCard } from "./testimonials-card";
 import { Star } from "lucide-react";
 
-const testimonialsData = [
-  {
-    quote: "Nuvexora delivered our entire AI trading system 3 weeks ahead of schedule. Their senior engineers wrote clean, SOC2-compliant code that handled $1B+ in transactions on day one without a single hiccup.",
-    author: "Marcus Vance",
-    title: "Chief Technology Officer",
-    company: "Veloce Financial",
-    avatarText: "MV"
-  },
-  {
-    quote: "Finding an engineering agency that understands both cutting-edge Next.js architecture and enterprise HIPAA security was impossible until we partnered with Nuvexora. Truly a 10/10 experience.",
-    author: "Dr. Elena Rostova",
-    title: "VP of Engineering",
-    company: "Apex Healthcare",
-    avatarText: "ER"
-  },
-  {
-    quote: "Their team built our custom predictive logistics engine from scratch. We reduced fuel consumption by 35% across 12,000 active vehicles within the first quarter of deployment.",
-    author: "David Chen",
-    title: "Head of Infrastructure",
-    company: "OmniLogistics",
-    avatarText: "DC"
-  }
-];
-
 export function TestimonialsSection() {
+  const hasTestimonials = false; // Temporarily hardcoded to false until real DB integration
+
   return (
     <section className="py-8 sm:py-10 lg:py-12 bg-background text-foreground relative overflow-hidden">
       <Container size="2xl">
@@ -46,20 +24,16 @@ export function TestimonialsSection() {
           </p>
         </div>
 
-        {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {testimonialsData.map((item, idx) => (
-            <TestimonialsCard
-              key={item.author}
-              quote={item.quote}
-              author={item.author}
-              title={item.title}
-              company={item.company}
-              avatarText={item.avatarText}
-              index={idx}
-            />
-          ))}
-        </div>
+        {hasTestimonials ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {/* Real testimonials will be mapped here */}
+          </div>
+        ) : (
+          <div className="w-full p-12 flex flex-col items-center justify-center bg-slate-100/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-3xl text-center">
+            <p className="text-slate-500 dark:text-slate-400 font-medium mb-2">New client testimonials are currently being curated.</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500">We prioritize client confidentiality. Public endorsements will appear here soon.</p>
+          </div>
+        )}
       </Container>
     </section>
   );

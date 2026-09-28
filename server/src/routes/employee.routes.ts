@@ -53,10 +53,26 @@ router.get("/my/tasks", async (req: any, res) => {
 // --- MEETINGS: Shows meetings where this employee is invited ---
 router.get("/my/meetings", async (req: any, res) => {
   try {
+    const employee = await Employee.findOne({
+      $or: [{ userId: req.user.userId }, { email: req.user.email }],
+    });
+
+    const candidateIds: any[] = [req.user.userId];
+    if (employee) {
+      candidateIds.push(employee._id);
+      if (employee.userId) candidateIds.push(employee.userId);
+    }
+
     const meetings = await Meeting.find({
-      invitedEmployees: req.user.userId,
+      $or: [
+        { invitedEmployees: { $in: candidateIds } },
+        { organizerEmail: req.user.email },
+      ],
       status: { $ne: "cancelled" },
-    }).sort({ meetingDate: 1 });
+    })
+      .populate("invitedEmployees", "name email role")
+      .sort({ meetingDate: 1 });
+
     return res.json({ success: true, meetings });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message || "Failed to fetch meetings" });

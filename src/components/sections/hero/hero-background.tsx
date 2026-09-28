@@ -10,10 +10,10 @@ export function HeroBackground() {
       <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/60 via-sky-50/40 to-transparent dark:from-blue-900/30 dark:via-sky-950/20 blur-3xl transform-gpu will-change-transform" />
       <div className="absolute top-1/4 right-0 w-[500px] h-[500px] rounded-full bg-blue-400/10 dark:bg-blue-600/15 blur-[130px] transform-gpu will-change-transform" />
       <div className="absolute top-1/3 -left-32 w-[600px] h-[600px] rounded-full bg-cyan-400/10 dark:bg-cyan-600/15 blur-[140px] transform-gpu will-change-transform" />
-      
+
       {/* Animated Subtle Tech Grid */}
-      <div 
-        className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 dark:opacity-30" 
+      <div
+        className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 dark:opacity-30"
       />
 
       {/* Animated Glowing Light Beams across the Grid */}
@@ -41,7 +41,7 @@ export function HeroBackground() {
       />
 
       {/* Subtle Ambient Grain Overlay */}
-      <div 
+      <div
         className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"
       />
     </div>

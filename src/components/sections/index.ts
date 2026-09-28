@@ -24,7 +24,7 @@ export * from "@/components/sections/blog-preview";
 export * from "@/components/sections/contact";
 export * from "@/components/sections/timeline";
 export * from "@/components/sections/tabs";
-export * from "@/components/sections/cursor";
+
 export * from "@/components/sections/feature-card";
 export * from "@/components/sections/service-card";
 export * from "@/components/sections/technology-card";

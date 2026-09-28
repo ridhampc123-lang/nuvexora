@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useEmployeeProjectsQuery, useEmployeeTasksQuery, useEmployeeMeetingsQuery, useEmployeeNotificationsQuery, useMarkNotificationReadMutation } from "@/hooks/use-api-queries";
 import { useAuth } from "@/providers/auth-provider";
+import { MeetingRoomModal } from "@/components/common/meeting-room-modal";
 
 export default function EmployeeDashboard() {
   const { data: dbProjects = [], isLoading: loadingProjects } = useEmployeeProjectsQuery();
@@ -27,6 +28,9 @@ export default function EmployeeDashboard() {
   const { data: dbNotifications = [], isLoading: loadingNotifications } = useEmployeeNotificationsQuery();
   const markRead = useMarkNotificationReadMutation();
   const { user } = useAuth();
+
+  const [selectedMeetingForRoom, setSelectedMeetingForRoom] = React.useState<any>(null);
+  const [isRoomOpen, setIsRoomOpen] = React.useState(false);
 
   const todaysTasks = dbTasks.map((t: any) => ({
     title: t.title,
@@ -244,16 +248,18 @@ export default function EmployeeDashboard() {
                       {new Date(m.meetingDate).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} · {m.timeSlot}
                     </div>
                     <div className="text-[10px] text-slate-400">Topic: {m.topic}</div>
-                    {m.meetingLink && (
-                      <a
-                        href={m.meetingLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg transition-colors"
+                    <div className="pt-1 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedMeetingForRoom(m);
+                          setIsRoomOpen(true);
+                        }}
+                        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg transition-colors shadow-md shadow-indigo-600/20"
                       >
-                        <Video className="w-3 h-3" /> Join Meeting
-                      </a>
-                    )}
+                        <Video className="w-3 h-3" /> Join Room
+                      </button>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -308,6 +314,13 @@ export default function EmployeeDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Virtual Meeting Room Modal */}
+      <MeetingRoomModal
+        isOpen={isRoomOpen}
+        onClose={() => setIsRoomOpen(false)}
+        meeting={selectedMeetingForRoom}
+      />
     </div>
   );
 }
