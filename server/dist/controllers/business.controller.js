@@ -1,15 +1,28 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateAiContent = exports.getFinanceLedger = exports.getTickets = exports.getEmployees = exports.getDealsPipeline = void 0;
+exports.generateAiContent = exports.getFinanceLedger = exports.getTickets = exports.getEmployees = exports.updateDealStatus = exports.createDeal = exports.getDealsPipeline = void 0;
 const async_handler_js_1 = require("../utils/async-handler.js");
 const api_response_js_1 = require("../utils/api-response.js");
 const deal_model_js_1 = require("../models/deal.model.js");
 const employee_model_js_1 = require("../models/employee.model.js");
 const ticket_model_js_1 = require("../models/ticket.model.js");
 const invoice_model_js_1 = require("../models/invoice.model.js");
+const index_js_1 = require("../socket/index.js");
 exports.getDealsPipeline = (0, async_handler_js_1.asyncHandler)(async (_req, res) => {
     const deals = await deal_model_js_1.Deal.find().sort({ createdAt: -1 });
     return res.status(200).json(new api_response_js_1.ApiResponse(200, deals, "CRM deal pipeline retrieved successfully"));
+});
+exports.createDeal = (0, async_handler_js_1.asyncHandler)(async (req, res) => {
+    const deal = await deal_model_js_1.Deal.create(req.body);
+    (0, index_js_1.getIO)().emit("dashboard_update");
+    return res.status(201).json(new api_response_js_1.ApiResponse(201, deal, "Deal created successfully"));
+});
+exports.updateDealStatus = (0, async_handler_js_1.asyncHandler)(async (req, res) => {
+    const { id } = req.params;
+    const { stage, probability } = req.body;
+    const deal = await deal_model_js_1.Deal.findByIdAndUpdate(id, { stage, probability }, { new: true });
+    (0, index_js_1.getIO)().emit("dashboard_update");
+    return res.status(200).json(new api_response_js_1.ApiResponse(200, deal, "Deal updated successfully"));
 });
 exports.getEmployees = (0, async_handler_js_1.asyncHandler)(async (_req, res) => {
     const employees = await employee_model_js_1.Employee.find().sort({ name: 1 });
@@ -35,7 +48,7 @@ exports.generateAiContent = (0, async_handler_js_1.asyncHandler)(async (req, res
         generatedText = `Project Scope Estimate:\nFront-end: 120 hrs\nBackend REST APIs: 160 hrs\nDevOps & Staging: 40 hrs\nTotal Estimated Effort: 320 hours ($38,400).`;
     }
     else {
-        generatedText = `Nuvexora AI Insight:\n${prompt}\n\nRecommended strategy: Deploy Next.js 15 micro-frontends backed by MongoDB Atlas sharded clusters.`;
+        generatedText = `Nuvexora AI Insight:\n${prompt}\n\nRecommended strategy: Deploy Next.js 16 micro-frontends backed by MongoDB Atlas sharded clusters.`;
     }
     return res.status(200).json(new api_response_js_1.ApiResponse(200, { generatedText, type }, "AI response generated successfully"));
 });

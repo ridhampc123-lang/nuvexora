@@ -29,12 +29,13 @@ const MilestoneSchema = new Schema<IMilestone>({
 const ProjectSchema = new Schema<IProject>(
   {
     title: { type: String, required: true, trim: true },
-    clientId: { type: Schema.Types.ObjectId, ref: "ClientAccount", required: true },
+    clientId: { type: Schema.Types.ObjectId, ref: "ClientAccount", required: true, index: true },
     category: { type: String, required: true },
     status: {
       type: String,
       enum: ["discovery", "in_development", "qa_testing", "deployed", "completed"],
       default: "discovery",
+      index: true,
     },
     progressPercentage: { type: Number, min: 0, max: 100, default: 0 },
     startDate: { type: Date, default: Date.now },

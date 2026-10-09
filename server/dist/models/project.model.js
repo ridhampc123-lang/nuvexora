@@ -42,12 +42,13 @@ const MilestoneSchema = new mongoose_1.Schema({
 });
 const ProjectSchema = new mongoose_1.Schema({
     title: { type: String, required: true, trim: true },
-    clientId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", required: true },
+    clientId: { type: mongoose_1.Schema.Types.ObjectId, ref: "ClientAccount", required: true, index: true },
     category: { type: String, required: true },
     status: {
         type: String,
         enum: ["discovery", "in_development", "qa_testing", "deployed", "completed"],
         default: "discovery",
+        index: true,
     },
     progressPercentage: { type: Number, min: 0, max: 100, default: 0 },
     startDate: { type: Date, default: Date.now },

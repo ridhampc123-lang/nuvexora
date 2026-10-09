@@ -1,6 +1,6 @@
 "use client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getHomepageData, bookConsultationMeeting, subscribeNewsletter, getPublicBlogs, getPublicPortfolio } from "@/lib/api/public-api";
+import { getHomepageData, bookConsultationMeeting, subscribeNewsletter, getPublicBlogs, getPublicPortfolio, getPublicServices } from "@/lib/api/public-api";
 import { getEmployeeProjects, getEmployeeTasks, getMyAttendance, checkInEmployee, checkOutEmployee, getMyLeaveRequests, createEmployeeLeaveRequest } from "@/lib/api/employee-api";
 import { getChannelMessages, sendChatMessageApi, getChatChannelsApi, getAssignedTeamMembersApi } from "@/lib/api/chat-api";
 import { 
@@ -76,6 +76,8 @@ import {
   getAdminPermissions,
   getAdminRoles,
   createAdminRole,
+  updateAdminRole,
+  deleteAdminRole,
   getAdminServices,
   createAdminService,
   updateAdminService,
@@ -130,6 +132,13 @@ export const usePublicPortfolioQuery = () => {
   return useQuery({
     queryKey: ["publicPortfolio"],
     queryFn: getPublicPortfolio,
+  });
+};
+
+export const usePublicServicesQuery = () => {
+  return useQuery({
+    queryKey: ["publicServices"],
+    queryFn: getPublicServices,
   });
 };
 
@@ -1049,6 +1058,26 @@ export const useCreateAdminRoleMutation = () => {
   });
 };
 
+export const useUpdateAdminRoleMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateAdminRole,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminRoles"] });
+    },
+  });
+};
+
+export const useDeleteAdminRoleMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteAdminRole,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminRoles"] });
+    },
+  });
+};
+
 // --- SERVICES HOOKS ---
 export const useAdminServicesQuery = () => {
   return useQuery({
@@ -1256,6 +1285,19 @@ export const useMarkNotificationReadMutation = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employeeNotifications"] });
     },
+  });
+};
+
+const getEmployeeTimesheets = async () => {
+  const { apiClient } = await import("@/lib/api/api-client");
+  const { data } = await apiClient.get("/employee/my/timesheets");
+  return data;
+};
+
+export const useEmployeeTimesheetsQuery = () => {
+  return useQuery({
+    queryKey: ["employeeTimesheets"],
+    queryFn: getEmployeeTimesheets,
   });
 };
 

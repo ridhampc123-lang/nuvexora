@@ -6,6 +6,8 @@ const auth_middleware_js_1 = require("../middleware/auth.middleware.js");
 const router = (0, express_1.Router)();
 router.use(auth_middleware_js_1.verifyJWT);
 router.get("/crm/deals", business_controller_js_1.getDealsPipeline);
+router.post("/crm/deals", business_controller_js_1.createDeal);
+router.patch("/crm/deals/:id", business_controller_js_1.updateDealStatus);
 router.get("/hr/employees", business_controller_js_1.getEmployees);
 router.get("/support/tickets", business_controller_js_1.getTickets);
 router.get("/finance/ledger", business_controller_js_1.getFinanceLedger);

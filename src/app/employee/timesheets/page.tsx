@@ -8,7 +8,7 @@ export default function EmployeeTimesheetsPage() {
   const [showLogForm, setShowLogForm] = useState(false);
 
   // Form State
-  const [date, setDate] = useState("2026-08-04");
+  const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [project, setProject] = useState("Development Project");
   const [task, setTask] = useState("");
   const [hours, setHours] = useState(1);

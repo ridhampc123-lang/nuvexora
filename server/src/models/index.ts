@@ -33,3 +33,7 @@ export * from "./leave-request.model.js";
 export * from "./ticket.model.js";
 export * from "./department.model.js";
 export * from "./chat-message.model.js";
+export * from "./pricing.model.js";
+export * from "./currency.model.js";
+export * from "./proposal.model.js";
+export * from "./contract.model.js";

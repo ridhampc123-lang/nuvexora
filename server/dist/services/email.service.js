@@ -3,33 +3,45 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendClientWelcomeEmail = exports.sendWelcomeEmail = exports.sendEmail = void 0;
+exports.sendLeadMeetingLinkEmail = exports.sendMeetingInviteEmail = exports.sendClientWelcomeEmail = exports.sendWelcomeEmail = exports.sendEmail = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
-const transporter = nodemailer_1.default.createTransport({
-    host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: parseInt(process.env.SMTP_PORT || "587", 10),
-    secure: false,
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-});
 const sendEmail = async ({ to, subject, html, }) => {
     try {
-        if (!process.env.SMTP_USER) {
-            console.log(`[Email Mock Service] Email to ${to} with subject "${subject}" logged.`);
-            return;
+        const smtpUser = process.env.SMTP_USER?.trim();
+        const smtpPass = process.env.SMTP_PASS?.trim();
+        if (!smtpUser || !smtpPass || smtpUser.includes("example.com") || smtpPass === "your-password" || smtpPass === "xxxx") {
+            if (process.env.NODE_ENV === "production") {
+                throw new Error("Email Service Mock Mode is disabled in production. Please provide valid SMTP credentials in .env");
+            }
+            console.log(`[Email Service (Mock Mode)] Skipped live delivery to ${to}. Subject: "${subject}".`);
+            return false;
         }
+        const transporter = nodemailer_1.default.createTransport({
+            host: process.env.SMTP_HOST || "smtp.gmail.com",
+            port: parseInt(process.env.SMTP_PORT || "587", 10),
+            secure: process.env.SMTP_SECURE === "true",
+            auth: {
+                user: smtpUser,
+                pass: smtpPass,
+            },
+        });
         await transporter.sendMail({
-            from: process.env.SMTP_FROM || "Nuvexora Technologies <no-reply@nuvexora.com>",
+            from: process.env.SMTP_FROM || `Nuvexora Technologies <${smtpUser}>`,
             to,
             subject,
             html,
         });
         console.log(`[Email Service] Email sent successfully to ${to}`);
+        return true;
     }
     catch (error) {
-        console.error(`[Email Error] Failed to send email to ${to}:`, error);
+        if (error?.code === "EAUTH" || error?.responseCode === 535 || error?.message?.includes("Invalid login")) {
+            console.warn(`[Email Service Warning] Could not send email to ${to} due to invalid SMTP credentials (SMTP_USER/SMTP_PASS in .env). System flow continued normally.`);
+        }
+        else {
+            console.warn(`[Email Service Warning] Failed to send email to ${to}: ${error?.message || error}. System flow continued normally.`);
+        }
+        return false;
     }
 };
 exports.sendEmail = sendEmail;
@@ -65,3 +77,144 @@ const sendClientWelcomeEmail = async (email, name, accountManager, activationUrl
     await (0, exports.sendEmail)({ to: email, subject: "Welcome to Nuvexora - Client Portal Access", html });
 };
 exports.sendClientWelcomeEmail = sendClientWelcomeEmail;
+const sendMeetingInviteEmail = async (employeeName, employeeEmail, meeting) => {
+    const formattedDate = new Date(meeting.meetingDate).toLocaleDateString("en-US", {
+        weekday: "long", year: "numeric", month: "long", day: "numeric"
+    });
+    const html = `
+    <div style="font-family: sans-serif; max-width: 620px; margin: 0 auto; padding: 0; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0;">
+      <!-- Header -->
+      <div style="background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%); padding: 40px 32px; text-align: center;">
+        <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.15); border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+          <span style="font-size: 28px;">📅</span>
+        </div>
+        <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Meeting Invitation</h1>
+        <p style="color: #93c5fd; margin: 8px 0 0; font-size: 14px;">You have been invited to a meeting</p>
+      </div>
+
+      <!-- Body -->
+      <div style="background: #ffffff; padding: 32px;">
+        <p style="color: #475569; font-size: 15px; margin: 0 0 24px;">Hello <strong style="color: #0f172a;">${employeeName}</strong>,</p>
+        <p style="color: #475569; font-size: 15px; margin: 0 0 28px;">
+          <strong style="color: #0f172a;">${meeting.organizerName}</strong> has scheduled a meeting and added you as an attendee. Please find the details below.
+        </p>
+
+        <!-- Meeting Card -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 28px;">
+          <h2 style="color: #1e40af; font-size: 18px; font-weight: 800; margin: 0 0 16px;">${meeting.title}</h2>
+          
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 6px 0; color: #94a3b8; font-size: 13px; font-weight: 600; width: 40%;">📆 DATE</td>
+              <td style="padding: 6px 0; color: #0f172a; font-size: 13px; font-weight: 700;">${formattedDate}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #94a3b8; font-size: 13px; font-weight: 600;">🕐 TIME SLOT</td>
+              <td style="padding: 6px 0; color: #0f172a; font-size: 13px; font-weight: 700;">${meeting.timeSlot} (${meeting.timezone})</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #94a3b8; font-size: 13px; font-weight: 600;">💬 TOPIC</td>
+              <td style="padding: 6px 0; color: #475569; font-size: 13px;">${meeting.topic}</td>
+            </tr>
+          </table>
+        </div>
+
+        ${meeting.meetingLink ? `
+        <div style="text-align: center; margin-bottom: 28px;">
+          <a href="${meeting.meetingLink}" 
+             style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #2563eb, #4f46e5); color: white; text-decoration: none; border-radius: 10px; font-weight: 800; font-size: 15px; letter-spacing: 0.2px; box-shadow: 0 4px 14px rgba(37,99,235,0.35);">
+            🎥 Join Meeting
+          </a>
+        </div>
+        ` : `
+        <div style="background: #fef9c3; border: 1px solid #fde047; border-radius: 10px; padding: 14px 18px; margin-bottom: 28px;">
+          <p style="color: #713f12; font-size: 13px; margin: 0;">⚠️ No meeting link has been added yet. Please check the Employee Portal for updates.</p>
+        </div>
+        `}
+
+        <p style="color: #64748b; font-size: 13px; margin: 0 0 4px;">
+          You can view all your scheduled meetings in your Employee Portal under 
+          <strong style="color: #2563eb;">Dashboard → Upcoming Meetings</strong>.
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 32px; text-align: center;">
+        <p style="color: #94a3b8; font-size: 12px; margin: 0;">© ${new Date().getFullYear()} Nuvexora Technologies. All rights reserved.</p>
+      </div>
+    </div>
+  `;
+    await (0, exports.sendEmail)({
+        to: employeeEmail,
+        subject: `📅 Meeting Invitation: ${meeting.title} on ${formattedDate}`,
+        html,
+    });
+};
+exports.sendMeetingInviteEmail = sendMeetingInviteEmail;
+const sendLeadMeetingLinkEmail = async ({ toEmail, clientName, meetingLink, meetingTime, adminNote, }) => {
+    const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 620px; margin: 0 auto; padding: 0; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+      <!-- Header -->
+      <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 36px 32px; text-align: center;">
+        <div style="width: 54px; height: 54px; background: rgba(37, 99, 235, 0.2); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+          <span style="font-size: 26px;">🎥</span>
+        </div>
+        <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">Strategy Call & Meeting Link</h1>
+        <p style="color: #94a3b8; margin: 6px 0 0; font-size: 14px;">Nuvexora Technologies Team</p>
+      </div>
+
+      <!-- Body -->
+      <div style="background: #ffffff; padding: 32px;">
+        <p style="color: #334155; font-size: 15px; margin: 0 0 20px;">Hello <strong style="color: #0f172a;">${clientName}</strong>,</p>
+        <p style="color: #475569; font-size: 15px; margin: 0 0 24px; line-height: 1.6;">
+          Thank you for reaching out to Nuvexora Technologies regarding your project. Our team has reviewed your inquiry and scheduled a strategy session to discuss your roadmap, architecture, and scope.
+        </p>
+
+        <!-- Meeting Details Box -->
+        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 14px; padding: 22px; margin-bottom: 28px;">
+          <h3 style="color: #1e293b; font-size: 15px; font-weight: 700; margin: 0 0 14px; text-transform: uppercase; tracking: 0.5px;">Meeting Overview</h3>
+          
+          ${meetingTime ? `
+          <div style="margin-bottom: 12px; display: flex; align-items: center;">
+            <span style="color: #64748b; font-size: 13px; font-weight: 600; width: 120px;">🗓️ SCHEDULED:</span>
+            <span style="color: #0f172a; font-size: 14px; font-weight: 700;">${meetingTime}</span>
+          </div>
+          ` : ''}
+
+          ${adminNote ? `
+          <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+            <span style="color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 4px;">Note from Our Team:</span>
+            <p style="color: #334155; font-size: 13px; margin: 0; line-height: 1.5; font-style: italic; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">"${adminNote}"</p>
+          </div>
+          ` : ''}
+        </div>
+
+        <!-- Call to Action Button -->
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${meetingLink}" 
+             target="_blank"
+             style="display: inline-block; padding: 16px 36px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 16px; letter-spacing: 0.3px; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);">
+            🎥 Click Here to Join Meeting
+          </a>
+        </div>
+
+        <div style="background: #f1f5f9; border-radius: 10px; padding: 14px 16px; margin-top: 24px; text-align: center;">
+          <p style="color: #64748b; font-size: 12px; margin: 0 0 6px;">Direct Link URL (if button doesn't open):</p>
+          <a href="${meetingLink}" style="color: #2563eb; font-size: 13px; word-break: break-all; font-weight: 600;">${meetingLink}</a>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 32px; text-align: center;">
+        <p style="color: #64748b; font-size: 13px; font-weight: 600; margin: 0 0 4px;">Nuvexora Technologies Private Limited</p>
+        <p style="color: #94a3b8; font-size: 12px; margin: 0;">Need to reschedule? Reply directly to this email.</p>
+      </div>
+    </div>
+  `;
+    return await (0, exports.sendEmail)({
+        to: toEmail,
+        subject: `🎥 Google Meet & Strategy Session Invitation - Nuvexora Technologies`,
+        html,
+    });
+};
+exports.sendLeadMeetingLinkEmail = sendLeadMeetingLinkEmail;

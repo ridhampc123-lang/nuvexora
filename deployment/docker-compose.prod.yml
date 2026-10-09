@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  # Next.js 16 Production Frontend
+  frontend:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.frontend
+    container_name: nuvexora-frontend
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=https://api.nuvexora.com/api/v1
+      - NEXT_PUBLIC_SOCKET_URL=https://api.nuvexora.com
+      - NEXT_PUBLIC_APP_URL=https://nuvexora.com
+    ports:
+      - "3000:3000"
+    networks:
+      - nuvexora-network
+
+  # Express.js Backend API
+  backend:
+    build:
+      context: ../server
+      dockerfile: ../deployment/Dockerfile.backend
+    container_name: nuvexora-backend
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - CLIENT_URL=https://nuvexora.com
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=15m
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_REFRESH_EXPIRES_IN=7d
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - nuvexora-network
+
+networks:
+  nuvexora-network:
+    driver: bridge

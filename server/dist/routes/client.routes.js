@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const client_controller_js_1 = require("../controllers/client.controller.js");
+const auth_middleware_js_1 = require("../middleware/auth.middleware.js");
 const router = (0, express_1.Router)();
+router.use(auth_middleware_js_1.verifyJWT, (0, auth_middleware_js_1.requireRole)("CLIENT"));
 router.get("/dashboard", client_controller_js_1.getClientDashboardData);
 router.get("/projects", client_controller_js_1.getClientProjects);
 router.get("/tasks", client_controller_js_1.getClientTasks);

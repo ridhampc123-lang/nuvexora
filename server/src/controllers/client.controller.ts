@@ -93,9 +93,22 @@ export const getClientTasks = asyncHandler(async (req: AuthenticatedRequest, res
   return res.status(200).json(new ApiResponse(200, tasks, "Client tasks retrieved successfully"));
 });
 
-export const updateClientTask = asyncHandler(async (req: Request, res: Response) => {
+export const updateClientTask = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   const { status } = req.body;
+
+  const userId = req.user?.userId;
+  const client = await findClientOrHeal(userId, req.user?.email);
+  const clientIds = getClientIds(client, userId);
+  const projects = await Project.find({ clientId: { $in: clientIds } });
+  const projectIds = projects.map(p => p._id.toString());
+
+  const taskToUpdate = await Task.findById(id);
+  if (!taskToUpdate) return res.status(404).json(new ApiResponse(404, null, "Task not found"));
+
+  if (!projectIds.includes(taskToUpdate.projectId.toString())) {
+    return res.status(403).json(new ApiResponse(403, null, "Unauthorized to update this task"));
+  }
 
   const task = await Task.findByIdAndUpdate(id, { status }, { new: true });
   try {
@@ -113,8 +126,20 @@ export const getClientInvoices = asyncHandler(async (req: AuthenticatedRequest, 
   return res.status(200).json(new ApiResponse(200, invoices, "Client invoices retrieved successfully"));
 });
 
-export const payClientInvoice = asyncHandler(async (req: Request, res: Response) => {
+export const payClientInvoice = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
+  
+  const userId = req.user?.userId;
+  const client = await findClientOrHeal(userId, req.user?.email);
+  const clientIds = getClientIds(client, userId).map(cid => cid.toString());
+
+  const invoiceToPay = await Invoice.findById(id);
+  if (!invoiceToPay) return res.status(404).json(new ApiResponse(404, null, "Invoice not found"));
+
+  if (!clientIds.includes(invoiceToPay.clientId.toString())) {
+    return res.status(403).json(new ApiResponse(403, null, "Unauthorized to pay this invoice"));
+  }
+
   const invoice = await Invoice.findByIdAndUpdate(id, { status: "paid" }, { new: true });
   try {
     getIO().emit("dashboard_update");

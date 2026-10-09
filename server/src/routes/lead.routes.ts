@@ -7,8 +7,8 @@ import { verifyJWT, authorize } from "../middleware/auth.middleware.js";
 const router = Router();
 
 router.post("/", validate(createLeadSchema), createLead);
-router.get("/", verifyJWT, authorize("admin"), getLeads);
-router.patch("/:id/status", verifyJWT, authorize("admin"), updateLeadStatus);
-router.delete("/:id", verifyJWT, authorize("admin"), deleteLead);
+router.get("/", verifyJWT, authorize("ADMIN"), getLeads);
+router.patch("/:id/status", verifyJWT, authorize("ADMIN"), updateLeadStatus);
+router.delete("/:id", verifyJWT, authorize("ADMIN"), deleteLead);
 
 export default router;

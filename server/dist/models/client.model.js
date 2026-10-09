@@ -36,8 +36,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ClientAccount = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const ClientAccountSchema = new mongoose_1.Schema({
+    userId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", index: true },
     companyName: { type: String, required: true, trim: true },
     ownerName: { type: String, required: true },
+    name: { type: String, default: "" },
+    company: { type: String, default: "" },
     email: { type: String, required: true, lowercase: true },
     phone: { type: String, default: "" },
     industry: { type: String, required: true },
@@ -49,6 +52,6 @@ const ClientAccountSchema = new mongoose_1.Schema({
     tier: { type: String, enum: ["Startup", "Scaleup", "Enterprise"], default: "Scaleup" },
     contractValue: { type: Number, default: 0 },
     slaUptimeTarget: { type: String, default: "99.99%" },
-    status: { type: String, enum: ["active", "inactive", "deleted"], default: "active" },
+    status: { type: String, enum: ["active", "inactive", "deleted"], default: "active", index: true },
 }, { timestamps: true });
 exports.ClientAccount = mongoose_1.default.model("ClientAccount", ClientAccountSchema);

@@ -8,8 +8,9 @@ exports.createLeadSchema = zod_1.z.object({
         email: zod_1.z.string().email("Valid email address required"),
         phone: zod_1.z.string().optional(),
         company: zod_1.z.string().optional(),
-        serviceCategory: zod_1.z.string().min(1, "Service category is required"),
+        serviceCategory: zod_1.z.string().optional(),
         budgetRange: zod_1.z.string().optional(),
-        message: zod_1.z.string().min(10, "Message must be at least 10 characters"),
+        timeline: zod_1.z.string().optional(),
+        message: zod_1.z.string().min(3, "Message is required"),
     }),
 });

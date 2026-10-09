@@ -37,7 +37,7 @@ exports.Contract = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const ContractSchema = new mongoose_1.Schema({
     title: { type: String, required: true },
-    clientId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", required: true },
+    clientId: { type: mongoose_1.Schema.Types.ObjectId, ref: "ClientAccount", required: true },
     projectId: { type: mongoose_1.Schema.Types.ObjectId, ref: "Project" },
     content: { type: String, required: true },
     status: { type: String, enum: ["draft", "sent", "signed", "expired"], default: "draft" },

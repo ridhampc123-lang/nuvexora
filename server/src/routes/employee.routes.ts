@@ -104,21 +104,11 @@ router.patch("/my/notifications/:id/read", async (req: any, res) => {
   }
 });
 
-router.get("/my/timesheets", (req: any, res) => {
-  res.json({
-    success: true,
-    user: req.user,
-    totalHoursThisWeek: 38.5,
-    billableHours: 35.0,
-    nonBillableHours: 3.5
-  });
-});
-
+// Helper to ensure Employee document exists for the logged in user
 import { Attendance } from "../models/attendance.model.js";
 import { User } from "../models/user.model.js";
 import { getIO } from "../socket/index.js";
 
-// Helper to ensure Employee document exists for the logged in user
 async function getOrCreateEmployee(user: any) {
   let emp = await Employee.findOne({ userId: user.userId });
   if (!emp && user.email) {
@@ -145,14 +135,37 @@ async function getOrCreateEmployee(user: any) {
   return emp;
 }
 
-router.get("/my/timesheets", (req: any, res) => {
-  res.json({
-    success: true,
-    user: req.user,
-    totalHoursThisWeek: 38.5,
-    billableHours: 35.0,
-    nonBillableHours: 3.5
-  });
+router.get("/my/timesheets", async (req: any, res) => {
+  try {
+    const employee = await getOrCreateEmployee(req.user);
+    const now = new Date();
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(diff);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const records = await Attendance.find({
+      employeeId: employee._id,
+      date: { $gte: startOfWeek }
+    });
+
+    let totalMinutes = 0;
+    for (const rec of records) {
+      totalMinutes += (rec.totalWorkingMinutes || 0);
+    }
+    const totalHoursThisWeek = parseFloat((totalMinutes / 60).toFixed(1));
+
+    return res.json({
+      success: true,
+      user: req.user,
+      totalHoursThisWeek,
+      billableHours: totalHoursThisWeek,
+      nonBillableHours: 0
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message || "Failed to calculate timesheets" });
+  }
 });
 
 // GET /api/v1/employee/my/attendance - Fetch today status and history

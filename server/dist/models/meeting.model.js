@@ -46,5 +46,6 @@ const MeetingSchema = new mongoose_1.Schema({
     topic: { type: String, required: true },
     status: { type: String, enum: ["scheduled", "completed", "cancelled"], default: "scheduled" },
     meetingLink: { type: String, default: "" },
+    invitedEmployees: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "User" }],
 }, { timestamps: true });
 exports.Meeting = mongoose_1.default.model("Meeting", MeetingSchema);

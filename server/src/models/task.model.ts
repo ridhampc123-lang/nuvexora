@@ -14,12 +14,12 @@ export interface ITask extends Document {
 
 const TaskSchema = new Schema<ITask>(
   {
-    projectId: { type: Schema.Types.ObjectId, ref: "Project", required: true },
+    projectId: { type: Schema.Types.ObjectId, ref: "Project", required: true, index: true },
     title: { type: String, required: true, trim: true },
     description: { type: String, default: "" },
-    assignedTo: { type: Schema.Types.ObjectId, ref: "User" },
+    assignedTo: { type: Schema.Types.ObjectId, ref: "User", index: true },
     priority: { type: String, enum: ["low", "medium", "high", "urgent"], default: "medium" },
-    status: { type: String, enum: ["todo", "in_progress", "review", "completed"], default: "todo" },
+    status: { type: String, enum: ["todo", "in_progress", "review", "completed"], default: "todo", index: true },
     dueDate: { type: Date },
   },
   { timestamps: true }

@@ -9,7 +9,8 @@ import {
   Milestone, Building2, Landmark, Clock, CalendarDays, Video, Calendar,
   MessageSquare, LifeBuoy, FileSpreadsheet, CreditCard, ScrollText, PenTool,
   FolderOpen, LineChart, PieChart, LayoutTemplate, PenBox, FolderHeart, ShieldCheck,
-  Image as ImageIcon, Key, History, Settings, ChevronLeft, ChevronRight, Sparkles
+  Image as ImageIcon, Key, History, Settings, ChevronLeft, ChevronRight, Sparkles,
+  Coins, Database
 } from "lucide-react";
 
 const navGroups = [
@@ -76,15 +77,17 @@ const navGroups = [
       { label: "Blog", href: "/admin/blog", icon: PenBox },
       { label: "Portfolio", href: "/admin/portfolio", icon: FolderHeart },
       { label: "Services", href: "/admin/services", icon: LayoutTemplate },
+      { label: "Pricing & Plans", href: "/admin/pricing", icon: Coins },
       { label: "Media", href: "/admin/media", icon: ImageIcon },
     ]
   },
   {
-    title: "System",
+    title: "System & Backups",
     items: [
       { label: "Users", href: "/admin/users", icon: Users },
       { label: "Roles", href: "/admin/roles", icon: ShieldCheck },
       { label: "Permissions", href: "/admin/permissions", icon: Key },
+      { label: "Export & Backups", href: "/admin/backup", icon: Database },
       { label: "Settings", href: "/admin/settings", icon: Settings },
       { label: "Audit Logs", href: "/admin/audit-logs", icon: History },
     ]

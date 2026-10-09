@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { User, IUser } from "../models/user.model.js";
+import { Role } from "../models/role.model.js";
 import { RefreshToken } from "../models/refresh-token.model.js";
 import { AuditLog } from "../models/audit-log.model.js";
 import { ApiError } from "../utils/api-error.js";
@@ -111,6 +112,23 @@ export class AuthService {
       userAgent,
     });
 
+    // Dynamically resolve permissions assigned to this user's role
+    const effectivePermissions: string[] = Array.isArray(user.permissionsOverride)
+      ? [...user.permissionsOverride]
+      : [];
+
+    try {
+      const roleDoc = await Role.findOne({ code: user.role }).populate("permissions");
+      if (roleDoc && Array.isArray(roleDoc.permissions)) {
+        for (const p of roleDoc.permissions as any[]) {
+          const pCode = typeof p === "string" ? p : p?.code;
+          if (pCode && !effectivePermissions.includes(pCode)) {
+            effectivePermissions.push(pCode);
+          }
+        }
+      }
+    } catch {}
+
     const userPayload = {
       id: user._id,
       name: user.name,
@@ -118,7 +136,7 @@ export class AuthService {
       role: user.role,
       avatar: user.avatar,
       company: user.company,
-      permissions: user.permissionsOverride,
+      permissions: effectivePermissions,
     };
 
     return { user: userPayload, accessToken, refreshToken };
@@ -187,7 +205,8 @@ export class AuthService {
     user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
     await user.save();
 
-    const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const clientUrl = process.env.CLIENT_URL;
+    if (!clientUrl) throw new ApiError(500, "CLIENT_URL environment variable is not defined");
     const resetUrl = `${clientUrl}/reset-password?token=${resetToken}`;
 
     await sendEmail({
@@ -266,7 +285,8 @@ export class AuthService {
       details: { email: user.email, role: user.role },
     });
 
-    const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const clientUrl = process.env.CLIENT_URL;
+    if (!clientUrl) throw new ApiError(500, "CLIENT_URL environment variable is not defined");
     const activationUrl = `${clientUrl}/activate?token=${activationToken}`;
 
     if (userData.type === "CLIENT") {

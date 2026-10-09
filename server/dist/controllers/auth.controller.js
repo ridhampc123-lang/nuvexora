@@ -60,11 +60,15 @@ exports.changePassword = (0, async_handler_js_1.asyncHandler)(async (req, res) =
     return res.status(200).json(new api_response_js_1.ApiResponse(200, null, "Password changed successfully"));
 });
 exports.getMe = (0, async_handler_js_1.asyncHandler)(async (req, res) => {
-    const user = await user_model_js_1.User.findById(req.user?.userId);
+    const user = await user_model_js_1.User.findById(req.user?.userId).lean();
     if (!user) {
         throw new api_error_js_1.ApiError(404, "User profile not found");
     }
-    return res.status(200).json(new api_response_js_1.ApiResponse(200, user, "User profile retrieved successfully"));
+    const userWithPermissions = {
+        ...user,
+        permissions: req.user?.permissions || [],
+    };
+    return res.status(200).json(new api_response_js_1.ApiResponse(200, userWithPermissions, "User profile retrieved successfully"));
 });
 exports.updateProfile = (0, async_handler_js_1.asyncHandler)(async (req, res) => {
     const user = await user_model_js_1.User.findByIdAndUpdate(req.user?.userId, req.body, { new: true, runValidators: true });

@@ -2,11 +2,30 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const admin_controller_js_1 = require("../controllers/admin.controller.js");
+const cloudinary_js_1 = require("../config/cloudinary.js");
 const admin_blog_controller_js_1 = require("../controllers/admin-blog.controller.js");
 const admin_portfolio_controller_js_1 = require("../controllers/admin-portfolio.controller.js");
 const auth_middleware_js_1 = require("../middleware/auth.middleware.js");
 const router = (0, express_1.Router)();
-router.use(auth_middleware_js_1.verifyJWT, (0, auth_middleware_js_1.requireRole)("SUPER_ADMIN", "ADMIN"));
+router.use(auth_middleware_js_1.verifyJWT);
+router.use((0, auth_middleware_js_1.requireRoleOrPermission)(["SUPER_ADMIN", "ADMIN"], [
+    "ROLES_MANAGE",
+    "USERS_VIEW",
+    "USERS_MANAGE",
+    "PROJECTS_VIEW",
+    "PROJECTS_MANAGE",
+    "INVOICES_VIEW",
+    "INVOICES_MANAGE",
+    "LEADS_VIEW",
+    "LEADS_MANAGE",
+    "AUDIT_VIEW",
+    "MEDIA_MANAGE",
+    "BLOG_MANAGE",
+    "TASKS_VIEW",
+    "TASKS_MANAGE"
+]));
+// Media Image Upload Endpoint
+router.post("/upload", cloudinary_js_1.upload.single("image"), admin_controller_js_1.uploadMediaImage);
 // Blogs Management
 router.get("/blogs", admin_blog_controller_js_1.getAdminBlogs);
 router.post("/blogs", admin_blog_controller_js_1.createBlog);
@@ -22,19 +41,24 @@ router.get("/metrics", admin_controller_js_1.getAdminDashboardMetrics);
 // Users Management
 router.get("/users", admin_controller_js_1.getAllUsers);
 router.patch("/users/:id", admin_controller_js_1.updateUser);
+router.delete("/users/:id", admin_controller_js_1.deleteUser);
 // Leads Management
 router.get("/leads", admin_controller_js_1.getAllLeads);
 router.patch("/leads/:id", admin_controller_js_1.updateLeadStatus);
+router.post("/leads/:id/send-meeting", admin_controller_js_1.sendLeadMeetingLink);
+router.delete("/leads/:id", admin_controller_js_1.deleteLead);
 // Clients CRM Management
 router.get("/clients", admin_controller_js_1.getAllClients);
 router.post("/clients", admin_controller_js_1.createClient);
 router.patch("/clients/:id", admin_controller_js_1.updateClient);
 router.get("/clients/:id", admin_controller_js_1.getClientById);
+router.delete("/clients/:id", admin_controller_js_1.deleteClient);
 // Employees Management
 router.get("/employees", admin_controller_js_1.getAllEmployees);
 router.get("/employees/:id", admin_controller_js_1.getEmployeeById);
 router.post("/employees", admin_controller_js_1.createEmployee);
 router.patch("/employees/:id", admin_controller_js_1.updateEmployee);
+router.delete("/employees/:id", admin_controller_js_1.deleteEmployee);
 // Departments Management
 router.get("/departments", admin_controller_js_1.getAllDepartments);
 router.post("/departments", admin_controller_js_1.createDepartment);
@@ -98,4 +122,29 @@ router.delete("/meetings/:id", admin_controller_js_1.deleteMeeting);
 router.get("/tickets", admin_controller_js_1.getAllTickets);
 router.patch("/tickets/:id", admin_controller_js_1.updateTicket);
 router.delete("/tickets/:id", admin_controller_js_1.deleteTicket);
+// Audit Logs
+router.get("/audit-logs", admin_controller_js_1.getAuditLogs);
+// Permissions
+router.get("/permissions", admin_controller_js_1.getPermissions);
+// Roles
+router.get("/roles", admin_controller_js_1.getRoles);
+router.post("/roles", admin_controller_js_1.createRole);
+router.patch("/roles/:id", admin_controller_js_1.updateRole);
+router.delete("/roles/:id", admin_controller_js_1.deleteRole);
+// Services Management
+router.get("/services", admin_controller_js_1.getAllServices);
+router.post("/services", admin_controller_js_1.createService);
+router.patch("/services/:id", admin_controller_js_1.updateService);
+router.delete("/services/:id", admin_controller_js_1.deleteService);
+// Media Management
+router.get("/media", admin_controller_js_1.getAllMedia);
+router.delete("/media/:id", admin_controller_js_1.deleteMedia);
+// Careers Management
+router.get("/careers", admin_controller_js_1.getAllCareers);
+router.post("/careers", admin_controller_js_1.createCareer);
+router.patch("/careers/:id", admin_controller_js_1.updateCareer);
+router.delete("/careers/:id", admin_controller_js_1.deleteCareer);
+// Analytics & Reports
+router.get("/analytics", admin_controller_js_1.getAdminAnalyticsData);
+router.get("/reports", admin_controller_js_1.getAdminReportsData);
 exports.default = router;

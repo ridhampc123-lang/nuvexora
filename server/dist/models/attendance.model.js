@@ -40,6 +40,9 @@ const AttendanceSchema = new mongoose_1.Schema({
     date: { type: Date, required: true },
     checkIn: { type: Date, default: Date.now },
     checkOut: { type: Date },
+    breakTimeMinutes: { type: Number, default: 0 },
+    totalWorkingMinutes: { type: Number, default: 0 },
     status: { type: String, enum: ["present", "late", "absent", "half_day"], default: "present" },
+    notes: { type: String, default: "" },
 }, { timestamps: true });
 exports.Attendance = mongoose_1.default.model("Attendance", AttendanceSchema);

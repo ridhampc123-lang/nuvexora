@@ -20,10 +20,27 @@ exports.app = app;
 app.use((0, helmet_1.default)());
 app.use((0, compression_1.default)());
 app.use((0, cors_1.default)({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+        // Allow requests with no origin (e.g. mobile apps, curl, server-side Next.js rewrites)
+        if (!origin)
+            return callback(null, true);
+        const clientUrl = process.env.CLIENT_URL;
+        const isVercel = origin.endsWith(".vercel.app");
+        const isLocal = origin.startsWith("http://localhost:") ||
+            origin.startsWith("http://127.0.0.1:") ||
+            /^http:\/\/(192\.168|10|172\.(1[6-9]|2[0-9]|3[0-1]))\./.test(origin);
+        if (isVercel ||
+            isLocal ||
+            !clientUrl ||
+            origin === clientUrl ||
+            process.env.NODE_ENV !== "production") {
+            return callback(null, true);
+        }
+        return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
 }));
 // Rate Limiter: 100 requests per 15 minutes per IP
 const limiter = (0, express_rate_limit_1.rateLimit)({
@@ -36,8 +53,8 @@ const limiter = (0, express_rate_limit_1.rateLimit)({
 app.use("/api/", limiter);
 // Logging & Body Parsers
 app.use((0, morgan_1.default)("dev"));
-app.use(express_1.default.json({ limit: "16kb" }));
-app.use(express_1.default.urlencoded({ extended: true, limit: "16kb" }));
+app.use(express_1.default.json({ limit: "50mb" }));
+app.use(express_1.default.urlencoded({ extended: true, limit: "50mb" }));
 app.use((0, cookie_parser_1.default)());
 // Base Health Check
 app.get("/", (_req, res) => {

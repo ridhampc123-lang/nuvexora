@@ -13,9 +13,24 @@ cloudinary_1.v2.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 const storage = multer_1.default.memoryStorage();
+const fileFilter = (req, file, cb) => {
+    const allowedMimeTypes = [
+        "image/jpeg", "image/png", "image/webp", "image/gif",
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ];
+    if (allowedMimeTypes.includes(file.mimetype)) {
+        cb(null, true);
+    }
+    else {
+        cb(new Error("Invalid file type. Only JPG, PNG, WEBP, GIF, PDF, and DOC are allowed."));
+    }
+};
 exports.upload = (0, multer_1.default)({
     storage,
     limits: {
         fileSize: 10 * 1024 * 1024, // 10MB limit
     },
+    fileFilter,
 });

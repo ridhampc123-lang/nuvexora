@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const chat_controller_js_1 = require("../controllers/chat.controller.js");
+const router = (0, express_1.Router)();
+router.get("/messages", chat_controller_js_1.getChannelMessages);
+router.post("/messages", chat_controller_js_1.sendChatMessage);
+router.get("/channels", chat_controller_js_1.getChatChannels);
+router.get("/team-members", chat_controller_js_1.getAssignedTeamMembers);
+router.post("/purge-dummy-data", chat_controller_js_1.purgeDummyMessages);
+exports.default = router;

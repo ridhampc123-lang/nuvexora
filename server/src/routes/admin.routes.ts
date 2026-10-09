@@ -74,6 +74,8 @@ import {
   getPermissions,
   getRoles,
   createRole,
+  updateRole,
+  deleteRole,
   getAllServices,
   createService,
   updateService,
@@ -90,11 +92,46 @@ import {
 import { upload } from "../config/cloudinary.js";
 import { getAdminBlogs, updateBlog, deleteBlog, createBlog as createAdminBlog } from "../controllers/admin-blog.controller.js";
 import { getAdminPortfolio, createPortfolioItem, updatePortfolioItem, deletePortfolioItem } from "../controllers/admin-portfolio.controller.js";
-import { verifyJWT, requireRole } from "../middleware/auth.middleware.js";
+import {
+  getAdminPricing,
+  createPricingPlan,
+  updatePricingPlan,
+  deletePricingPlan,
+  reorderPricingPlans,
+  getCurrencies,
+  createCurrency,
+  updateCurrency,
+  deleteCurrency,
+  exportMasterExcel,
+  getMasterDataSnapshot,
+  restoreEmergencyBackup
+} from "../controllers/pricing.controller.js";
+import { verifyJWT, requireRole, requireRoleOrPermission } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
-router.use(verifyJWT, requireRole("SUPER_ADMIN", "ADMIN"));
+router.use(verifyJWT);
+router.use(
+  requireRoleOrPermission(
+    ["SUPER_ADMIN", "ADMIN"],
+    [
+      "ROLES_MANAGE",
+      "USERS_VIEW",
+      "USERS_MANAGE",
+      "PROJECTS_VIEW",
+      "PROJECTS_MANAGE",
+      "INVOICES_VIEW",
+      "INVOICES_MANAGE",
+      "LEADS_VIEW",
+      "LEADS_MANAGE",
+      "AUDIT_VIEW",
+      "MEDIA_MANAGE",
+      "BLOG_MANAGE",
+      "TASKS_VIEW",
+      "TASKS_MANAGE"
+    ]
+  )
+);
 
 // Media Image Upload Endpoint
 router.post("/upload", upload.single("image"), uploadMediaImage);
@@ -226,6 +263,8 @@ router.get("/permissions", getPermissions);
 // Roles
 router.get("/roles", getRoles);
 router.post("/roles", createRole);
+router.patch("/roles/:id", updateRole);
+router.delete("/roles/:id", deleteRole);
 
 // Services Management
 router.get("/services", getAllServices);
@@ -246,6 +285,24 @@ router.delete("/careers/:id", deleteCareer);
 // Analytics & Reports
 router.get("/analytics", getAdminAnalyticsData);
 router.get("/reports", getAdminReportsData);
+
+// Dynamic Pricing Management
+router.get("/pricing", getAdminPricing);
+router.post("/pricing", createPricingPlan);
+router.patch("/pricing/:id", updatePricingPlan);
+router.delete("/pricing/:id", deletePricingPlan);
+router.post("/pricing/reorder", reorderPricingPlans);
+
+// Currency Management
+router.get("/currencies", getCurrencies);
+router.post("/currencies", createCurrency);
+router.patch("/currencies/:id", updateCurrency);
+router.delete("/currencies/:id", deleteCurrency);
+
+// Master Data Export & Emergency Backups
+router.get("/export/excel", exportMasterExcel);
+router.get("/backup/snapshot", getMasterDataSnapshot);
+router.post("/backup/restore", restoreEmergencyBackup);
 
 export default router;
 

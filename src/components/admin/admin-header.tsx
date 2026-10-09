@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { motion, AnimatePresence } from "framer-motion";
+import { executeMasterExcelExport } from "@/lib/export/master-excel-exporter";
 
 const mobileNavItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -81,6 +82,26 @@ export function AdminHeader() {
 
         {/* Right Controls */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Master Export Excel Button */}
+          <button
+            type="button"
+            onClick={executeMasterExcelExport}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-all"
+            title="Download Master Excel Spreadsheet with all system data (.xlsx)"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Master Export</span>
+          </button>
+
+          {/* Backup Shortcut Link */}
+          <Link
+            href="/admin/backup"
+            className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 text-xs font-bold transition-all"
+            title="Emergency Backups & Disaster Recovery"
+          >
+            <span>Backups</span>
+          </Link>
+
           {/* View Live Site Button */}
           <Link
             href="/"

@@ -17,7 +17,7 @@ import {
   Calendar,
   Zap,
 } from "lucide-react";
-import { useEmployeeProjectsQuery, useEmployeeTasksQuery, useEmployeeMeetingsQuery, useEmployeeNotificationsQuery, useMarkNotificationReadMutation } from "@/hooks/use-api-queries";
+import { useEmployeeProjectsQuery, useEmployeeTasksQuery, useEmployeeMeetingsQuery, useEmployeeNotificationsQuery, useMarkNotificationReadMutation, useEmployeeTimesheetsQuery } from "@/hooks/use-api-queries";
 import { useAuth } from "@/providers/auth-provider";
 import { MeetingRoomModal } from "@/components/common/meeting-room-modal";
 
@@ -26,6 +26,7 @@ export default function EmployeeDashboard() {
   const { data: dbTasks = [], isLoading: loadingTasks } = useEmployeeTasksQuery();
   const { data: dbMeetings = [], isLoading: loadingMeetings } = useEmployeeMeetingsQuery();
   const { data: dbNotifications = [], isLoading: loadingNotifications } = useEmployeeNotificationsQuery();
+  const { data: timesheetData } = useEmployeeTimesheetsQuery();
   const markRead = useMarkNotificationReadMutation();
   const { user } = useAuth();
 
@@ -96,8 +97,10 @@ export default function EmployeeDashboard() {
             <span>Work Hours</span>
             <Clock className="w-4 h-4 text-blue-400" />
           </div>
-          <div className="text-2xl font-extrabold text-white">40.0 Hrs</div>
-          <div className="text-[10px] text-emerald-400 font-medium">100% of weekly target</div>
+          <div className="text-2xl font-extrabold text-white">
+            {(timesheetData?.totalHoursThisWeek ?? 0).toFixed(1)} Hrs
+          </div>
+          <div className="text-[10px] text-slate-400 font-medium">Logged this week</div>
         </div>
 
         <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
@@ -122,11 +125,11 @@ export default function EmployeeDashboard() {
 
         <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-            <span>Performance Score</span>
-            <TrendingUp className="w-4 h-4 text-amber-400" />
+            <span>Upcoming Meetings</span>
+            <Video className="w-4 h-4 text-amber-400" />
           </div>
-          <div className="text-2xl font-extrabold text-white">4.95 / 5.0</div>
-          <div className="text-[10px] text-amber-400 font-medium">Top 5% Quarterly Rank</div>
+          <div className="text-2xl font-extrabold text-white">{upcomingMeetings.length} Scheduled</div>
+          <div className="text-[10px] text-amber-400 font-medium">Direct sync & team scrums</div>
         </div>
       </div>
 

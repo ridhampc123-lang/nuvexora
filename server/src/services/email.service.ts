@@ -14,6 +14,9 @@ export const sendEmail = async ({
     const smtpPass = process.env.SMTP_PASS?.trim();
 
     if (!smtpUser || !smtpPass || smtpUser.includes("example.com") || smtpPass === "your-password" || smtpPass === "xxxx") {
+      if (process.env.NODE_ENV === "production") {
+        throw new Error("Email Service Mock Mode is disabled in production. Please provide valid SMTP credentials in .env");
+      }
       console.log(`[Email Service (Mock Mode)] Skipped live delivery to ${to}. Subject: "${subject}".`);
       return false;
     }

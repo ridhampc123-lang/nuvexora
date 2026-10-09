@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Employee = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const EmployeeSchema = new mongoose_1.Schema({
-    userId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User" },
+    userId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", index: true },
     employeeId: { type: String, required: true, unique: true },
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
@@ -44,7 +44,7 @@ const EmployeeSchema = new mongoose_1.Schema({
     department: { type: String, required: true },
     role: { type: String, required: true },
     designation: { type: String, required: true },
-    manager: { type: mongoose_1.Schema.Types.ObjectId, ref: "User" },
+    manager: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", index: true },
     employmentType: { type: String, enum: ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN"], default: "FULL_TIME" },
     salary: { type: Number, default: 0 },
     joiningDate: { type: Date, default: Date.now },

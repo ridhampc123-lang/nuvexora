@@ -16,6 +16,11 @@ import {
   Lock,
   Search
 } from "lucide-react";
+import { usePublicServicesQuery } from "@/hooks/use-api-queries";
+
+const IconMap: Record<string, any> = {
+  Code2, BrainCircuit, Smartphone, Cloud, Building2, Palette, Database, Lock, Search
+};
 
 const servicesData = [
   {
@@ -74,10 +79,23 @@ const servicesData = [
 
 export function ServicesSection() {
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const { data: dbServices } = usePublicServicesQuery();
+
+  const activeServices = dbServices && dbServices.length > 0
+    ? dbServices.map((s: any) => ({
+        category: s.category,
+        title: s.title,
+        description: s.shortDescription,
+        icon: IconMap[s.icon] || Code2,
+        badge: s.badge,
+        features: s.features,
+        href: `/services/${s.slug}`
+      }))
+    : servicesData;
 
   const filteredServices = activeCategory === "all" 
-    ? servicesData 
-    : servicesData.filter(s => s.category === activeCategory);
+    ? activeServices 
+    : activeServices.filter((s: any) => s.category === activeCategory);
 
   return (
     <section className="py-8 sm:py-10 lg:py-12 bg-background text-foreground relative overflow-hidden">
@@ -123,7 +141,7 @@ export function ServicesSection() {
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {filteredServices.map((service, idx) => (
+          {filteredServices.map((service: any, idx: number) => (
             <ServiceCard
               key={service.title}
               title={service.title}

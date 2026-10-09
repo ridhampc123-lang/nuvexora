@@ -42,6 +42,7 @@ const LeaveRequestSchema = new mongoose_1.Schema({
     endDate: { type: Date, required: true },
     reason: { type: String, required: true },
     status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+    declineReason: { type: String, default: "" },
     reviewedBy: { type: mongoose_1.Schema.Types.ObjectId, ref: "User" },
 }, { timestamps: true });
 exports.LeaveRequest = mongoose_1.default.model("LeaveRequest", LeaveRequestSchema);

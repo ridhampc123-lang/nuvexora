@@ -8,6 +8,6 @@ const router = Router();
 
 router.get("/", getBlogs);
 router.get("/:slug", getBlogBySlug);
-router.post("/", verifyJWT, authorize("admin"), validate(createBlogSchema), createBlog);
+router.post("/", verifyJWT, authorize("ADMIN"), validate(createBlogSchema), createBlog);
 
 export default router;

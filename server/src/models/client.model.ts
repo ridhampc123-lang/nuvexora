@@ -24,7 +24,7 @@ export interface IClientAccount extends Document {
 
 const ClientAccountSchema = new Schema<IClientAccount>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User" },
+    userId: { type: Schema.Types.ObjectId, ref: "User", index: true },
     companyName: { type: String, required: true, trim: true },
     ownerName: { type: String, required: true },
     name: { type: String, default: "" },
@@ -40,7 +40,7 @@ const ClientAccountSchema = new Schema<IClientAccount>(
     tier: { type: String, enum: ["Startup", "Scaleup", "Enterprise"], default: "Scaleup" },
     contractValue: { type: Number, default: 0 },
     slaUptimeTarget: { type: String, default: "99.99%" },
-    status: { type: String, enum: ["active", "inactive", "deleted"], default: "active" },
+    status: { type: String, enum: ["active", "inactive", "deleted"], default: "active", index: true },
   },
   { timestamps: true }
 );

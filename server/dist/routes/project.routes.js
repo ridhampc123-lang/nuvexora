@@ -8,6 +8,6 @@ const auth_middleware_js_1 = require("../middleware/auth.middleware.js");
 const router = (0, express_1.Router)();
 router.use(auth_middleware_js_1.verifyJWT);
 router.get("/", project_controller_js_1.getClientProjects);
-router.post("/", (0, auth_middleware_js_1.authorize)("admin"), (0, validate_middleware_js_1.validate)(project_validation_js_1.createProjectSchema), project_controller_js_1.createProject);
-router.patch("/:id/progress", (0, auth_middleware_js_1.authorize)("admin"), project_controller_js_1.updateProjectProgress);
+router.post("/", (0, auth_middleware_js_1.requireRoleOrPermission)(["ADMIN", "SUPER_ADMIN", "PROJECT_MANAGER"], ["PROJECTS_MANAGE"]), (0, validate_middleware_js_1.validate)(project_validation_js_1.createProjectSchema), project_controller_js_1.createProject);
+router.patch("/:id/progress", (0, auth_middleware_js_1.requireRoleOrPermission)(["ADMIN", "SUPER_ADMIN", "PROJECT_MANAGER"], ["PROJECTS_MANAGE"]), project_controller_js_1.updateProjectProgress);
 exports.default = router;

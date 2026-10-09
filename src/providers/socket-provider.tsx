@@ -22,22 +22,14 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    let socketUrl = "http://localhost:5000";
-    if (process.env.NEXT_PUBLIC_SOCKET_URL) {
-      socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
-    } else if (process.env.NEXT_PUBLIC_API_URL) {
-      socketUrl = process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/v1\/?$/, "");
-    } else if (typeof window !== "undefined") {
-      const { hostname, protocol } = window.location;
-      if (hostname === "localhost" || hostname === "127.0.0.1") {
-        socketUrl = "http://localhost:5000";
-      } else if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
-        socketUrl = `http://${hostname}:5000`;
-      } else if (protocol === "https:") {
-        socketUrl = window.location.origin;
-      } else {
-        socketUrl = `http://${hostname}:5000`;
-      }
+    let socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/v1\/?$/, "") || "";
+    if (!socketUrl) {
+      console.warn("NEXT_PUBLIC_SOCKET_URL is not defined in environment variables.");
+    }
+
+    let token = "";
+    if (typeof window !== "undefined") {
+      token = localStorage.getItem("nuvexora_access_token") || localStorage.getItem("nuvexora_token") || "";
     }
 
     const socketInstance = io(socketUrl, {
@@ -45,6 +37,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       autoConnect: true,
       transports: ["websocket", "polling"],
       reconnectionAttempts: 5,
+      auth: { token },
     });
 
     const handleRealtimeUpdate = () => {

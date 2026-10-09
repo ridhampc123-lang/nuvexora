@@ -38,7 +38,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 const ProposalSchema = new mongoose_1.Schema({
     title: { type: String, required: true },
     projectId: { type: mongoose_1.Schema.Types.ObjectId, ref: "Project" },
-    clientId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", required: true },
+    clientId: { type: mongoose_1.Schema.Types.ObjectId, ref: "ClientAccount", required: true },
     amount: { type: Number, required: true },
     status: { type: String, enum: ["draft", "sent", "accepted", "rejected"], default: "draft" },
     validUntil: { type: Date, required: true },

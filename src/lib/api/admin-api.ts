@@ -646,6 +646,16 @@ export const createAdminRole = async (roleData: any) => {
   return data.data;
 };
 
+export const updateAdminRole = async ({ id, ...roleData }: { id: string; [key: string]: any }) => {
+  const { data } = await apiClient.patch(`/admin/roles/${id}`, roleData);
+  return data.data;
+};
+
+export const deleteAdminRole = async (id: string) => {
+  const { data } = await apiClient.delete(`/admin/roles/${id}`);
+  return data.data;
+};
+
 // --- MEDIA ---
 export const getAdminMedia = async () => {
   try {
@@ -700,6 +710,81 @@ export const getAdminReports = async () => {
     return data.data;
   } catch {}
   return null;
+};
+
+// --- DYNAMIC PRICING CMS ---
+export const getAdminPricingPlans = async () => {
+  try {
+    const { data } = await apiClient.get("/admin/pricing");
+    return data.data;
+  } catch (err) {
+    console.error("Failed to fetch admin pricing", err);
+    return { plans: [], metrics: { total: 0, activeCount: 0, popularCount: 0 } };
+  }
+};
+
+export const createAdminPricingPlan = async (planData: any) => {
+  const { data } = await apiClient.post("/admin/pricing", planData);
+  return data.data;
+};
+
+export const updateAdminPricingPlan = async ({ id, ...planData }: { id: string; [key: string]: any }) => {
+  const { data } = await apiClient.patch(`/admin/pricing/${id}`, planData);
+  return data.data;
+};
+
+export const deleteAdminPricingPlan = async (id: string) => {
+  const { data } = await apiClient.delete(`/admin/pricing/${id}`);
+  return data.data;
+};
+
+export const reorderAdminPricingPlans = async (items: { id: string; order: number }[]) => {
+  const { data } = await apiClient.post("/admin/pricing/reorder", { items });
+  return data.data;
+};
+
+// --- CURRENCY MANAGEMENT ---
+export const getAdminCurrencies = async () => {
+  try {
+    const { data } = await apiClient.get("/admin/currencies");
+    return Array.isArray(data.data) ? data.data : [];
+  } catch (err) {
+    console.error("Failed to fetch currencies", err);
+    return [];
+  }
+};
+
+export const createAdminCurrency = async (currencyData: any) => {
+  const { data } = await apiClient.post("/admin/currencies", currencyData);
+  return data.data;
+};
+
+export const updateAdminCurrency = async ({ id, ...currencyData }: { id: string; [key: string]: any }) => {
+  const { data } = await apiClient.patch(`/admin/currencies/${id}`, currencyData);
+  return data.data;
+};
+
+export const deleteAdminCurrency = async (id: string) => {
+  const { data } = await apiClient.delete(`/admin/currencies/${id}`);
+  return data.data;
+};
+
+// --- MASTER DATA EXPORT & EMERGENCY BACKUPS ---
+export const downloadMasterExcelExport = async () => {
+  const response = await apiClient.get("/admin/export/excel", {
+    responseType: "blob",
+  });
+  return response.data;
+};
+
+export const getMasterBackupSnapshot = async () => {
+  const { data } = await apiClient.get("/admin/backup/snapshot");
+  return data.data;
+};
+
+export const restoreMasterBackup = async (snapshotData: any) => {
+  const { data } = await apiClient.post("/admin/backup/restore", snapshotData);
+  return data.data;
 };
 
 

@@ -43,8 +43,8 @@ const InvoiceItemSchema = new mongoose_1.Schema({
 });
 const InvoiceSchema = new mongoose_1.Schema({
     invoiceNumber: { type: String, required: true, unique: true },
-    projectId: { type: mongoose_1.Schema.Types.ObjectId, ref: "Project", required: true },
-    clientId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", required: true },
+    projectId: { type: mongoose_1.Schema.Types.ObjectId, ref: "Project", required: true, index: true },
+    clientId: { type: mongoose_1.Schema.Types.ObjectId, ref: "ClientAccount", required: true, index: true },
     items: [InvoiceItemSchema],
     subtotal: { type: Number, required: true },
     tax: { type: Number, default: 0 },

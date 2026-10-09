@@ -32,8 +32,8 @@ const InvoiceItemSchema = new Schema<IInvoiceItem>({
 const InvoiceSchema = new Schema<IInvoice>(
   {
     invoiceNumber: { type: String, required: true, unique: true },
-    projectId: { type: Schema.Types.ObjectId, ref: "Project", required: true },
-    clientId: { type: Schema.Types.ObjectId, ref: "ClientAccount", required: true },
+    projectId: { type: Schema.Types.ObjectId, ref: "Project", required: true, index: true },
+    clientId: { type: Schema.Types.ObjectId, ref: "ClientAccount", required: true, index: true },
     items: [InvoiceItemSchema],
     subtotal: { type: Number, required: true },
     tax: { type: Number, default: 0 },

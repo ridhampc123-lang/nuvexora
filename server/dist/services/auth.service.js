@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const user_model_js_1 = require("../models/user.model.js");
+const role_model_js_1 = require("../models/role.model.js");
 const refresh_token_model_js_1 = require("../models/refresh-token.model.js");
 const audit_log_model_js_1 = require("../models/audit-log.model.js");
 const api_error_js_1 = require("../utils/api-error.js");
@@ -92,6 +93,22 @@ class AuthService {
             ipAddress,
             userAgent,
         });
+        // Dynamically resolve permissions assigned to this user's role
+        const effectivePermissions = Array.isArray(user.permissionsOverride)
+            ? [...user.permissionsOverride]
+            : [];
+        try {
+            const roleDoc = await role_model_js_1.Role.findOne({ code: user.role }).populate("permissions");
+            if (roleDoc && Array.isArray(roleDoc.permissions)) {
+                for (const p of roleDoc.permissions) {
+                    const pCode = typeof p === "string" ? p : p?.code;
+                    if (pCode && !effectivePermissions.includes(pCode)) {
+                        effectivePermissions.push(pCode);
+                    }
+                }
+            }
+        }
+        catch { }
         const userPayload = {
             id: user._id,
             name: user.name,
@@ -99,7 +116,7 @@ class AuthService {
             role: user.role,
             avatar: user.avatar,
             company: user.company,
-            permissions: user.permissionsOverride,
+            permissions: effectivePermissions,
         };
         return { user: userPayload, accessToken, refreshToken };
     }
@@ -155,7 +172,9 @@ class AuthService {
         user.resetPasswordToken = hashedToken;
         user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
         await user.save();
-        const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+        const clientUrl = process.env.CLIENT_URL;
+        if (!clientUrl)
+            throw new api_error_js_1.ApiError(500, "CLIENT_URL environment variable is not defined");
         const resetUrl = `${clientUrl}/reset-password?token=${resetToken}`;
         await (0, email_service_js_1.sendEmail)({
             to: user.email,
@@ -219,7 +238,9 @@ class AuthService {
             userAgent,
             details: { email: user.email, role: user.role },
         });
-        const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+        const clientUrl = process.env.CLIENT_URL;
+        if (!clientUrl)
+            throw new api_error_js_1.ApiError(500, "CLIENT_URL environment variable is not defined");
         const activationUrl = `${clientUrl}/activate?token=${activationToken}`;
         if (userData.type === "CLIENT") {
             await (0, email_service_js_1.sendClientWelcomeEmail)(user.email, user.name, userData.accountManager || "Our Team", activationUrl);

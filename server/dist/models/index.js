@@ -48,3 +48,4 @@ __exportStar(require("./attendance.model.js"), exports);
 __exportStar(require("./leave-request.model.js"), exports);
 __exportStar(require("./ticket.model.js"), exports);
 __exportStar(require("./department.model.js"), exports);
+__exportStar(require("./chat-message.model.js"), exports);

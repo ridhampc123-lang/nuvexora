@@ -30,7 +30,7 @@ export interface IEmployee extends Document {
 
 const EmployeeSchema = new Schema<IEmployee>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User" },
+    userId: { type: Schema.Types.ObjectId, ref: "User", index: true },
     employeeId: { type: String, required: true, unique: true },
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
@@ -38,7 +38,7 @@ const EmployeeSchema = new Schema<IEmployee>(
     department: { type: String, required: true },
     role: { type: String, required: true },
     designation: { type: String, required: true },
-    manager: { type: Schema.Types.ObjectId, ref: "User" },
+    manager: { type: Schema.Types.ObjectId, ref: "User", index: true },
     employmentType: { type: String, enum: ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN"], default: "FULL_TIME" },
     salary: { type: Number, default: 0 },
     joiningDate: { type: Date, default: Date.now },

@@ -58,10 +58,44 @@ export const uploadMediaImage = asyncHandler(async (req: AuthenticatedRequest, r
       resource_type: "auto",
     });
 
+    try {
+      await Media.create({
+        filename: req.file?.originalname || `asset-${Date.now()}`,
+        publicId: uploadRes.public_id,
+        url: uploadRes.url || uploadRes.secure_url,
+        secureUrl: uploadRes.secure_url,
+        format: uploadRes.format || req.file?.mimetype?.split("/")[1] || "bin",
+        bytes: uploadRes.bytes || req.file?.size || 0,
+        folder: "nuvexora/cms",
+        uploadedBy: (req.user as any)?._id || (req.user as any)?.userId,
+      });
+      try {
+        getIO().emit("dashboard_update");
+      } catch {}
+    } catch (dbErr: any) {
+      console.error("Media persistence warning:", dbErr?.message);
+    }
+
     return res.status(200).json(new ApiResponse(200, { url: uploadRes.secure_url }, "Image uploaded successfully to Cloudinary"));
   } catch (error: any) {
     console.error("Cloudinary Upload Warning/Error:", error?.message || error);
     // Graceful fallback to Data URI format if Cloudinary service/credentials encounter issues
+    try {
+      await Media.create({
+        filename: req.file?.originalname || `asset-${Date.now()}`,
+        publicId: `local-${Date.now()}`,
+        url: dataURI.length > 500 ? "data:embedded-file" : dataURI,
+        secureUrl: dataURI.length > 500 ? "data:embedded-file" : dataURI,
+        format: req.file?.mimetype?.split("/")[1] || "bin",
+        bytes: req.file?.size || 0,
+        folder: "nuvexora/local",
+        uploadedBy: (req.user as any)?._id || (req.user as any)?.userId,
+      });
+      try {
+        getIO().emit("dashboard_update");
+      } catch {}
+    } catch {}
+
     return res.status(200).json(new ApiResponse(200, { url: dataURI }, "Image uploaded via resilient fallback"));
   }
 });
@@ -742,44 +776,49 @@ const normalizeInvitedAttendees = async (rawList: any[]) => {
   const userIds: mongoose.Types.ObjectId[] = [];
   const notifications: { _id: any; name: string; email: string }[] = [];
 
-  for (const raw of rawList) {
-    if (!raw) continue;
-    const strId = typeof raw === "object" ? (raw._id || raw.id || raw.userId || "").toString() : raw.toString();
-    if (!strId || !mongoose.isValidObjectId(strId)) continue;
+  const strIds = rawList
+    .map(raw => typeof raw === "object" ? (raw._id || raw.id || raw.userId || "").toString() : (raw || "").toString())
+    .filter(id => id && mongoose.isValidObjectId(id));
 
-    // Check if directly a User
-    const user = await User.findById(strId);
-    if (user) {
-      if (!userIds.some((id) => id.toString() === user._id.toString())) {
-        userIds.push(user._id as any);
-      }
-      notifications.push({ _id: user._id, name: user.name, email: user.email });
-      continue;
+  if (strIds.length === 0) return { userIds, notifications };
+
+  const users = await User.find({ _id: { $in: strIds } });
+  const employees = await Employee.find({ _id: { $in: strIds } });
+  
+  const foundUserIds = new Set(users.map(u => u._id.toString()));
+  
+  for (const user of users) {
+    if (!userIds.some(id => id.toString() === user._id.toString())) userIds.push(user._id as any);
+    notifications.push({ _id: user._id, name: user.name, email: user.email });
+  }
+  
+  const empUserIdsToFetch = employees.filter(e => e.userId && !foundUserIds.has(e.userId.toString())).map(e => e.userId);
+  const empEmailsToFetch = employees.filter(e => !e.userId && e.email).map(e => e.email);
+  
+  const linkedUsersQuery: any[] = [];
+  if (empUserIdsToFetch.length > 0) linkedUsersQuery.push({ _id: { $in: empUserIdsToFetch } });
+  if (empEmailsToFetch.length > 0) linkedUsersQuery.push({ email: { $in: empEmailsToFetch } });
+  
+  const linkedUsers = linkedUsersQuery.length > 0 ? await User.find({ $or: linkedUsersQuery }) : [];
+  
+  for (const emp of employees) {
+    let linkedUser = linkedUsers.find(u => 
+      (emp.userId && u._id.toString() === emp.userId.toString()) || 
+      (emp.email && u.email === emp.email)
+    );
+    
+    if (linkedUser && !emp.userId && emp.email === linkedUser.email) {
+      emp.userId = linkedUser._id as any;
+      await emp.save(); // Only saves if a link was missing
     }
-
-    // Check if an Employee document
-    const emp = await Employee.findById(strId);
-    if (emp) {
-      // Find or link User
-      let linkedUser = emp.userId ? await User.findById(emp.userId) : null;
-      if (!linkedUser && emp.email) {
-        linkedUser = await User.findOne({ email: emp.email });
-        if (linkedUser) {
-          emp.userId = linkedUser._id as any;
-          await emp.save();
-        }
-      }
-      if (linkedUser) {
-        if (!userIds.some((id) => id.toString() === linkedUser!._id.toString())) {
-          userIds.push(linkedUser._id as any);
-        }
+    
+    if (linkedUser) {
+      if (!userIds.some(id => id.toString() === linkedUser!._id.toString())) userIds.push(linkedUser._id as any);
+      if (!notifications.some(n => n._id.toString() === linkedUser!._id.toString())) {
         notifications.push({ _id: linkedUser._id, name: linkedUser.name, email: linkedUser.email });
-      } else {
-        // Fallback store emp._id
-        if (!userIds.some((id) => id.toString() === emp._id.toString())) {
-          userIds.push(emp._id as any);
-        }
       }
+    } else {
+      if (!userIds.some(id => id.toString() === emp._id.toString())) userIds.push(emp._id as any);
     }
   }
 
@@ -894,20 +933,122 @@ export const getAuditLogs = asyncHandler(async (_req: Request, res: Response) =>
 
 // --- PERMISSIONS ---
 export const getPermissions = asyncHandler(async (_req: Request, res: Response) => {
-  const permissions = await Permission.find().sort({ module: 1, name: 1 });
+  let permissions = await Permission.find().sort({ module: 1, name: 1 });
+  if (permissions.length === 0) {
+    const defaultPermissions = [
+      { name: "View Users", code: "USERS_VIEW", module: "Users", description: "View user directory and profiles" },
+      { name: "Manage Users", code: "USERS_MANAGE", module: "Users", description: "Create, edit, and deactivate users" },
+      { name: "View Projects", code: "PROJECTS_VIEW", module: "Projects", description: "Access projects and milestones" },
+      { name: "Manage Projects", code: "PROJECTS_MANAGE", module: "Projects", description: "Create and edit project details" },
+      { name: "Delete Projects", code: "PROJECTS_DELETE", module: "Projects", description: "Archive or delete projects" },
+      { name: "View Invoices", code: "INVOICES_VIEW", module: "Finance", description: "View client invoices and billing" },
+      { name: "Manage Invoices", code: "INVOICES_MANAGE", module: "Finance", description: "Create, send, and void invoices" },
+      { name: "View Leads", code: "LEADS_VIEW", module: "CRM", description: "View sales inquiries and pipeline" },
+      { name: "Manage Leads", code: "LEADS_MANAGE", module: "CRM", description: "Update lead status and schedule calls" },
+      { name: "View Tasks", code: "TASKS_VIEW", module: "Tasks", description: "View team tasks and kanban boards" },
+      { name: "Manage Tasks", code: "TASKS_MANAGE", module: "Tasks", description: "Assign and reorder tasks" },
+      { name: "Manage Media", code: "MEDIA_MANAGE", module: "Storage", description: "Upload, download, and delete assets" },
+      { name: "Manage Blog", code: "BLOG_MANAGE", module: "Content", description: "Publish and edit blog posts" },
+      { name: "View Audit Logs", code: "AUDIT_VIEW", module: "System", description: "Inspect system security audit trails" },
+      { name: "Manage Roles", code: "ROLES_MANAGE", module: "System", description: "Configure RBAC roles and policies" },
+    ];
+    try {
+      await Permission.insertMany(defaultPermissions);
+      permissions = await Permission.find().sort({ module: 1, name: 1 });
+    } catch {}
+  }
   return res.status(200).json(new ApiResponse(200, permissions, "Permissions retrieved successfully"));
 });
 
 // --- ROLES ---
 export const getRoles = asyncHandler(async (_req: Request, res: Response) => {
-  const roles = await Role.find().sort({ name: 1 });
+  const roles = await Role.find().populate("permissions").sort({ name: 1 });
   return res.status(200).json(new ApiResponse(200, roles, "Roles retrieved successfully"));
 });
 
+export const updateRole = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name, description, permissions, isDefault } = req.body;
+
+  const role = await Role.findById(id);
+  if (!role) {
+    throw new ApiError(404, "Role not found");
+  }
+
+  if (name && typeof name === "string" && name.trim()) {
+    role.name = name.trim();
+  }
+  if (description !== undefined) {
+    role.description = description;
+  }
+  if (Array.isArray(permissions)) {
+    role.permissions = permissions.filter((p: any) => mongoose.Types.ObjectId.isValid(p));
+  }
+  if (isDefault !== undefined && typeof isDefault === "boolean") {
+    role.isDefault = isDefault;
+  }
+
+  await role.save();
+  const updated = await Role.findById(id).populate("permissions");
+
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
+
+  return res.status(200).json(new ApiResponse(200, updated, "Role updated successfully"));
+});
+
 export const createRole = asyncHandler(async (req: Request, res: Response) => {
-  const role = await Role.create(req.body);
-  getIO().emit("dashboard_update");
+  const { name, code, description, permissions, isDefault } = req.body;
+  if (!name || typeof name !== "string" || !name.trim()) {
+    throw new ApiError(400, "Role name is required");
+  }
+
+  const roleCode = (code || name)
+    .toUpperCase()
+    .trim()
+    .replace(/[^A-Z0-9_]/g, "_");
+
+  const existing = await Role.findOne({ code: roleCode });
+  if (existing) {
+    throw new ApiError(409, `A role with code '${roleCode}' already exists`);
+  }
+
+  const validPermissions = Array.isArray(permissions)
+    ? permissions.filter((p: any) => mongoose.Types.ObjectId.isValid(p))
+    : [];
+
+  const role = await Role.create({
+    name: name.trim(),
+    code: roleCode,
+    description: description || "",
+    permissions: validPermissions,
+    isDefault: !!isDefault,
+  });
+
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
+
   return res.status(201).json(new ApiResponse(201, role, "Role created successfully"));
+});
+
+export const deleteRole = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const role = await Role.findById(id);
+  if (!role) {
+    throw new ApiError(404, "Role not found");
+  }
+  if (role.isDefault) {
+    throw new ApiError(400, "Default system roles cannot be deleted");
+  }
+  await Role.findByIdAndDelete(id);
+
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
+
+  return res.status(200).json(new ApiResponse(200, null, "Role deleted successfully"));
 });
 
 // --- SERVICES ---
@@ -944,8 +1085,17 @@ export const getAllMedia = asyncHandler(async (_req: Request, res: Response) => 
 
 export const deleteMedia = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  await Media.findByIdAndDelete(id);
-  getIO().emit("dashboard_update");
+  const media = await Media.findByIdAndDelete(id);
+  if (media && media.publicId && !media.publicId.startsWith("local-")) {
+    try {
+      await cloudinary.uploader.destroy(media.publicId);
+    } catch (e: any) {
+      console.warn("Cloudinary delete warning:", e?.message);
+    }
+  }
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
   return res.status(200).json(new ApiResponse(200, null, "Media item deleted successfully"));
 });
 

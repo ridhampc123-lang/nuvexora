@@ -42,11 +42,15 @@ const LeadSchema = new mongoose_1.Schema({
     company: { type: String, default: "" },
     serviceCategory: { type: String, required: true, default: "General Inquiry" },
     budgetRange: { type: String, default: "Undisclosed" },
+    timeline: { type: String, default: "Flexible" },
     message: { type: String, required: true },
     status: {
         type: String,
         enum: ["new", "contacted", "qualified", "converted", "closed"],
         default: "new",
     },
+    meetingLink: { type: String, default: "" },
+    meetingTime: { type: String, default: "" },
+    adminNote: { type: String, default: "" },
 }, { timestamps: true });
 exports.Lead = mongoose_1.default.model("Lead", LeadSchema);

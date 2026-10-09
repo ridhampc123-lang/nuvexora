@@ -37,7 +37,7 @@ exports.Payment = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const PaymentSchema = new mongoose_1.Schema({
     invoiceId: { type: mongoose_1.Schema.Types.ObjectId, ref: "Invoice", required: true },
-    clientId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", required: true },
+    clientId: { type: mongoose_1.Schema.Types.ObjectId, ref: "ClientAccount", required: true },
     amount: { type: Number, required: true },
     paymentMethod: { type: String, enum: ["stripe", "bank_transfer", "crypto", "card"], default: "card" },
     transactionId: { type: String, required: true },

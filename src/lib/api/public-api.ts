@@ -67,3 +67,23 @@ export const submitLeadInquiry = async (payload: {
   const { data } = await apiClient.post("/leads", payload);
   return data.data;
 };
+
+export const getPublicPricingData = async () => {
+  try {
+    const { data } = await apiClient.get("/public/pricing");
+    return data.data;
+  } catch (error) {
+    console.warn("Failed to fetch dynamic public pricing, using fallback", error);
+    return null;
+  }
+};
+
+export const getPublicCurrencies = async () => {
+  try {
+    const { data } = await apiClient.get("/public/currencies");
+    return data.data;
+  } catch {
+    return [];
+  }
+};
+

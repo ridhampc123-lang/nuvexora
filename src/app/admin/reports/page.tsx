@@ -3,23 +3,60 @@
 import React, { useState } from "react";
 import { FileSpreadsheet, Download, FileText, Calendar, Filter, CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useAdminReportsQuery } from "@/hooks/use-api-queries";
 
 export default function ReportsPage() {
   const [generating, setGenerating] = useState<string | null>(null);
+  const { refetch } = useAdminReportsQuery();
 
   const reports = [
-    { id: "financial", title: "Executive Financial & P&L Statement", desc: "Detailed breakdown of monthly recurring revenue, active retainers, client invoices, and payment disbursements.", category: "Finance", format: "PDF / CSV" },
-    { id: "leads", title: "Sales Pipeline & Lead Conversion Audit", desc: "Performance breakdown of consultation requests, client acquisitions, and proposal acceptance rates.", category: "Sales & Marketing", format: "XLSX" },
-    { id: "projects", title: "Project Delivery & SLA Compliance Report", desc: "Milestone completion telemetry, engineering task throughput, and client approval velocities.", category: "Operations", format: "PDF" },
+    { id: "financial", title: "Executive Financial & P&L Statement", desc: "Detailed breakdown of monthly recurring revenue, active retainers, client invoices, and payment disbursements.", category: "Finance", format: "CSV" },
+    { id: "leads", title: "Sales Pipeline & Lead Conversion Audit", desc: "Performance breakdown of consultation requests, client acquisitions, and proposal acceptance rates.", category: "Sales & Marketing", format: "CSV" },
+    { id: "projects", title: "Project Delivery & SLA Compliance Report", desc: "Milestone completion telemetry, engineering task throughput, and client approval velocities.", category: "Operations", format: "CSV" },
     { id: "hr", title: "Employee Attendance & Payroll Ledger", desc: "Hours logged, leave balance calculations, department resource allocation, and payroll prep audit.", category: "HR & People", format: "CSV" },
   ];
 
-  const handleGenerate = (id: string, title: string) => {
+  const handleGenerate = async (id: string, title: string) => {
     setGenerating(id);
-    setTimeout(() => {
+    try {
+      const res = await refetch();
+      const reportsData = res.data || {};
+      let csvContent = "";
+      const filename = `${id}_report_${new Date().toISOString().split("T")[0]}.csv`;
+
+      if (id === "financial") {
+        const rows = reportsData.invoices || [];
+        csvContent = "InvoiceNumber,Client,TotalAmount,Status,DueDate\n" +
+          rows.map((r: any) => `"${r.invoiceNumber || ""}","${r.clientId || ""}","${r.totalAmount || 0}","${r.status || ""}","${r.dueDate || ""}"`).join("\n");
+      } else if (id === "leads") {
+        const rows = reportsData.leads || [];
+        csvContent = "Name,Email,Company,Status,CreatedAt\n" +
+          rows.map((r: any) => `"${r.name || ""}","${r.email || ""}","${r.company || ""}","${r.status || ""}","${r.createdAt || ""}"`).join("\n");
+      } else if (id === "projects") {
+        const rows = reportsData.projects || [];
+        csvContent = "Title,Category,Status,ProgressPercentage,CreatedAt\n" +
+          rows.map((r: any) => `"${r.title || ""}","${r.category || ""}","${r.status || ""}","${r.progressPercentage || 0}%","${r.createdAt || ""}"`).join("\n");
+      } else if (id === "hr") {
+        const rows = reportsData.attendance || [];
+        csvContent = "EmployeeId,Date,CheckIn,CheckOut,Status,TotalMinutes\n" +
+          rows.map((r: any) => `"${r.employeeId || ""}","${r.date || ""}","${r.checkIn || ""}","${r.checkOut || ""}","${r.status || ""}","${r.totalWorkingMinutes || 0}"`).join("\n");
+      }
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success(`Exported: ${title}`);
+    } catch (err: any) {
+      toast.error("Failed to export report: " + (err.message || "Unknown error"));
+    } finally {
       setGenerating(null);
-      toast.success(`Generated report: ${title}`);
-    }, 1200);
+    }
   };
 
   return (

@@ -166,6 +166,7 @@ export const navigationConfig = {
     { label: "Home", href: "/" },
     servicesMegaMenu,
     { label: "Portfolio", href: "/portfolio" },
+    { label: "Pricing", href: "/pricing" },
     resourcesMegaMenu,
     companyMegaMenu,
   ],
@@ -213,6 +214,7 @@ export const navigationConfig = {
       title: "Company",
       items: [
         { label: "About", href: "/about" },
+        { label: "Pricing", href: "/pricing" },
         { label: "Careers", href: "/careers" },
         { label: "Contact", href: "/contact" },
         { label: "Privacy Policy", href: "/privacy-policy" },
