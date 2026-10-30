@@ -1,5 +1,6 @@
 "use client"
 
+import React, { useRef, useCallback, useState } from "react"
 import Link from "next/link"
 import { MailIcon, PhoneIcon } from "lucide-react"
 
@@ -11,8 +12,38 @@ import { Button } from "@/components/ui/button"
 import { SiteLogo } from "@/components/layout/site-logo"
 
 function Footer() {
+  const footerRef = useRef<HTMLElement>(null)
+  const textRef = useRef<HTMLDivElement>(null)
+  const [isHovered, setIsHovered] = useState(false)
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    if (!textRef.current || !footerRef.current) return
+    const rect = footerRef.current.getBoundingClientRect()
+    const mouseX = (e.clientX - rect.left) / rect.width
+    const mouseY = (e.clientY - rect.top) / rect.height
+    const posX = 50 + (mouseX - 0.5) * 8
+    const posY = 50 + (mouseY - 0.5) * 8
+    textRef.current.style.setProperty("--mask-x", `${posX.toFixed(2)}%`)
+    textRef.current.style.setProperty("--mask-y", `${posY.toFixed(2)}%`)
+  }, [])
+
+  const handleMouseEnter = useCallback(() => setIsHovered(true), [])
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false)
+    if (textRef.current) {
+      textRef.current.style.setProperty("--mask-x", "50%")
+      textRef.current.style.setProperty("--mask-y", "50%")
+    }
+  }, [])
+
   return (
-    <footer className="bg-slate-950 text-white relative overflow-hidden border-t border-slate-900">
+    <footer
+      ref={footerRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="bg-slate-950 text-white relative overflow-hidden border-t border-slate-900"
+    >
       {/* Background Radial Blue Glow */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.15),transparent_40%)] pointer-events-none" />
 
@@ -116,6 +147,21 @@ function Footer() {
             <Link href="/contact" className="transition-colors hover:text-white">Contact Us</Link>
           </div>
         </Container>
+      </div>
+
+      {/* Oversized Nature-Masked Typography (Nuvexora Brand Treatment) */}
+      <div
+        ref={textRef}
+        aria-hidden="true"
+        className={`w-full overflow-hidden pt-4 sm:pt-6 pb-0 mb-0 flex items-end justify-center select-none ${
+          !isHovered ? "textured-mask-ambient" : ""
+        }`}
+      >
+        <span
+          className="textured-mask-heading font-heading font-black tracking-[-0.04em] leading-[0.75] block text-center w-full max-w-full text-[17.5vw] sm:text-[16.8vw] md:text-[16.2vw] lg:text-[15.8vw] xl:text-[15.2vw] pointer-events-none -mb-[1.8vw] sm:-mb-[1.4vw] translate-y-[1%]"
+        >
+          Nuvexora
+        </span>
       </div>
     </footer>
   )

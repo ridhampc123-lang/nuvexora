@@ -41,3 +41,4 @@ export * from "@/components/sections/services/industries-grid";
 export * from "@/components/sections/services/service-case-studies";
 export * from "@/components/sections/services/services-faq";
 export * from "@/components/sections/services/service-detail-view";
+

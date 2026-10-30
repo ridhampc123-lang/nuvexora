@@ -210,3 +210,77 @@ html.lenis body {
 .will-change-transform {
   will-change: transform;
 }
+
+/* ==========================================================================
+   IMAGE-MASKED TEXTURED TYPOGRAPHY (Nuvexora Brand Treatment)
+   ========================================================================== */
+.textured-mask-heading {
+  background-image: url('/images/textures/nuvexora-nature-grass.jpg');
+  background-image: image-set(
+    url('/images/textures/nuvexora-nature-grass.webp') type('image/webp'),
+    url('/images/textures/nuvexora-nature-grass.jpg') type('image/jpeg')
+  );
+  background-size: 110% 110%;
+  background-position: var(--mask-x, 50%) var(--mask-y, 50%);
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 12px 28px rgba(21, 94, 38, 0.16));
+  transition: background-position 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: background-position;
+}
+
+.dark .textured-mask-heading {
+  filter: drop-shadow(0 14px 34px rgba(34, 197, 94, 0.22));
+}
+
+/* Responsive Texture Loading for Performance */
+@media (max-width: 640px) {
+  .textured-mask-heading {
+    background-image: url('/images/textures/nuvexora-nature-grass-sm.webp');
+    background-size: 135% 135%;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .textured-mask-heading {
+    background-image: url('/images/textures/nuvexora-nature-grass-md.webp');
+    background-size: 120% 120%;
+  }
+}
+
+/* Browser Fallback for lack of background-clip: text */
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .textured-mask-heading {
+    color: #15803d !important;
+    -webkit-text-fill-color: #15803d !important;
+    background-image: none !important;
+    filter: none !important;
+  }
+}
+
+/* Ambient Subtle Texture Drift for browsers with motion allowed */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes subtle-nature-drift {
+    0%, 100% {
+      background-position: 50% 50%;
+    }
+    50% {
+      background-position: 52% 48%;
+    }
+  }
+
+  .textured-mask-ambient {
+    animation: subtle-nature-drift 18s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .textured-mask-heading,
+  .textured-mask-ambient {
+    animation: none !important;
+    transition: none !important;
+  }
+}
