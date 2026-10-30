@@ -95,6 +95,27 @@ export const deleteAdminPortfolio = async (id: string) => {
   return data.data;
 };
 
+// --- CASE STUDIES ---
+export const getAdminCaseStudies = async () => {
+  try {
+    const { data } = await apiClient.get("/admin/case-studies");
+    if (Array.isArray(data.data)) return data.data;
+  } catch {}
+  return [];
+};
+export const createAdminCaseStudy = async (caseStudyData: any) => {
+  const { data } = await apiClient.post("/admin/case-studies", caseStudyData);
+  return data.data;
+};
+export const updateAdminCaseStudy = async ({ id, ...caseStudyData }: { id: string; [key: string]: any }) => {
+  const { data } = await apiClient.patch(`/admin/case-studies/${id}`, caseStudyData);
+  return data.data;
+};
+export const deleteAdminCaseStudy = async (id: string) => {
+  const { data } = await apiClient.delete(`/admin/case-studies/${id}`);
+  return data.data;
+};
+
 export const getAdminMetrics = async () => {
   try {
     const { data } = await apiClient.get("/admin/metrics");

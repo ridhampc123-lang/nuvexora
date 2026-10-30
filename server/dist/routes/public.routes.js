@@ -2,9 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const public_controller_js_1 = require("../controllers/public.controller.js");
+const pricing_controller_js_1 = require("../controllers/pricing.controller.js");
+const case_study_controller_js_1 = require("../controllers/case-study.controller.js");
 const router = (0, express_1.Router)();
 router.get("/homepage", public_controller_js_1.getHomepageData);
 router.get("/portfolio", public_controller_js_1.getPublicPortfolio);
+router.get("/case-studies", case_study_controller_js_1.getPublicCaseStudies);
+router.get("/case-studies/:slug", case_study_controller_js_1.getPublicCaseStudyBySlug);
+router.get("/pricing", pricing_controller_js_1.getPublicPricing);
+router.get("/currencies", pricing_controller_js_1.getPublicCurrencies);
 router.post("/meetings/book", public_controller_js_1.bookMeeting);
 router.post("/newsletter/subscribe", public_controller_js_1.subscribeNewsletter);
 exports.default = router;

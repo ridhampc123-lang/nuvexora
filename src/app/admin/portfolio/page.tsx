@@ -182,7 +182,7 @@ export default function PortfolioCMSPage() {
         </div>
       ),
     },
-    { header: "Case Study Title", accessorKey: "title" },
+    { header: "Project Title", accessorKey: "title" },
     { header: "Client", accessorKey: "clientName" },
     {
       header: "Description / Summary",
@@ -232,19 +232,19 @@ export default function PortfolioCMSPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <AdminDataTable
-        title="Portfolio & Case Studies"
-        description="Manage corporate case studies, descriptions, metrics, client results, and technical showcases."
+        title="Portfolio Projects CMS"
+        description="Manage showcase portfolio projects, deliverables, client results, and technical showcases."
         columns={columns}
         data={portfolio}
-        searchPlaceholder="Search case studies..."
+        searchPlaceholder="Search portfolio projects..."
         onAddNew={() => handleOpenModal()}
-        addNewLabel="Add Case Study"
+        addNewLabel="Add Portfolio Project"
       />
 
       <AdminModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingItem ? "Edit Case Study" : "Add Case Study"}
+        title={editingItem ? "Edit Portfolio Project" : "Add Portfolio Project"}
       >
         <form onSubmit={handleSave} className="space-y-4 text-xs">
           <div>
@@ -361,7 +361,7 @@ export default function PortfolioCMSPage() {
               Cancel
             </button>
             <button type="submit" disabled={uploading} className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold shadow-md shadow-blue-600/20 disabled:opacity-50">
-              Save Case Study
+              Save Project
             </button>
           </div>
         </form>

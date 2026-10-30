@@ -92,6 +92,7 @@ import {
 import { upload } from "../config/cloudinary.js";
 import { getAdminBlogs, updateBlog, deleteBlog, createBlog as createAdminBlog } from "../controllers/admin-blog.controller.js";
 import { getAdminPortfolio, createPortfolioItem, updatePortfolioItem, deletePortfolioItem } from "../controllers/admin-portfolio.controller.js";
+import { getAdminCaseStudies, createCaseStudy, updateCaseStudy, deleteCaseStudy } from "../controllers/case-study.controller.js";
 import {
   getAdminPricing,
   createPricingPlan,
@@ -147,6 +148,12 @@ router.get("/portfolio", getAdminPortfolio);
 router.post("/portfolio", createPortfolioItem);
 router.patch("/portfolio/:id", updatePortfolioItem);
 router.delete("/portfolio/:id", deletePortfolioItem);
+
+// Case Studies Management
+router.get("/case-studies", getAdminCaseStudies);
+router.post("/case-studies", createCaseStudy);
+router.patch("/case-studies/:id", updateCaseStudy);
+router.delete("/case-studies/:id", deleteCaseStudy);
 
 // Dashboard Metrics
 router.get("/metrics", getAdminDashboardMetrics);

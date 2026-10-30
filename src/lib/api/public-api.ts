@@ -32,6 +32,24 @@ export const getPublicPortfolio = async () => {
   }
 };
 
+export const getPublicCaseStudies = async () => {
+  try {
+    const { data } = await apiClient.get("/public/case-studies");
+    return data.data;
+  } catch {
+    return [];
+  }
+};
+
+export const getPublicCaseStudyBySlug = async (slug: string) => {
+  try {
+    const { data } = await apiClient.get(`/public/case-studies/${slug}`);
+    return data.data;
+  } catch {
+    return null;
+  }
+};
+
 export const getHomepageData = async () => {
   const { data } = await apiClient.get("/public/homepage");
   return data.data;

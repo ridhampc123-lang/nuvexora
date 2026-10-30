@@ -37,3 +37,4 @@ export * from "./pricing.model.js";
 export * from "./currency.model.js";
 export * from "./proposal.model.js";
 export * from "./contract.model.js";
+export * from "./case-study.model.js";

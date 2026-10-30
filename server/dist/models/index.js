@@ -49,3 +49,8 @@ __exportStar(require("./leave-request.model.js"), exports);
 __exportStar(require("./ticket.model.js"), exports);
 __exportStar(require("./department.model.js"), exports);
 __exportStar(require("./chat-message.model.js"), exports);
+__exportStar(require("./pricing.model.js"), exports);
+__exportStar(require("./currency.model.js"), exports);
+__exportStar(require("./proposal.model.js"), exports);
+__exportStar(require("./contract.model.js"), exports);
+__exportStar(require("./case-study.model.js"), exports);

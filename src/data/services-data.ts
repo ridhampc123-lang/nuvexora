@@ -498,17 +498,7 @@ export const servicesData: Service[] = [
       { step: 5, title: "Developer Handoff & QA Review", description: "Delivering Figma tokens to engineering and inspecting final code builds for pixel-perfection.", duration: "Week 10" }
     ],
     targetIndustries: ["SaaS Platforms", "FinTech Mobile Apps", "E-Commerce Brands", "Healthcare Portals", "Consumer Apps"],
-    caseStudies: [
-      {
-        title: "FinTech App UX Redesign",
-        client: "PayPulse Mobility",
-        industry: "Financial Services",
-        metrics: ["+185% Onboarding Completion", "4.9 User Satisfaction Score", "Zero Accessibility Audit Flaws"],
-        before: "Complex 7-step onboarding flow suffering from 60% user drop-off rate and low app reviews.",
-        after: "Designed clean 3-step biometric onboarding flow with instant feedback and accessible design system.",
-        technologies: ["Figma", "Framer", "Design Tokens", "Storybook"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "What is a Design System and why does our company need one?", answer: "A Design System is a centralized library of UI components, visual styles, and design tokens. It ensures visual consistency across all web and mobile products while allowing developers to build features 2x faster." },
       { question: "How do you ensure the design will look identical when coded?", answer: "Our designers work hand-in-hand with our engineers using Figma auto-layout and design token exports that map 1:1 with Tailwind CSS classes and React component props." }
@@ -578,17 +568,7 @@ export const servicesData: Service[] = [
       { step: 4, title: "Optimization & Multivariate A/B Testing", description: "Scaling winning ad angles, pruning underperforming keywords, and split-testing headlines.", duration: "Ongoing" }
     ],
     targetIndustries: ["B2B SaaS", "Enterprise Services", "E-Commerce", "FinTech", "Professional Services"],
-    caseStudies: [
-      {
-        title: "B2B SaaS Growth Campaign",
-        client: "CloudScale Analytics",
-        industry: "Enterprise SaaS",
-        metrics: ["5.2x ROAS", "+310% Monthly Demo Requests", "42% CAC Reduction"],
-        before: "Wasting $30k/mo on generic Google Search ads with 1.2% landing page conversion rate.",
-        after: "Built specialized LinkedIn ABM campaign paired with Next.js high-speed landing pages.",
-        technologies: ["LinkedIn Ads", "Google Ads", "GA4 Server-Side", "HubSpot"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "How do you overcome iOS 14+ tracking limitations in ad reporting?", answer: "We deploy Server-Side Google Tag Manager and direct Conversion APIs (Meta CAPI / LinkedIn CAPI). This sends conversion data directly from your server to ad networks, bypassing browser ad-blockers and privacy restrictions." },
       { question: "What is your minimum recommended ad spend budget?", answer: "For meaningful statistical testing and audience learning, we recommend starting with a minimum ad spend budget of $3,000 to $5,000 per month across search or social channels." }
@@ -655,17 +635,7 @@ export const servicesData: Service[] = [
       { step: 4, title: "Collateral Design & Export", description: "Building pitch decks, business cards, social templates, and exporting master vector packages.", duration: "Week 7 - 8" }
     ],
     targetIndustries: ["Enterprise Tech & SaaS", "Venture-Backed Startups", "FinTech & Banking", "Consulting Firms", "Premium E-Commerce"],
-    caseStudies: [
-      {
-        title: "Enterprise Rebranding for AI Pioneer",
-        client: "Cognitive Dynamics",
-        industry: "Artificial Intelligence",
-        metrics: ["3x Enterprise Contract Values", "$15M Series A Raised", "100% Brand Consistency"],
-        before: "Outdated 2012 logo and mismatched slide decks making the team look like a small regional agency.",
-        after: "Crafted sleek modern brand identity system with 3D graphic accents and enterprise pitch deck.",
-        technologies: ["Illustrator", "Figma", "Spline 3D", "After Effects"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "What is included in the final brand guidelines package?", answer: "You receive master vector logo files, clear-space rules, incorrect usage warnings, color swatches (RGB, CMYK, HEX, Pantone), typography font files, copy guidelines, and collateral templates." },
       { question: "Can you help rebrand an established company without losing existing brand equity?", answer: "Yes! We specialize in evolutionary rebranding—preserving core recognizable logo elements while modernizing typography, colors, and digital assets for modern screens." }
@@ -734,17 +704,7 @@ export const servicesData: Service[] = [
       { step: 4, title: "Authority Link Building & Content Sprints", description: "Publishing expert content hubs and executing targeted white-hat backlink outreach.", duration: "Ongoing" }
     ],
     targetIndustries: ["SaaS & B2B Software", "E-Commerce Stores", "Professional Services", "Healthcare & Medical", "Financial Advice & FinTech"],
-    caseStudies: [
-      {
-        title: "B2B Software Organic Revenue Explosion",
-        client: "WorkforceHQ",
-        industry: "HR Tech",
-        metrics: ["+340% Organic Signups", "#1 Ranking for 45 Core Keywords", "Zero Paid Ad Spend Needed"],
-        before: "Stuck on Page 3 of Google due to duplicate sitemap URLs and slow client-side rendering.",
-        after: "Implemented server-side Next.js rendering, FAQ Schema, and programmatic keyword hubs.",
-        technologies: ["Next.js", "Schema.org", "Ahrefs", "Google Search Console"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "How long does it take to see results from Enterprise SEO?", answer: "While technical fixes (indexing and Core Web Vitals) yield ranking improvements in 3 to 6 weeks, full topical authority building and competitive Page 1 rankings typically mature over 3 to 6 months." },
       { question: "Do you use safe, white-hat SEO techniques?", answer: "Exclusively. We adhere 100% to Google's Search Essentials guidelines. We never use spammy link schemes or automated low-quality content spinners that risk manual penalties." }
@@ -814,17 +774,7 @@ export const servicesData: Service[] = [
       { step: 4, title: "Testing & Employee Onboarding", description: "Running stress-test simulations with sample data payloads and training team members on monitors.", duration: "Week 6" }
     ],
     targetIndustries: ["Logistics & Warehousing", "Accounting & Finance", "Healthcare Administration", "Real Estate Brokerages", "E-Commerce"],
-    caseStudies: [
-      {
-        title: "Automated Invoice & AP Processing Engine",
-        client: "LogiTrans Global",
-        industry: "Logistics",
-        metrics: ["12,000 Invoices Processed/Mo", "99.8% Accuracy", "4 Full-Time Staff Reallocated"],
-        before: "4 accounts payable clerks spending 40 hours weekly typing vendor PDF invoices into SAP.",
-        after: "Built AI OCR automation pipeline extracting line items from PDF emails and creating SAP bills instantly.",
-        technologies: ["Python", "OpenAI Vision", "n8n", "PostgreSQL", "SAP API"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "What happens if a third-party API goes down during an automated workflow?", answer: "Our automation pipelines include dead-letter queues and automated retry policies. If an API fails, the execution pauses, alerts your team on Slack, and automatically retries once the endpoint recovers." },
       { question: "Is cloud automation secure for handling sensitive financial records?", answer: "Yes! We use bank-grade AES-256 encryption for all stored API tokens and environment credentials. Data is processed in memory and never exposed to unencrypted logs." }
@@ -894,17 +844,7 @@ export const servicesData: Service[] = [
       { step: 4, title: "Data Migration & Team Onboarding", description: "Importing legacy contacts, running sales rep training sessions, and configuring mobile views.", duration: "Week 10 - 12" }
     ],
     targetIndustries: ["B2B Commercial Sales", "Real Estate Agencies", "Financial Wealth Management", "Consulting Agencies", "High-Ticket E-Commerce"],
-    caseStudies: [
-      {
-        title: "B2B Commercial Real Estate CRM",
-        client: "Vanguard Commercial",
-        industry: "Real Estate",
-        metrics: ["300 Sales Reps Onboarded", "+38% Deal Closure Rate", "Instant SMS Lead Routing"],
-        before: "Reps losing deal history when switching jobs and spending 3 hours daily on manual data entry.",
-        after: "Built custom Next.js CRM with automated property matching and instant lead routing.",
-        technologies: ["Next.js", "TypeScript", "PostgreSQL", "Twilio", "SendGrid"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "Can you migrate our existing data from Salesforce or HubSpot?", answer: "Yes! We write custom ETL migration scripts to transfer contacts, deal history, notes, and activity logs accurately without losing historical context." },
       { question: "Why build a custom CRM instead of paying for Salesforce?", answer: "A custom CRM is tailored 100% to your unique workflow, features zero bloat, loads instantly, and eliminates recurring per-seat monthly license fees that compound as your company grows." }
@@ -976,17 +916,7 @@ export const servicesData: Service[] = [
       { step: 5, title: "Deployment & SLA Support", description: "Migrating enterprise data, conducting staff training workshops, and launching 24/7 support.", duration: "Week 22 - 24" }
     ],
     targetIndustries: ["Manufacturing", "Wholesale & Distribution", "Construction & Engineering", "Retail Conglomerates", "Healthcare Supply Networks"],
-    caseStudies: [
-      {
-        title: "Multi-Factory ERP Transformation",
-        client: "Apex Manufacturing Corp",
-        industry: "Manufacturing",
-        metrics: ["5 Factories Unified", "35% Reduction in Scrap Material", "$2.4M Annual Cost Savings"],
-        before: "Using 4 different legacy software tools causing weekly assembly line shutdowns due to missing raw materials.",
-        after: "Built custom ERP with real-time BOM tracking, automated supplier PO generation, and barcode scanning.",
-        technologies: ["Java", "Spring Boot", "Next.js", "PostgreSQL", "Docker"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "How does a custom ERP compare to SAP or Microsoft Dynamics?", answer: "SAP/Dynamics are massive, generic products requiring expensive consultants to customize. A custom ERP is built 100% around your exact operational rules, eliminating bloated software bloat and ongoing license fees." },
       { question: "Can your ERP interface with handheld barcode scanners?", answer: "Yes! We build mobile apps and web modules that interface directly with Zebra handheld scanners and RFID readers for instant inventory receiving and picking." }
@@ -1056,17 +986,7 @@ export const servicesData: Service[] = [
       { step: 4, title: "Documentation & Gateway Deployment", description: "Deploying API Gateway, publishing interactive developer portal, and enabling monitoring alerts.", duration: "Week 9 - 10" }
     ],
     targetIndustries: ["FinTech Payments", "SaaS Platforms", "Mobile Applications", "E-Commerce Platforms", "Logistics Data Networks"],
-    caseStudies: [
-      {
-        title: "High-Throughput FinTech Payment API",
-        client: "PaySwift Infrastructure",
-        industry: "Financial Services",
-        metrics: ["10M Daily API Requests", "7ms Average Latency", "99.999% SLA Uptime"],
-        before: "Legacy Node.js API crashing under 2,000 concurrent payment requests with 1.2s response times.",
-        after: "Re-engineered core API in Go with Redis caching layer and Kong Gateway rate-limiting.",
-        technologies: ["Go", "Redis", "Kong API Gateway", "PostgreSQL", "Docker"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "Should we choose REST or GraphQL for our API project?", answer: "REST is ideal for straightforward CRUD and third-party public integrations. GraphQL is superior for complex mobile and web apps where reducing data payload size and avoiding multiple network roundtrips is critical." },
       { question: "How do you handle API versioning when releasing breaking changes?", answer: "We implement semantic URL versioning (/v1, /v2) or header versioning. Older API versions remain fully operational until client applications complete deprecation migration cycles." }
@@ -1136,17 +1056,7 @@ export const servicesData: Service[] = [
       { step: 4, title: "Payment Testing & Launch Cutover", description: "Executing multi-currency payment tests, tax validation, and DNS cutover.", duration: "Week 12 - 14" }
     ],
     targetIndustries: ["Direct-to-Consumer (D2C) Brands", "Luxury Fashion & Apparel", "Consumer Electronics", "Health & Supplements", "Global Retail Networks"],
-    caseStudies: [
-      {
-        title: "Headless E-Commerce Re-Architecture",
-        client: "Aura Luxury Apparel",
-        industry: "Fashion Retail",
-        metrics: ["+45% Mobile Revenue", "0.4s Product Page Load", "28% Reduction in Cart Abandonment"],
-        before: "Monolithic Shopify theme taking 5.2 seconds to render on mobile devices, losing 30% of sales.",
-        after: "Built Next.js 15 Headless storefront connected to Shopify Plus API and Algolia search.",
-        technologies: ["Next.js", "Shopify GraphQL API", "Algolia", "Tailwind CSS", "Vercel"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "What is Headless E-Commerce and why should our brand switch?", answer: "Headless E-Commerce separates your customer-facing website (Next.js) from the backend inventory system (Shopify). This results in 3x faster loading speeds, complete visual design freedom, and higher conversion rates." },
       { question: "Can we still use our existing Shopify backend for orders and fulfillment?", answer: "Absolutely! Headless architecture uses Shopify solely as a secure backend engine for managing products, inventory, orders, and payments while Next.js powers the high-speed frontend." }
@@ -1214,17 +1124,7 @@ export const servicesData: Service[] = [
       { step: 3, title: "Proactive Maintenance Retainer Activation", description: "Executing weekly dependency updates, database optimizations, and monthly security reports.", duration: "Ongoing" }
     ],
     targetIndustries: ["SaaS & Cloud Software", "Financial Tech", "Healthcare Platforms", "E-Commerce Retailers", "Enterprise Infrastructure"],
-    caseStudies: [
-      {
-        title: "24/7 SLA Protection for FinTech Portal",
-        client: "SecureBank Digital",
-        industry: "Financial Services",
-        metrics: ["99.999% SLA Uptime Maintained", "<8 Min Average Incident Resolution", "0 Security Breach Events"],
-        before: "Experiencing unmonitored weekend database lockups taking 6+ hours to notice and fix.",
-        after: "Activated 24/7 Nuvexora SLA retainer with 15-minute response guarantee and automated failover.",
-        technologies: ["Datadog", "PagerDuty", "AWS", "Sentry"]
-      }
-    ],
+    caseStudies: [],
     faqs: [
       { question: "What is included in your SLA incident response guarantee?", answer: "Our SLA guarantees that a senior engineer will acknowledge and begin active remediation on any Critical (Priority 1) outage within 15 minutes of trigger, 24 hours a day, 365 days a year." },
       { question: "Can unused maintenance hours rollover to the next month?", answer: "Yes! A portion of unused monthly engineering retainer hours can be rolled over or applied toward minor feature requests, UI enhancements, or performance tuning." }

@@ -1,6 +1,6 @@
 "use client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getHomepageData, bookConsultationMeeting, subscribeNewsletter, getPublicBlogs, getPublicPortfolio, getPublicServices } from "@/lib/api/public-api";
+import { getHomepageData, bookConsultationMeeting, subscribeNewsletter, getPublicBlogs, getPublicPortfolio, getPublicServices, getPublicCaseStudies, getPublicCaseStudyBySlug } from "@/lib/api/public-api";
 import { getEmployeeProjects, getEmployeeTasks, getMyAttendance, checkInEmployee, checkOutEmployee, getMyLeaveRequests, createEmployeeLeaveRequest } from "@/lib/api/employee-api";
 import { getChannelMessages, sendChatMessageApi, getChatChannelsApi, getAssignedTeamMembersApi } from "@/lib/api/chat-api";
 import { 
@@ -132,6 +132,21 @@ export const usePublicPortfolioQuery = () => {
   return useQuery({
     queryKey: ["publicPortfolio"],
     queryFn: getPublicPortfolio,
+  });
+};
+
+export const usePublicCaseStudiesQuery = () => {
+  return useQuery({
+    queryKey: ["publicCaseStudies"],
+    queryFn: getPublicCaseStudies,
+  });
+};
+
+export const usePublicCaseStudyQuery = (slug: string) => {
+  return useQuery({
+    queryKey: ["publicCaseStudy", slug],
+    queryFn: () => getPublicCaseStudyBySlug(slug),
+    enabled: !!slug,
   });
 };
 

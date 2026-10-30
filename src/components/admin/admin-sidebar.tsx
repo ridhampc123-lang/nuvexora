@@ -76,6 +76,7 @@ const navGroups = [
     items: [
       { label: "Blog", href: "/admin/blog", icon: PenBox },
       { label: "Portfolio", href: "/admin/portfolio", icon: FolderHeart },
+      { label: "Case Studies", href: "/admin/case-studies", icon: Briefcase },
       { label: "Services", href: "/admin/services", icon: LayoutTemplate },
       { label: "Pricing & Plans", href: "/admin/pricing", icon: Coins },
       { label: "Media", href: "/admin/media", icon: ImageIcon },

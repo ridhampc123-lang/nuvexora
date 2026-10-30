@@ -5,6 +5,8 @@ const admin_controller_js_1 = require("../controllers/admin.controller.js");
 const cloudinary_js_1 = require("../config/cloudinary.js");
 const admin_blog_controller_js_1 = require("../controllers/admin-blog.controller.js");
 const admin_portfolio_controller_js_1 = require("../controllers/admin-portfolio.controller.js");
+const case_study_controller_js_1 = require("../controllers/case-study.controller.js");
+const pricing_controller_js_1 = require("../controllers/pricing.controller.js");
 const auth_middleware_js_1 = require("../middleware/auth.middleware.js");
 const router = (0, express_1.Router)();
 router.use(auth_middleware_js_1.verifyJWT);
@@ -36,6 +38,11 @@ router.get("/portfolio", admin_portfolio_controller_js_1.getAdminPortfolio);
 router.post("/portfolio", admin_portfolio_controller_js_1.createPortfolioItem);
 router.patch("/portfolio/:id", admin_portfolio_controller_js_1.updatePortfolioItem);
 router.delete("/portfolio/:id", admin_portfolio_controller_js_1.deletePortfolioItem);
+// Case Studies Management
+router.get("/case-studies", case_study_controller_js_1.getAdminCaseStudies);
+router.post("/case-studies", case_study_controller_js_1.createCaseStudy);
+router.patch("/case-studies/:id", case_study_controller_js_1.updateCaseStudy);
+router.delete("/case-studies/:id", case_study_controller_js_1.deleteCaseStudy);
 // Dashboard Metrics
 router.get("/metrics", admin_controller_js_1.getAdminDashboardMetrics);
 // Users Management
@@ -147,4 +154,19 @@ router.delete("/careers/:id", admin_controller_js_1.deleteCareer);
 // Analytics & Reports
 router.get("/analytics", admin_controller_js_1.getAdminAnalyticsData);
 router.get("/reports", admin_controller_js_1.getAdminReportsData);
+// Dynamic Pricing Management
+router.get("/pricing", pricing_controller_js_1.getAdminPricing);
+router.post("/pricing", pricing_controller_js_1.createPricingPlan);
+router.patch("/pricing/:id", pricing_controller_js_1.updatePricingPlan);
+router.delete("/pricing/:id", pricing_controller_js_1.deletePricingPlan);
+router.post("/pricing/reorder", pricing_controller_js_1.reorderPricingPlans);
+// Currency Management
+router.get("/currencies", pricing_controller_js_1.getCurrencies);
+router.post("/currencies", pricing_controller_js_1.createCurrency);
+router.patch("/currencies/:id", pricing_controller_js_1.updateCurrency);
+router.delete("/currencies/:id", pricing_controller_js_1.deleteCurrency);
+// Master Data Export & Emergency Backups
+router.get("/export/excel", pricing_controller_js_1.exportMasterExcel);
+router.get("/backup/snapshot", pricing_controller_js_1.getMasterDataSnapshot);
+router.post("/backup/restore", pricing_controller_js_1.restoreEmergencyBackup);
 exports.default = router;

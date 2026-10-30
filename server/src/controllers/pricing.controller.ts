@@ -29,7 +29,8 @@ import {
   Attendance,
   LeaveRequest,
   Ticket,
-  Career
+  Career,
+  CaseStudy
 } from "../models/index.js";
 
 // --- PUBLIC PRICING & CURRENCY ---
@@ -373,6 +374,7 @@ export const getMasterDataSnapshot = asyncHandler(async (_req: Request, res: Res
     subscribers,
     tickets,
     careers,
+    caseStudies,
     siteSettings
   ] = await Promise.all([
     Lead.find().lean(),
@@ -395,6 +397,7 @@ export const getMasterDataSnapshot = asyncHandler(async (_req: Request, res: Res
     Subscriber.find().lean(),
     Ticket.find().lean(),
     Career.find().lean(),
+    CaseStudy.find().lean(),
     SiteSettings.find().lean()
   ]);
 
@@ -418,6 +421,7 @@ export const getMasterDataSnapshot = asyncHandler(async (_req: Request, res: Res
       services,
       blogs,
       portfolio,
+      caseStudies,
       pricing,
       currencies,
       subscribers,
