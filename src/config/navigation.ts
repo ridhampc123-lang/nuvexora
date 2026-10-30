@@ -11,7 +11,6 @@ import {
   CpuIcon,
   GraduationCapIcon,
   GlobeIcon,
-  HeartHandshakeIcon,
   LayoutGridIcon,
   MailIcon,
   NewspaperIcon,
@@ -69,7 +68,7 @@ const servicesMegaMenu: MegaMenuConfig = {
   ],
   quickLinks: [
     { label: "Services overview", href: "/services", icon: LayoutGridIcon },
-    { label: "Pricing", href: "/pricing", icon: HeartHandshakeIcon },
+    { label: "Case Studies", href: "/case-studies", icon: BriefcaseBusinessIcon },
     { label: "Contact", href: "/contact", icon: ContactIcon },
   ],
 };
@@ -166,7 +165,6 @@ export const navigationConfig = {
     { label: "Home", href: "/" },
     servicesMegaMenu,
     { label: "Portfolio", href: "/portfolio" },
-    { label: "Pricing", href: "/pricing" },
     resourcesMegaMenu,
     companyMegaMenu,
   ],
@@ -214,7 +212,6 @@ export const navigationConfig = {
       title: "Company",
       items: [
         { label: "About", href: "/about" },
-        { label: "Pricing", href: "/pricing" },
         { label: "Careers", href: "/careers" },
         { label: "Contact", href: "/contact" },
         { label: "Privacy Policy", href: "/privacy-policy" },
