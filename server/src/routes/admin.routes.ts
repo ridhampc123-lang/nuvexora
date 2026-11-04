@@ -82,6 +82,7 @@ import {
   deleteService,
   getAllMedia,
   deleteMedia,
+  downloadMedia,
   getAllCareers,
   createCareer,
   updateCareer,
@@ -281,6 +282,7 @@ router.delete("/services/:id", deleteService);
 
 // Media Management
 router.get("/media", getAllMedia);
+router.get("/media/:id/download", downloadMedia);
 router.delete("/media/:id", deleteMedia);
 
 // Careers Management

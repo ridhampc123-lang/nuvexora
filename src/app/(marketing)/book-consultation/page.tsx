@@ -90,7 +90,7 @@ export default function BookConsultationPage() {
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.12]">
             Book Your Free 45-Minute{" "}
-            <span className="bg-gradient-to-r from-blue-400 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
+            <span className="text-gradient-animated-glow">
               Technical Strategy Call
             </span>
           </h1>

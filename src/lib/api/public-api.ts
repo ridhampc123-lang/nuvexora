@@ -19,8 +19,12 @@ export const getPublicBlogs = async () => {
 };
 
 export const getPublicBlogBySlug = async (slug: string) => {
-  const { data } = await apiClient.get(`/blogs/${slug}`);
-  return data.data;
+  try {
+    const { data } = await apiClient.get(`/blogs/${slug}`);
+    return data.data;
+  } catch {
+    return null;
+  }
 };
 
 export const getPublicPortfolio = async () => {

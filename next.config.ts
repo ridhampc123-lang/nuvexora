@@ -11,10 +11,16 @@ const nextConfig: NextConfig = {
       ? backendUrl
       : `${backendUrl.replace(/\/$/, "")}/api/v1`;
 
+    const backendBase = target.replace(/\/api\/v1\/?$/, "");
+
     return [
       {
         source: "/api/v1/:path*",
         destination: `${target}/:path*`,
+      },
+      {
+        source: "/uploads/:path*",
+        destination: `${backendBase}/uploads/:path*`,
       },
     ];
   },

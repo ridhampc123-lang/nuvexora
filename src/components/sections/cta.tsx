@@ -26,7 +26,7 @@ export function CTA() {
 
             <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12]">
               Let’s Engineer Your Next{" "}
-              <span className="bg-gradient-to-r from-blue-400 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
+              <span className="text-gradient-animated-glow">
                 Market Breakthrough.
               </span>
             </h2>

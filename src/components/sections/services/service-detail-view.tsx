@@ -474,7 +474,7 @@ export function ServiceDetailView({ service }: { service: Service }) {
         <Container size="2xl" className="text-center space-y-6 relative z-10 max-w-3xl">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.15]">
             Let's Build Your Next{" "}
-            <span className="bg-gradient-to-r from-blue-400 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
+            <span className="text-gradient-animated-glow">
               {service.name} Platform
             </span>
           </h2>

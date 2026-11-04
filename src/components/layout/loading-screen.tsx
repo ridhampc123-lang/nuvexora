@@ -93,7 +93,7 @@ export function LoadingScreen({ label = "Nuvexora Digital Platform" }: LoadingSc
 
         {/* Brand Headline */}
         <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-blue-200 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gradient-animated-glow">
             Nuvexora Technologies
           </h1>
           <p className="text-xs uppercase tracking-[0.3em] text-blue-400 font-semibold">

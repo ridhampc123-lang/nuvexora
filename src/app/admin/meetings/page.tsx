@@ -21,9 +21,43 @@ import {
   ExternalLink,
   Sparkles,
   Link as LinkIcon,
+  History,
+  CheckCircle2,
 } from "lucide-react";
 import { MeetingRoomModal } from "@/components/common/meeting-room-modal";
 import { toast } from "sonner";
+
+function isMeetingPast(m: any): boolean {
+  if (!m) return false;
+  if (m.status === "completed" || m.status === "cancelled") return true;
+  if (!m.meetingDate) return false;
+
+  const mDate = new Date(m.meetingDate);
+  if (isNaN(mDate.getTime())) return false;
+
+  const now = new Date();
+  let hours = 23;
+  let minutes = 59;
+
+  if (m.timeSlot && typeof m.timeSlot === "string") {
+    const parts = m.timeSlot.split(/[-–—]|to/i);
+    const timeStr = (parts.length > 1 ? parts[1] : parts[0]).trim();
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+    if (match) {
+      let h = parseInt(match[1], 10);
+      const min = parseInt(match[2], 10);
+      const meridiem = match[3] ? match[3].toUpperCase() : null;
+      if (meridiem === "PM" && h < 12) h += 12;
+      if (meridiem === "AM" && h === 12) h = 0;
+      hours = h;
+      minutes = min;
+    }
+  }
+
+  const end = new Date(mDate);
+  end.setHours(hours, minutes, 0, 0);
+  return end.getTime() < now.getTime();
+}
 
 export default function MeetingsPage() {
   const { data: meetings = [], isLoading } = useAdminMeetingsQuery();
@@ -32,10 +66,26 @@ export default function MeetingsPage() {
   const updateMeeting = useUpdateAdminMeetingMutation();
   const deleteMeeting = useDeleteAdminMeetingMutation();
 
+  const [viewMode, setViewMode] = useState<"upcoming" | "past">("upcoming");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState<any>(null);
   const [selectedMeetingForRoom, setSelectedMeetingForRoom] = useState<any>(null);
   const [isRoomOpen, setIsRoomOpen] = useState(false);
+
+  // Split and sort meetings into upcoming/current vs past
+  const upcomingMeetings = React.useMemo(() => {
+    return meetings
+      .filter((m: any) => !isMeetingPast(m))
+      .sort((a: any, b: any) => new Date(a.meetingDate).getTime() - new Date(b.meetingDate).getTime());
+  }, [meetings]);
+
+  const pastMeetings = React.useMemo(() => {
+    return meetings
+      .filter((m: any) => isMeetingPast(m))
+      .sort((a: any, b: any) => new Date(b.meetingDate).getTime() - new Date(a.meetingDate).getTime());
+  }, [meetings]);
+
+  const displayedMeetings = viewMode === "upcoming" ? upcomingMeetings : pastMeetings;
 
   const [formData, setFormData] = useState({
     title: "Technical Strategy Consultation",
@@ -186,19 +236,26 @@ export default function MeetingsPage() {
     },
     {
       header: "Status",
-      cell: (row) => (
-        <span
-          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-            row.status === "completed"
-              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30"
-              : row.status === "cancelled"
-              ? "bg-rose-50 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30"
-              : "bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30"
-          }`}
-        >
-          {row.status}
-        </span>
-      ),
+      cell: (row) => {
+        const isPast = isMeetingPast(row);
+        const isExpired = isPast && row.status === "scheduled";
+
+        return (
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+              row.status === "completed"
+                ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30"
+                : row.status === "cancelled"
+                ? "bg-rose-50 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400 border border-rose-200 dark:border-rose-500/30"
+                : isExpired
+                ? "bg-amber-50 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30"
+                : "bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30"
+            }`}
+          >
+            {isExpired ? "Expired" : row.status}
+          </span>
+        );
+      },
     },
     {
       header: "Join Room",
@@ -243,20 +300,102 @@ export default function MeetingsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      <AdminDataTable
-        title="Meetings & Conferences"
-        description="Schedule technical reviews, strategy sessions, and coordinate with engineering teams."
-        columns={columns}
-        data={isLoading ? [] : meetings}
-        searchPlaceholder="Search meetings..."
-        actionButton={
+      {/* Quick View Navigation Tabs */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="inline-flex p-1 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
           <button
-            onClick={() => openDrawer()}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-colors shadow-lg shadow-indigo-600/20 active:scale-95"
+            type="button"
+            onClick={() => setViewMode("upcoming")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              viewMode === "upcoming"
+                ? "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
           >
-            <Plus className="w-4 h-4" />
-            Schedule Meeting
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Current & Upcoming</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                viewMode === "upcoming"
+                  ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400"
+                  : "bg-slate-200/70 dark:bg-slate-800 text-slate-500"
+              }`}
+            >
+              {upcomingMeetings.length}
+            </span>
           </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("past")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              viewMode === "past"
+                ? "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            <History className="w-3.5 h-3.5" />
+            <span>Past Meetings</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                viewMode === "past"
+                  ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400"
+                  : "bg-slate-200/70 dark:bg-slate-800 text-slate-500"
+              }`}
+            >
+              {pastMeetings.length}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <AdminDataTable
+        title={viewMode === "upcoming" ? "Current & Upcoming Meetings" : "Past Meetings Archive"}
+        description={
+          viewMode === "upcoming"
+            ? "Active, scheduled, and today's consultation sessions, technical reviews, and engineering syncs."
+            : "Concluded, expired, and historical meeting records and previous consultations."
+        }
+        columns={columns}
+        data={isLoading ? [] : displayedMeetings}
+        searchPlaceholder={
+          viewMode === "upcoming" ? "Search current and upcoming meetings..." : "Search past meetings..."
+        }
+        actionButton={
+          <div className="flex items-center gap-2.5">
+            {viewMode === "upcoming" ? (
+              <button
+                type="button"
+                onClick={() => setViewMode("past")}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors shadow-xs cursor-pointer"
+              >
+                <History className="w-3.5 h-3.5 text-amber-500" />
+                <span>Past Meetings</span>
+                <span className="px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-500 font-mono">
+                  {pastMeetings.length}
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setViewMode("upcoming")}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/70 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-xs font-bold text-indigo-700 dark:text-indigo-300 transition-colors shadow-xs cursor-pointer"
+              >
+                <Calendar className="w-3.5 h-3.5 text-indigo-500" />
+                <span>Upcoming & Current</span>
+                <span className="px-1.5 py-0.2 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-[10px] text-indigo-700 dark:text-indigo-300 font-mono">
+                  {upcomingMeetings.length}
+                </span>
+              </button>
+            )}
+
+            <button
+              onClick={() => openDrawer()}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs sm:text-sm font-bold transition-colors shadow-lg shadow-indigo-600/20 active:scale-95 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              Schedule Meeting
+            </button>
+          </div>
         }
       />
 

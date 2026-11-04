@@ -284,3 +284,158 @@ html.lenis body {
     transition: none !important;
   }
 }
+
+/* ==========================================================================
+   DYNAMIC MULTICOLOR ANIMATED TEXT GRADIENTS (Continuous Morphing & Transitions)
+   ========================================================================== */
+
+/* Seamless continuous linear gradient flow - never pauses, never reverses */
+@keyframes text-gradient-continuous {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: -200% 50%;
+  }
+}
+
+@keyframes text-gradient-continuous-reverse {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Primary Multicolor Animated Gradient (Adaptive Light/Dark Mode) */
+.text-gradient-animated,
+.text-gradient-multicolor {
+  background: linear-gradient(
+    90deg,
+    #0284c7 0%,
+    #4f46e5 16%,
+    #9333ea 32%,
+    #db2777 48%,
+    #d97706 64%,
+    #0d9488 80%,
+    #0284c7 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: text-gradient-continuous 3.5s linear infinite;
+  will-change: background-position;
+}
+
+/* Luminous Glowing Multicolor for Dark Mode & Dark Containers */
+.dark .text-gradient-animated,
+.dark .text-gradient-multicolor,
+.text-gradient-animated-glow,
+.text-gradient-multicolor-glow {
+  background: linear-gradient(
+    90deg,
+    #00f0ff 0%,
+    #3b82f6 15%,
+    #8b5cf6 30%,
+    #ec4899 45%,
+    #f59e0b 60%,
+    #10b981 75%,
+    #06b6d4 90%,
+    #00f0ff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: text-gradient-continuous 3.5s linear infinite;
+  will-change: background-position;
+}
+
+/* Aurora Variant */
+.text-gradient-aurora {
+  background: linear-gradient(
+    90deg,
+    #06b6d4 0%,
+    #3b82f6 20%,
+    #8b5cf6 40%,
+    #ec4899 60%,
+    #10b981 80%,
+    #06b6d4 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: text-gradient-continuous 3.5s linear infinite;
+  will-change: background-position;
+}
+
+/* Electric Cyan-Blue Variant */
+.text-gradient-electric {
+  background: linear-gradient(
+    90deg,
+    #00f0ff 0%,
+    #3b82f6 25%,
+    #8b5cf6 50%,
+    #00f0ff 75%,
+    #3b82f6 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: text-gradient-continuous 3s linear infinite;
+  will-change: background-position;
+}
+
+/* Stream Variant */
+.text-gradient-stream {
+  background: linear-gradient(
+    90deg,
+    #38bdf8 0%,
+    #818cf8 20%,
+    #c084fc 40%,
+    #f472b6 60%,
+    #2dd4bf 80%,
+    #38bdf8 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: text-gradient-continuous 4s linear infinite;
+  will-change: background-position;
+}
+
+/* Active continuous gradient flow */
+.text-gradient-animated,
+.text-gradient-multicolor,
+.text-gradient-animated-glow,
+.text-gradient-multicolor-glow,
+.text-gradient-aurora,
+.text-gradient-electric,
+.text-gradient-stream {
+  animation-play-state: running !important;
+}

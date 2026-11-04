@@ -8,7 +8,13 @@ import { Role } from "../models/role.model.js";
 export const verifyJWT = async (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+    let token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+    if (!token && (req as any).cookies?.accessToken) {
+      token = (req as any).cookies.accessToken;
+    }
+    if (!token && req.query?.token && typeof req.query.token === "string") {
+      token = req.query.token;
+    }
 
     if (!token) {
       throw new ApiError(401, "Authentication token missing.");
@@ -135,7 +141,13 @@ export const requireAdmin = requireRole("SUPER_ADMIN", "ADMIN");
 export const optionalAuth = async (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+    let token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+    if (!token && (req as any).cookies?.accessToken) {
+      token = (req as any).cookies.accessToken;
+    }
+    if (!token && req.query?.token && typeof req.query.token === "string") {
+      token = req.query.token;
+    }
 
     if (token) {
       const secret = process.env.JWT_SECRET || "nuvexora_super_secret_jwt_key_2026_enterprise_level_secure";

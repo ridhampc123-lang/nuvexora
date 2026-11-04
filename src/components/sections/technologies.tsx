@@ -54,7 +54,8 @@ export function TechnologiesSection() {
             Battle-Tested Architecture
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Our World-Class Technology Ecosystem
+            Our World-Class{" "}
+            <span className="text-gradient-animated">Technology Ecosystem</span>
           </h2>
           <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 font-normal leading-relaxed">
             We build exclusively with modern, scalable, and type-safe technologies proven at global enterprise scale.

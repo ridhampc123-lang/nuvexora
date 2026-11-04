@@ -4,6 +4,8 @@ import helmet from "helmet";
 import compression from "compression";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import path from "path";
+import fs from "fs";
 import { rateLimit } from "express-rate-limit";
 import apiRoutes from "./routes/index.js";
 import { errorHandler } from "./middleware/error.middleware.js";
@@ -12,7 +14,11 @@ import { ApiError } from "./utils/api-error.js";
 const app: Application = express();
 
 // Security & Optimization Middlewares
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 app.use(compression());
 app.use(
   cors({
@@ -67,6 +73,23 @@ app.get("/", (_req, res) => {
     documentation: "/api/v1/health",
   });
 });
+
+// Static Uploads Directory
+const uploadsDir = path.resolve(
+  process.cwd().endsWith("server") ? process.cwd() : path.join(process.cwd(), "server"),
+  "public",
+  "uploads"
+);
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use("/uploads", express.static(uploadsDir));
+
+// Also support legacy/relative uploads if any files are placed in root public/uploads
+const fallbackUploadsDir = path.resolve(process.cwd(), "public", "uploads");
+if (fallbackUploadsDir !== uploadsDir && fs.existsSync(fallbackUploadsDir)) {
+  app.use("/uploads", express.static(fallbackUploadsDir));
+}
 
 // API Routes
 app.use("/api/v1", apiRoutes);

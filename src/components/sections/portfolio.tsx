@@ -36,7 +36,8 @@ export function PortfolioSection() {
               Featured Portfolio
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Featured Enterprise Solutions
+              Featured Enterprise{" "}
+              <span className="text-gradient-animated">Solutions</span>
             </h2>
             <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 font-normal leading-relaxed">
               Explore how we architect scalable systems and modernize legacy infrastructure for our clients.

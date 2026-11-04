@@ -107,7 +107,8 @@ export function ServicesSection() {
             Capabilities & Expertise
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Enterprise Digital Engineering Services
+            Enterprise Digital{" "}
+            <span className="text-gradient-animated">Engineering Services</span>
           </h2>
           <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 font-normal leading-relaxed">
             From bespoke AI models to cloud infrastructure and scalable web platforms, we engineer end-to-end software designed for scale and performance.

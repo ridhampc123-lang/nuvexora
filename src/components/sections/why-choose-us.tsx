@@ -61,7 +61,8 @@ export function WhyChooseUsSection() {
             The Nuvexora Advantage
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
-            Why Market Leaders Choose Nuvexora
+            Why Market Leaders{" "}
+            <span className="text-gradient-animated-glow">Choose Nuvexora</span>
           </h2>
           <p className="text-base sm:text-lg text-slate-400 font-normal leading-relaxed">
             We bridge the gap between boutique design agency elegance and enterprise software engineering rigor.

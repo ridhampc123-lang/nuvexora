@@ -145,6 +145,7 @@ router.patch("/services/:id", admin_controller_js_1.updateService);
 router.delete("/services/:id", admin_controller_js_1.deleteService);
 // Media Management
 router.get("/media", admin_controller_js_1.getAllMedia);
+router.get("/media/:id/download", admin_controller_js_1.downloadMedia);
 router.delete("/media/:id", admin_controller_js_1.deleteMedia);
 // Careers Management
 router.get("/careers", admin_controller_js_1.getAllCareers);

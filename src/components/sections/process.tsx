@@ -61,7 +61,8 @@ export function ProcessSection() {
             Proven Delivery Process
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            How We Execute Enterprise Software
+            How We Execute{" "}
+            <span className="text-gradient-animated">Enterprise Software</span>
           </h2>
           <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 font-normal leading-relaxed">
             Our disciplined 6-stage engineering process ensures total transparency, predictable delivery velocity, and uncompromised quality.

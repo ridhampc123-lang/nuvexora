@@ -13,24 +13,19 @@ cloudinary_1.v2.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 const storage = multer_1.default.memoryStorage();
-const fileFilter = (req, file, cb) => {
-    const allowedMimeTypes = [
-        "image/jpeg", "image/png", "image/webp", "image/gif",
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ];
-    if (allowedMimeTypes.includes(file.mimetype)) {
-        cb(null, true);
+const fileFilter = (_req, file, cb) => {
+    // Disallow dangerous executables, allow all media, docs, spreadsheets, archives, text
+    const disallowedExtensions = [".exe", ".bat", ".cmd", ".sh", ".ps1", ".vbs", ".dll", ".so", ".bin"];
+    const ext = (file.originalname || "").toLowerCase().substring((file.originalname || "").lastIndexOf("."));
+    if (disallowedExtensions.includes(ext)) {
+        return cb(new Error("Executable binary files are restricted for enterprise security."));
     }
-    else {
-        cb(new Error("Invalid file type. Only JPG, PNG, WEBP, GIF, PDF, and DOC are allowed."));
-    }
+    cb(null, true);
 };
 exports.upload = (0, multer_1.default)({
     storage,
     limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB limit
+        fileSize: 50 * 1024 * 1024, // 50MB limit
     },
     fileFilter,
 });

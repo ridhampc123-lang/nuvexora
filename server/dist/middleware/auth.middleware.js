@@ -11,7 +11,13 @@ const role_model_js_1 = require("../models/role.model.js");
 const verifyJWT = async (req, _res, next) => {
     try {
         const authHeader = req.headers.authorization;
-        const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+        let token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+        if (!token && req.cookies?.accessToken) {
+            token = req.cookies.accessToken;
+        }
+        if (!token && req.query?.token && typeof req.query.token === "string") {
+            token = req.query.token;
+        }
         if (!token) {
             throw new api_error_js_1.ApiError(401, "Authentication token missing.");
         }
@@ -110,7 +116,13 @@ exports.requireAdmin = (0, exports.requireRole)("SUPER_ADMIN", "ADMIN");
 const optionalAuth = async (req, _res, next) => {
     try {
         const authHeader = req.headers.authorization;
-        const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+        let token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+        if (!token && req.cookies?.accessToken) {
+            token = req.cookies.accessToken;
+        }
+        if (!token && req.query?.token && typeof req.query.token === "string") {
+            token = req.query.token;
+        }
         if (token) {
             const secret = process.env.JWT_SECRET || "nuvexora_super_secret_jwt_key_2026_enterprise_level_secure";
             const decoded = jsonwebtoken_1.default.verify(token, secret);

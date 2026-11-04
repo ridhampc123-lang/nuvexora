@@ -70,7 +70,8 @@ export default function CaseStudiesPage() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.1]">
-            Engineering Outcomes, Not Just Lines of Code.
+            Engineering Outcomes,{" "}
+            <span className="text-gradient-animated">Not Just Lines of Code.</span>
           </h1>
 
           <p className="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300 font-normal leading-relaxed max-w-3xl mx-auto">

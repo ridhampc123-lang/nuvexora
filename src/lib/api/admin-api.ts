@@ -41,7 +41,12 @@ export const uploadAdminImage = async (file: File): Promise<string> => {
       reader.onload = async () => {
         try {
           const base64Image = reader.result as string;
-          const { data } = await apiClient.post("/admin/upload", { image: base64Image });
+          const { data } = await apiClient.post("/admin/upload", {
+            image: base64Image,
+            filename: file.name,
+            size: file.size,
+            mimeType: file.type,
+          });
           resolve(data.data.url);
         } catch (err) {
           reject(err);

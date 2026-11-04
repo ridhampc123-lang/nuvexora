@@ -44,7 +44,7 @@ export function ServicesHero() {
           >
             Innovate. Build. Elevate.
             <br />
-            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 bg-clip-text text-transparent">
+            <span className="text-gradient-animated">
               Architecting Digital Dominance.
             </span>
           </motion.h1>
