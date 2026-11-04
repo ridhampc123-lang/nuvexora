@@ -32,6 +32,7 @@ import {
   Lock,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 import type { Service } from "@/types/service";
 import { servicesData } from "@/data/services-data";
 import { TestimonialsSection } from "@/components/sections/testimonials";
@@ -474,9 +475,9 @@ export function ServiceDetailView({ service }: { service: Service }) {
         <Container size="2xl" className="text-center space-y-6 relative z-10 max-w-3xl">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.15]">
             Let's Build Your Next{" "}
-            <span className="text-gradient-animated-glow">
+            <AnimatedGradientText variant="glow">
               {service.name} Platform
-            </span>
+            </AnimatedGradientText>
           </h2>
           <p className="text-base sm:text-lg text-slate-300 font-normal max-w-2xl mx-auto leading-relaxed">
             Schedule a free technical strategy call with our principal architects to align roadmap, budget, and delivery milestones.

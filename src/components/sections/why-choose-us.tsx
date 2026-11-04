@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Container } from "@/components/ui/container";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 import { 
   Zap, 
   ShieldCheck, 
@@ -62,7 +63,7 @@ export function WhyChooseUsSection() {
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
             Why Market Leaders{" "}
-            <span className="text-gradient-animated-glow">Choose Nuvexora</span>
+            <AnimatedGradientText variant="glow">Choose Nuvexora</AnimatedGradientText>
           </h2>
           <p className="text-base sm:text-lg text-slate-400 font-normal leading-relaxed">
             We bridge the gap between boutique design agency elegance and enterprise software engineering rigor.

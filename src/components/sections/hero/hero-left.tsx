@@ -13,6 +13,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { HeroStatCard } from "./hero-stat-card";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
 export function HeroLeft() {
   const stats = [
@@ -48,9 +49,9 @@ export function HeroLeft() {
       >
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.12]">
           Architecting{" "}
-          <span className="text-gradient-animated">
+          <AnimatedGradientText variant="multicolor">
             Enterprise Platforms.
-          </span>
+          </AnimatedGradientText>
           <br />
           Engineering Digital Excellence.
         </h1>

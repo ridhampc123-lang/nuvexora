@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Container } from "@/components/ui/container";
 import { ArrowRight, Sparkles, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
 export function CTA() {
   return (
@@ -26,9 +27,9 @@ export function CTA() {
 
             <h2 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12]">
               Let’s Engineer Your Next{" "}
-              <span className="text-gradient-animated-glow">
+              <AnimatedGradientText variant="glow">
                 Market Breakthrough.
-              </span>
+              </AnimatedGradientText>
             </h2>
 
             <p className="text-base sm:text-xl text-slate-300 font-normal leading-relaxed max-w-2xl mx-auto">

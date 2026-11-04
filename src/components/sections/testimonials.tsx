@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Container } from "@/components/ui/container";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 import { TestimonialsCard } from "./testimonials-card";
 import { Star } from "lucide-react";
 
@@ -18,7 +19,7 @@ export function TestimonialsSection() {
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Trusted By{" "}
-            <span className="text-gradient-animated">Engineering VPs & Founders</span>
+            <AnimatedGradientText variant="multicolor">Engineering VPs & Founders</AnimatedGradientText>
           </h2>
           <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 font-normal leading-relaxed">
             See why leading technology companies rely on Nuvexora for high-stakes software development.

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, ShieldCheck, Cpu, Code2, Award } from "lucide-react";
 import { Container } from "@/components/ui/container";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
 export function ServicesHero() {
   const stats = [
@@ -44,9 +45,9 @@ export function ServicesHero() {
           >
             Innovate. Build. Elevate.
             <br />
-            <span className="text-gradient-animated">
+            <AnimatedGradientText variant="multicolor">
               Architecting Digital Dominance.
-            </span>
+            </AnimatedGradientText>
           </motion.h1>
 
           {/* Subtitle */}

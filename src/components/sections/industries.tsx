@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Container } from "@/components/ui/container";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 import { 
   Landmark, 
   Stethoscope, 
@@ -69,7 +70,7 @@ export function IndustriesSection() {
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Tailored Engineering For{" "}
-            <span className="text-gradient-animated">High-Stakes Verticals</span>
+            <AnimatedGradientText variant="multicolor">High-Stakes Verticals</AnimatedGradientText>
           </h2>
           <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 font-normal leading-relaxed">
             We understand the strict regulatory requirements, security standards, and architectural demands of modern industry leaders.

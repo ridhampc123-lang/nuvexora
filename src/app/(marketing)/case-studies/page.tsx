@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Container } from "@/components/ui/container";
 import { CTA } from "@/components/sections";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 import {
   Briefcase,
   ArrowRight,
@@ -71,7 +72,7 @@ export default function CaseStudiesPage() {
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.1]">
             Engineering Outcomes,{" "}
-            <span className="text-gradient-animated">Not Just Lines of Code.</span>
+            <AnimatedGradientText variant="multicolor">Not Just Lines of Code.</AnimatedGradientText>
           </h1>
 
           <p className="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300 font-normal leading-relaxed max-w-3xl mx-auto">

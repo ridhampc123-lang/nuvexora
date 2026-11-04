@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { FAQSection } from "@/components/sections/faq";
 import { CTA } from "@/components/sections/cta";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 import { submitLeadInquiry } from "@/lib/api/public-api";
 import {
   Calendar,
@@ -90,9 +91,8 @@ export default function BookConsultationPage() {
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.12]">
             Book Your Free 45-Minute{" "}
-            <span className="text-gradient-animated-glow">
-              Technical Strategy Call
-            </span>
+            <AnimatedGradientText variant="glow">
+              Technical Strategy Call</AnimatedGradientText>
           </h1>
 
           <p className="text-lg sm:text-xl text-slate-300 font-normal leading-relaxed max-w-3xl mx-auto">

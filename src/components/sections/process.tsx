@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Container } from "@/components/ui/container";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 import { 
   Search, 
   Compass, 
@@ -62,7 +63,7 @@ export function ProcessSection() {
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             How We Execute{" "}
-            <span className="text-gradient-animated">Enterprise Software</span>
+            <AnimatedGradientText variant="multicolor">Enterprise Software</AnimatedGradientText>
           </h2>
           <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 font-normal leading-relaxed">
             Our disciplined 6-stage engineering process ensures total transparency, predictable delivery velocity, and uncompromised quality.

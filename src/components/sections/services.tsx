@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Container } from "@/components/ui/container";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 import { ServiceCard } from "./service-card";
 import { 
   Code2, 
@@ -108,7 +109,7 @@ export function ServicesSection() {
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Enterprise Digital{" "}
-            <span className="text-gradient-animated">Engineering Services</span>
+            <AnimatedGradientText variant="multicolor">Engineering Services</AnimatedGradientText>
           </h2>
           <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 font-normal leading-relaxed">
             From bespoke AI models to cloud infrastructure and scalable web platforms, we engineer end-to-end software designed for scale and performance.

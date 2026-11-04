@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Cpu, Zap, ShieldCheck, Layers, Terminal } from "lucide-react";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
 interface LoadingScreenProps {
   label?: string;
@@ -93,8 +94,8 @@ export function LoadingScreen({ label = "Nuvexora Digital Platform" }: LoadingSc
 
         {/* Brand Headline */}
         <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gradient-animated-glow">
-            Nuvexora Technologies
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            <AnimatedGradientText variant="glow">Nuvexora Technologies</AnimatedGradientText>
           </h1>
           <p className="text-xs uppercase tracking-[0.3em] text-blue-400 font-semibold">
             Innovate. Build. Elevate.
