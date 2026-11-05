@@ -20,8 +20,8 @@ export const createLead = asyncHandler(async (req: Request, res: Response) => {
   });
 
   try {
-    getIO().emit("dashboard_update");
-    getIO().emit("new_lead", lead);
+    getIO().to("admin_room").emit("dashboard_update");
+    getIO().to("admin_room").emit("new_lead", lead);
   } catch (socketErr) {
     console.log("Socket emit warning:", socketErr);
   }

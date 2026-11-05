@@ -88,7 +88,9 @@ import {
   updateCareer,
   deleteCareer,
   getAdminAnalyticsData,
-  getAdminReportsData
+  getAdminReportsData,
+  getAdminSiteSettings,
+  updateAdminSiteSettings
 } from "../controllers/admin.controller.js";
 import { upload } from "../config/cloudinary.js";
 import { getAdminBlogs, updateBlog, deleteBlog, createBlog as createAdminBlog } from "../controllers/admin-blog.controller.js";
@@ -160,9 +162,9 @@ router.delete("/case-studies/:id", deleteCaseStudy);
 router.get("/metrics", getAdminDashboardMetrics);
 
 // Users Management
-router.get("/users", getAllUsers);
-router.patch("/users/:id", updateUser);
-router.delete("/users/:id", deleteUser);
+router.get("/users", requireRole("SUPER_ADMIN", "ADMIN"), getAllUsers);
+router.patch("/users/:id", requireRole("SUPER_ADMIN", "ADMIN"), updateUser);
+router.delete("/users/:id", requireRole("SUPER_ADMIN", "ADMIN"), deleteUser);
 
 // Leads Management
 router.get("/leads", getAllLeads);
@@ -269,10 +271,10 @@ router.get("/audit-logs", getAuditLogs);
 router.get("/permissions", getPermissions);
 
 // Roles
-router.get("/roles", getRoles);
-router.post("/roles", createRole);
-router.patch("/roles/:id", updateRole);
-router.delete("/roles/:id", deleteRole);
+router.get("/roles", requireRole("SUPER_ADMIN", "ADMIN"), getRoles);
+router.post("/roles", requireRole("SUPER_ADMIN"), createRole);
+router.patch("/roles/:id", requireRole("SUPER_ADMIN"), updateRole);
+router.delete("/roles/:id", requireRole("SUPER_ADMIN"), deleteRole);
 
 // Services Management
 router.get("/services", getAllServices);
@@ -309,9 +311,13 @@ router.patch("/currencies/:id", updateCurrency);
 router.delete("/currencies/:id", deleteCurrency);
 
 // Master Data Export & Emergency Backups
-router.get("/export/excel", exportMasterExcel);
-router.get("/backup/snapshot", getMasterDataSnapshot);
-router.post("/backup/restore", restoreEmergencyBackup);
+router.get("/export/excel", requireRole("SUPER_ADMIN", "ADMIN"), exportMasterExcel);
+router.get("/backup/snapshot", requireRole("SUPER_ADMIN"), getMasterDataSnapshot);
+router.post("/backup/restore", requireRole("SUPER_ADMIN"), restoreEmergencyBackup);
+
+// Global Site Settings CMS
+router.get("/settings", getAdminSiteSettings);
+router.put("/settings", requireRole("SUPER_ADMIN", "ADMIN"), updateAdminSiteSettings);
 
 export default router;
 

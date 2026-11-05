@@ -102,7 +102,21 @@ export const getMe = asyncHandler(async (req: AuthenticatedRequest, res: Respons
 });
 
 export const updateProfile = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const user = await User.findByIdAndUpdate(req.user?.userId, req.body, { new: true, runValidators: true });
+  const allowedFields = ["name", "phone", "company", "address", "timezone", "language"];
+  const sanitizedUpdates: Record<string, any> = {};
+
+  for (const field of allowedFields) {
+    if (req.body[field] !== undefined) {
+      sanitizedUpdates[field] = req.body[field];
+    }
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user?.userId,
+    { $set: sanitizedUpdates },
+    { new: true, runValidators: true }
+  ).select("-password");
+
   if (!user) {
     throw new ApiError(404, "User not found");
   }

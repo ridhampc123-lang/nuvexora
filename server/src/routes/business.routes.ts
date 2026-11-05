@@ -8,19 +8,28 @@ import {
   getFinanceLedger,
   generateAiContent,
 } from "../controllers/business.controller.js";
-import { verifyJWT } from "../middleware/auth.middleware.js";
+import { verifyJWT, requireRole } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
 router.use(verifyJWT);
 
-router.get("/crm/deals", getDealsPipeline);
-router.post("/crm/deals", createDeal);
-router.patch("/crm/deals/:id", updateDealStatus);
-router.get("/hr/employees", getEmployees);
-router.get("/support/tickets", getTickets);
-router.get("/finance/ledger", getFinanceLedger);
-router.post("/ai/generate", generateAiContent);
+// CRM pipeline restricted to Admin, Sales, and Leadership
+router.get("/crm/deals", requireRole("SUPER_ADMIN", "ADMIN", "SALES", "MANAGER"), getDealsPipeline);
+router.post("/crm/deals", requireRole("SUPER_ADMIN", "ADMIN", "SALES", "MANAGER"), createDeal);
+router.patch("/crm/deals/:id", requireRole("SUPER_ADMIN", "ADMIN", "SALES", "MANAGER"), updateDealStatus);
+
+// Internal HR employee directory restricted to Admin, HR, and Leadership
+router.get("/hr/employees", requireRole("SUPER_ADMIN", "ADMIN", "HR", "MANAGER"), getEmployees);
+
+// Support tickets desk overview
+router.get("/support/tickets", requireRole("SUPER_ADMIN", "ADMIN", "MANAGER"), getTickets);
+
+// Corporate finance & gross ledger strictly restricted to Finance & System Admins
+router.get("/finance/ledger", requireRole("SUPER_ADMIN", "ADMIN", "FINANCE"), getFinanceLedger);
+
+// AI generator restricted to privileged staff
+router.post("/ai/generate", requireRole("SUPER_ADMIN", "ADMIN", "MANAGER", "SALES"), generateAiContent);
 
 export default router;
 

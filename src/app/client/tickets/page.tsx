@@ -189,7 +189,14 @@ export default function SupportTicketsPage() {
 
               {/* Chat Thread Messages */}
               <div className="flex-1 overflow-y-auto my-4 space-y-4 pr-2 font-sans" data-lenis-prevent>
-                {activeTicket.messages.map((m: any, idx: number) => {
+                {(activeTicket.messages || [
+                  {
+                    sender: "Client",
+                    role: "Client",
+                    text: activeTicket.description,
+                    timestamp: activeTicket.createdAt ? new Date(activeTicket.createdAt).toLocaleDateString() : "Submitted"
+                  }
+                ]).map((m: any, idx: number) => {
                   const isClient = m.role === "Client";
                   return (
                     <div key={idx} className={`flex flex-col ${isClient ? "items-end" : "items-start"}`}>

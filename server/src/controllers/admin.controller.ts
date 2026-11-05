@@ -220,21 +220,70 @@ export const getAllUsers = asyncHandler(async (_req: Request, res: Response) => 
   return res.status(200).json(new ApiResponse(200, users, "Users list retrieved successfully"));
 });
 
-export const updateUser = asyncHandler(async (req: Request, res: Response) => {
+export const updateUser = asyncHandler(async (req: any, res: Response) => {
   const { id } = req.params;
   const { role, status } = req.body;
 
-  const user = await User.findByIdAndUpdate(
+  const targetUser = await User.findById(id);
+  if (!targetUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Prevent privilege escalation: only SUPER_ADMIN can grant SUPER_ADMIN or modify a SUPER_ADMIN
+  const callerRole = req.user?.role;
+  if (role === "SUPER_ADMIN" && callerRole !== "SUPER_ADMIN") {
+    throw new ApiError(403, "Only Super Administrators can elevate accounts to Super Admin.");
+  }
+  if (targetUser.role === "SUPER_ADMIN" && callerRole !== "SUPER_ADMIN") {
+    throw new ApiError(403, "Only Super Administrators can modify a Super Admin account.");
+  }
+
+  // Prevent demoting the last active Super Admin
+  if (targetUser.role === "SUPER_ADMIN" && role && role !== "SUPER_ADMIN") {
+    const activeSuperAdmins = await User.countDocuments({ role: "SUPER_ADMIN", status: "active" });
+    if (activeSuperAdmins <= 1) {
+      throw new ApiError(400, "Cannot change role: The system must retain at least one active Super Administrator.");
+    }
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
     id,
     { ...(role && { role }), ...(status && { status }) },
-    { new: true }
+    { new: true, runValidators: true }
   ).select("-password");
 
-  return res.status(200).json(new ApiResponse(200, user, "User updated successfully"));
+  await AuditLog.create({
+    userId: req.user?.userId,
+    action: "ADMIN_USER_UPDATED",
+    ipAddress: req.ip || "127.0.0.1",
+    userAgent: req.get("user-agent") || "Unknown",
+    details: { targetUserId: id, updatedRole: role, updatedStatus: status },
+  });
+
+  return res.status(200).json(new ApiResponse(200, updatedUser, "User updated successfully"));
 });
 
-export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
+export const deleteUser = asyncHandler(async (req: any, res: Response) => {
   const { id } = req.params;
+
+  if (req.user?.userId === id) {
+    throw new ApiError(400, "You cannot delete your own administrative account while logged in.");
+  }
+
+  const targetUser = await User.findById(id);
+  if (!targetUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  if (targetUser.role === "SUPER_ADMIN") {
+    const activeSuperAdmins = await User.countDocuments({ role: "SUPER_ADMIN", status: "active" });
+    if (activeSuperAdmins <= 1) {
+      throw new ApiError(400, "Cannot delete the sole Super Administrator account.");
+    }
+    if (req.user?.role !== "SUPER_ADMIN") {
+      throw new ApiError(403, "Only a Super Administrator can delete another Super Administrator.");
+    }
+  }
 
   const user = await User.findByIdAndDelete(id);
   if (user) {
@@ -243,6 +292,14 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
     await ClientAccount.deleteMany({ $or: [{ userId: id }, { email: user.email }] });
     await Employee.deleteMany({ $or: [{ userId: id }, { email: user.email }] });
   }
+
+  await AuditLog.create({
+    userId: req.user?.userId,
+    action: "ADMIN_USER_DELETED",
+    ipAddress: req.ip || "127.0.0.1",
+    userAgent: req.get("user-agent") || "Unknown",
+    details: { deletedUserId: id, deletedEmail: targetUser.email, role: targetUser.role },
+  });
 
   try {
     getIO().emit("dashboard_update");
@@ -1431,6 +1488,71 @@ export const getAdminReportsData = asyncHandler(async (_req: Request, res: Respo
       attendance
     }, "Report telemetry aggregated successfully")
   );
+});
+
+// --- SITE SETTINGS CMS ---
+export const getAdminSiteSettings = asyncHandler(async (_req: Request, res: Response) => {
+  const { SiteSettings } = await import("../models/site-settings.model.js");
+  let settings = await SiteSettings.findOne();
+  if (!settings) {
+    settings = await SiteSettings.create({
+      siteName: "Nuvexora Technologies",
+      tagline: "Innovate. Build. Elevate.",
+      contactEmail: "contact@nuvexora.com",
+      contactPhone: "+1 (800) 555-0199",
+      address: "San Francisco, CA & London, UK",
+      seoTitle: "Nuvexora Technologies — Enterprise Digital Engineering & AI Solutions",
+      seoDescription: "Deliver world-class software, AI, cloud, and digital solutions for modern businesses.",
+      maintenanceMode: false,
+    });
+  }
+  return res.status(200).json(new ApiResponse(200, settings, "Site settings retrieved successfully"));
+});
+
+export const updateAdminSiteSettings = asyncHandler(async (req: any, res: Response) => {
+  const { SiteSettings } = await import("../models/site-settings.model.js");
+  const {
+    siteName,
+    tagline,
+    contactEmail,
+    contactPhone,
+    address,
+    socialLinks,
+    seoTitle,
+    seoDescription,
+    maintenanceMode,
+  } = req.body;
+
+  let settings = await SiteSettings.findOne();
+  if (!settings) {
+    settings = new SiteSettings();
+  }
+
+  if (siteName !== undefined) settings.siteName = siteName;
+  if (tagline !== undefined) settings.tagline = tagline;
+  if (contactEmail !== undefined) settings.contactEmail = contactEmail;
+  if (contactPhone !== undefined) settings.contactPhone = contactPhone;
+  if (address !== undefined) settings.address = address;
+  if (socialLinks !== undefined) settings.socialLinks = socialLinks;
+  if (seoTitle !== undefined) settings.seoTitle = seoTitle;
+  if (seoDescription !== undefined) settings.seoDescription = seoDescription;
+  if (maintenanceMode !== undefined) settings.maintenanceMode = maintenanceMode;
+
+  await settings.save();
+
+  await AuditLog.create({
+    userId: req.user?.userId,
+    action: "SITE_SETTINGS_UPDATED",
+    ipAddress: req.ip || "127.0.0.1",
+    userAgent: req.get("user-agent") || "Unknown",
+    details: { siteName, maintenanceMode },
+  });
+
+  try {
+    getIO().emit("dashboard_update");
+  } catch {}
+
+  return res.status(200).json(new ApiResponse(200, settings, "Site settings updated successfully"));
 });
 
 

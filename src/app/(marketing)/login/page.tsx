@@ -57,43 +57,9 @@ function LoginFormContent() {
         setError(response.data?.message || "Invalid email or password.");
       }
     } catch (err: any) {
-      console.warn("Login API response issue:", err);
-
+      console.error("Login authentication error:", err);
       const serverMessage = err.response?.data?.message;
-      const status = err.response?.status;
-
-      // If credentials were explicitly rejected by live API (400 or 401 with message)
-      if (status === 400 || (status === 401 && serverMessage)) {
-        setError(serverMessage || "Invalid email or password.");
-        return;
-      }
-
-      // If API server returns 404 or Network Error on Vercel deployment:
-      // Authenticate user seamlessly so mobile visitors can access their portal without friction
-      const normalizedEmail = email.toLowerCase().trim();
-      let role: "SUPER_ADMIN" | "ADMIN" | "CLIENT" | "EMPLOYEE" = "CLIENT";
-      if (normalizedEmail.includes("admin")) {
-        role = "SUPER_ADMIN";
-      } else if (normalizedEmail.includes("employee") || normalizedEmail.includes("dev")) {
-        role = "EMPLOYEE";
-      }
-
-      const formattedName =
-        normalizedEmail.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ||
-        "Valued Client";
-
-      const fallbackUser = {
-        id: `usr_${Date.now()}`,
-        email: normalizedEmail,
-        name: formattedName,
-        role: role,
-        companyName: "Enterprise Client Corp",
-      };
-
-      const fallbackToken = `token_nuvexora_${Date.now()}`;
-      login(fallbackUser, fallbackToken);
-      toast.success(`Authenticated as ${fallbackUser.name}`);
-      redirectByRole(role);
+      setError(serverMessage || "Authentication failed. Please verify your credentials and try again.");
     } finally {
       setLoading(false);
     }

@@ -2,7 +2,8 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface ITicket extends Document {
   ticketNumber: string;
-  clientId: mongoose.Types.ObjectId;
+  clientId?: mongoose.Types.ObjectId;
+  submittedByUserId?: mongoose.Types.ObjectId;
   subject: string;
   category: "technical" | "billing" | "sales" | "general";
   priority: "low" | "medium" | "high" | "urgent";
@@ -16,7 +17,8 @@ export interface ITicket extends Document {
 const TicketSchema = new Schema<ITicket>(
   {
     ticketNumber: { type: String, required: true, unique: true },
-    clientId: { type: Schema.Types.ObjectId, ref: "ClientAccount", required: true },
+    clientId: { type: Schema.Types.ObjectId, ref: "ClientAccount", required: false },
+    submittedByUserId: { type: Schema.Types.ObjectId, ref: "User", required: false },
     subject: { type: String, required: true, trim: true },
     category: { type: String, enum: ["technical", "billing", "sales", "general"], default: "technical" },
     priority: { type: String, enum: ["low", "medium", "high", "urgent"], default: "medium" },

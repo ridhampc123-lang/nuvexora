@@ -22,15 +22,41 @@ export class AuthService {
       throw new ApiError(400, "An account with this email address already exists");
     }
 
+    // Strictly enforce non-administrative roles on public registration
+    const safeRole = userData.role === "USER" ? "USER" : "CLIENT";
+
     const user = await User.create({
       name: userData.name,
       email: userData.email,
       password: userData.password,
-      role: (userData.role as any) || "USER",
+      role: safeRole,
       company: userData.company || "",
       phone: userData.phone || "",
       status: "active",
     });
+
+    if (safeRole === "CLIENT") {
+      try {
+        const { ClientAccount } = await import("../models/client.model.js");
+        await ClientAccount.findOneAndUpdate(
+          { email: user.email.toLowerCase() },
+          {
+            $setOnInsert: {
+              userId: user._id,
+              companyName: userData.company || "Independent Enterprise",
+              ownerName: user.name,
+              email: user.email.toLowerCase(),
+              industry: "Technology",
+              tier: "Standard",
+              status: "active",
+            },
+          },
+          { upsert: true }
+        );
+      } catch (clientErr) {
+        console.warn("Could not auto-create ClientAccount document:", clientErr);
+      }
+    }
 
     await AuditLog.create({
       userId: user._id,

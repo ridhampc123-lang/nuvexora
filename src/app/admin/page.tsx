@@ -65,18 +65,18 @@ export default function AdminDashboardPage() {
     return "Good evening";
   }, []);
 
-  // Compute Authentic Revenue Metrics
+  // Compute Authentic Revenue Metrics from verified records
   const revenueCalculations = useMemo(() => {
     const paidInvoices = invoices.filter((i: any) => i.status === "paid");
     const totalPaid = paidInvoices.reduce((sum: number, inv: any) => sum + (inv.totalAmount || 0), 0);
     const totalAll = invoices.reduce((sum: number, inv: any) => sum + (inv.totalAmount || 0), 0);
     const pendingAmount = Math.max(0, totalAll - totalPaid);
+    const totalRevenue = metricsData?.totalRevenue !== undefined ? metricsData.totalRevenue : totalPaid;
 
-    const baseRevenue = metricsData?.totalRevenue || (totalPaid > 0 ? totalPaid : totalAll) || 2850000;
     return {
-      totalRevenue: baseRevenue,
-      paidAmount: totalPaid > 0 ? totalPaid : Math.round(baseRevenue * 0.78),
-      pendingAmount: pendingAmount > 0 ? pendingAmount : Math.round(baseRevenue * 0.22)
+      totalRevenue,
+      paidAmount: totalPaid,
+      pendingAmount
     };
   }, [invoices, metricsData]);
 
@@ -96,13 +96,13 @@ export default function AdminDashboardPage() {
     };
   }, [invoices, tasks, leads, tickets]);
 
-  // Advanced KPI Cards
+  // Authentic KPI Cards backed by authoritative database counts
   const kpiCards = [
     {
       label: "Platform Revenue",
       value: isMetricsLoading ? "..." : `₹${revenueCalculations.totalRevenue.toLocaleString("en-IN")}`,
       subtext: `₹${revenueCalculations.paidAmount.toLocaleString("en-IN")} collected`,
-      delta: "+18.4% MoM",
+      delta: `${invoices.length} invoices`,
       isPositive: true,
       icon: IndianRupee,
       href: "/admin/invoices",
@@ -112,7 +112,7 @@ export default function AdminDashboardPage() {
       label: "Active Projects",
       value: isMetricsLoading ? "..." : String(metricsData?.activeProjects ?? projects.length ?? 0),
       subtext: `${projects.filter((p: any) => p.status === "in_development" || p.status === "in_progress").length} in sprint delivery`,
-      delta: "+4 this month",
+      delta: `${projects.length} total`,
       isPositive: true,
       icon: FolderKanban,
       href: "/admin/projects",
@@ -121,8 +121,8 @@ export default function AdminDashboardPage() {
     {
       label: "Client Accounts",
       value: isMetricsLoading ? "..." : String(metricsData?.totalClients ?? 0),
-      subtext: "100% SLA compliance",
-      delta: "+12.5% YoY",
+      subtext: "Verified corporate accounts",
+      delta: "Authoritative",
       isPositive: true,
       icon: Building2,
       href: "/admin/clients",
@@ -132,7 +132,7 @@ export default function AdminDashboardPage() {
       label: "Inbound Pipeline Leads",
       value: isMetricsLoading ? "..." : String(metricsData?.totalLeads ?? leads.length ?? 0),
       subtext: `${leads.filter((l: any) => l.status === "new").length} pending contact`,
-      delta: "28.4% conv. rate",
+      delta: `${leads.length} total`,
       isPositive: true,
       icon: MessageSquare,
       href: "/admin/leads",
@@ -142,7 +142,7 @@ export default function AdminDashboardPage() {
       label: "Sprint Tasks Throughput",
       value: isMetricsLoading ? "..." : String(metricsData?.totalTasks ?? tasks.length ?? 0),
       subtext: `${metricsData?.completedTasks ?? tasks.filter((t: any) => t.status === "completed").length} finished`,
-      delta: "68% completion",
+      delta: `${tasks.length} total`,
       isPositive: true,
       icon: CheckSquare,
       href: "/admin/tasks",
@@ -151,8 +151,8 @@ export default function AdminDashboardPage() {
     {
       label: "Upcoming Meetings",
       value: isMetricsLoading ? "..." : String(metricsData?.upcomingMeetings ?? meetings.length ?? 0),
-      subtext: "Consultation & Sprint reviews",
-      delta: "Synced with GCal",
+      subtext: "Client & sprint consultations",
+      delta: `${meetings.length} scheduled`,
       isPositive: true,
       icon: Video,
       href: "/admin/meetings",
@@ -162,17 +162,17 @@ export default function AdminDashboardPage() {
       label: "Support Tickets",
       value: isMetricsLoading ? "..." : String(metricsData?.totalTickets ?? tickets.length ?? 0),
       subtext: `${urgentItems.openTickets.length} open tickets`,
-      delta: "Sub-2h response",
+      delta: `${tickets.length} total`,
       isPositive: true,
       icon: LifeBuoy,
       href: "/admin/support",
       color: "text-amber-600 bg-amber-50 dark:bg-amber-950/80 border-amber-200 dark:border-amber-900",
     },
     {
-      label: "System Health & SLA",
-      value: "99.998%",
-      subtext: "14ms multi-region latency",
-      delta: "Optimal",
+      label: "Telemetry Connection",
+      value: isConnected ? "Realtime" : "Polling",
+      subtext: isConnected ? "Socket.IO authenticated" : "HTTP polling fallback",
+      delta: isConnected ? "Live" : "Syncing",
       isPositive: true,
       icon: Cpu,
       href: "/admin/analytics",
@@ -180,7 +180,7 @@ export default function AdminDashboardPage() {
     },
   ];
 
-  // Pipeline distribution for the charts
+  // Pipeline distribution for the charts computed strictly from projects
   const discoveryCount = projects.filter((p: any) => p.status === "discovery" || p.status === "planning").length;
   const devCount = projects.filter((p: any) => p.status === "in_development" || p.status === "in_progress" || p.status === "development").length;
   const qaCount = projects.filter((p: any) => p.status === "qa_testing" || p.status === "review" || p.status === "qa").length;
@@ -188,26 +188,50 @@ export default function AdminDashboardPage() {
   const completedCount = projects.filter((p: any) => p.status === "completed").length;
 
   const projectStatusData = [
-    { name: "Discovery", count: discoveryCount || 2, color: "#3b82f6" },
-    { name: "Development", count: devCount || 5, color: "#6366f1" },
-    { name: "QA & Audit", count: qaCount || 3, color: "#f59e0b" },
-    { name: "Deployed", count: deployedCount || 2, color: "#06b6d4" },
-    { name: "Completed", count: completedCount || 4, color: "#10b981" },
+    { name: "Discovery", count: discoveryCount, color: "#3b82f6" },
+    { name: "Development", count: devCount, color: "#6366f1" },
+    { name: "QA & Audit", count: qaCount, color: "#f59e0b" },
+    { name: "Deployed", count: deployedCount, color: "#06b6d4" },
+    { name: "Completed", count: completedCount, color: "#10b981" },
   ];
 
-  // Monthly trends for area chart
+  // Monthly trends derived from real database invoice and lead creation dates
   const monthlyData = useMemo(() => {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const baseLeads = [8, 12, 19, 15, 24, 28, 32, 38, 42, 49, 54, 62];
-    const baseRev = [180000, 240000, 310000, 390000, 480000, 560000, 680000, 750000, 840000, 920000, 1050000, 1200000];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    const result = [];
 
-    return months.map((m, idx) => ({
-      month: m,
-      leads: baseLeads[idx],
-      revenue: baseRev[idx],
-      collected: Math.round(baseRev[idx] * 0.85)
-    }));
-  }, []);
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const mIdx = d.getMonth();
+      const y = d.getFullYear();
+      const mName = monthNames[mIdx];
+
+      const monthInvoices = invoices.filter((inv: any) => {
+        const invDate = new Date(inv.createdAt || inv.issueDate || Date.now());
+        return invDate.getMonth() === mIdx && invDate.getFullYear() === y;
+      });
+
+      const monthLeads = leads.filter((lead: any) => {
+        const leadDate = new Date(lead.createdAt || Date.now());
+        return leadDate.getMonth() === mIdx && leadDate.getFullYear() === y;
+      });
+
+      const revenue = monthInvoices.reduce((sum: number, inv: any) => sum + (inv.totalAmount || 0), 0);
+      const collected = monthInvoices
+        .filter((inv: any) => inv.status === "paid")
+        .reduce((sum: number, inv: any) => sum + (inv.totalAmount || 0), 0);
+
+      result.push({
+        month: `${mName} ${y === now.getFullYear() ? "" : y}`.trim(),
+        leads: monthLeads.length,
+        revenue,
+        collected
+      });
+    }
+
+    return result;
+  }, [invoices, leads]);
 
   // Filtered high-priority projects for live tracking
   const activeProjectsList = useMemo(() => {
@@ -576,8 +600,8 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800 mt-4 flex items-center justify-between text-xs text-slate-500">
-            <span>Total Deliverables: <strong className="text-slate-900 dark:text-white">{projects.length || 14}</strong></span>
-            <span className="text-emerald-600 font-bold">100% on schedule</span>
+            <span>Total Deliverables: <strong className="text-slate-900 dark:text-white">{projects.length}</strong></span>
+            <span className="text-blue-600 font-bold">{completedCount} Completed / {projects.length} Total</span>
           </div>
         </div>
       </div>
@@ -623,7 +647,7 @@ export default function AdminDashboardPage() {
           <div className="space-y-4">
             {activeProjectsList.length > 0 ? (
               activeProjectsList.map((project: any) => {
-                const progress = project.progressPercentage || Math.min(100, Math.floor(Math.random() * 40) + 50);
+                const progress = typeof project.progressPercentage === "number" ? project.progressPercentage : (project.status === "completed" ? 100 : 0);
                 return (
                   <div
                     key={project._id || project.title}

@@ -16,19 +16,33 @@ export const getChannelMessages = asyncHandler(async (req: Request, res: Respons
 });
 
 // POST /api/v1/chat/messages
-export const sendChatMessage = asyncHandler(async (req: Request, res: Response) => {
-  const { channelId, senderId, senderName, senderRole, text, attachmentName, attachmentUrl } = req.body;
+export const sendChatMessage = asyncHandler(async (req: any, res: Response) => {
+  const { channelId, text, attachmentName, attachmentUrl } = req.body;
 
-  if (!channelId || !senderName || !text) {
-    throw new ApiError(400, "channelId, senderName, and text are required");
+  if (!channelId || !text) {
+    throw new ApiError(400, "channelId and text are required");
+  }
+
+  // Derive sender identity strictly from authenticated JWT context
+  const authUser = req.user;
+  let resolvedName = authUser?.email || "Team Member";
+  let resolvedRole = authUser?.role || "USER";
+
+  if (authUser?.userId) {
+    const { User } = await import("../models/user.model.js");
+    const userDoc = await User.findById(authUser.userId).select("name role");
+    if (userDoc) {
+      resolvedName = userDoc.name || resolvedName;
+      resolvedRole = userDoc.role || resolvedRole;
+    }
   }
 
   const newMessage = await ChatMessage.create({
     channelId,
-    senderId,
-    senderName,
-    senderRole: senderRole || "User",
-    text,
+    senderId: authUser?.userId || "system",
+    senderName: resolvedName,
+    senderRole: resolvedRole,
+    text: String(text).trim(),
     attachmentName,
     attachmentUrl,
   });
@@ -37,7 +51,7 @@ export const sendChatMessage = asyncHandler(async (req: Request, res: Response) 
   try {
     const io = getIO();
     io.to(channelId).emit("new_chat_message", newMessage);
-    io.emit("admin_chat_broadcast", newMessage);
+    io.to("admin_room").emit("admin_chat_broadcast", newMessage);
   } catch (err) {
     console.warn("[Socket.IO Warning] Could not broadcast socket message:", err);
   }

@@ -61,21 +61,22 @@ export default function AnalyticsPage() {
     );
   };
 
-  // --- Dynamic Financial Calculations ---
+  // --- Dynamic Financial Calculations from Authoritative Invoices ---
   const totalRevenue = useMemo(() => {
-    if (analytics?.totalRevenue && analytics.totalRevenue > 0) return analytics.totalRevenue;
+    if (analytics?.totalRevenue !== undefined && analytics.totalRevenue > 0) return analytics.totalRevenue;
     const paidInvoices = invoices.filter((i: any) => i.status === "paid");
     if (paidInvoices.length > 0) {
       return paidInvoices.reduce((acc: number, curr: any) => acc + (curr.totalAmount || 0), 0);
     }
     const allInvoices = invoices.reduce((acc: number, curr: any) => acc + (curr.totalAmount || 0), 0);
-    return allInvoices > 0 ? allInvoices : 2850000;
+    return allInvoices;
   }, [analytics, invoices]);
 
   const paidRevenue = useMemo(() => {
-    const paid = invoices.filter((i: any) => i.status === "paid").reduce((acc: number, curr: any) => acc + (curr.totalAmount || 0), 0);
-    return paid > 0 ? paid : Math.round(totalRevenue * 0.78);
-  }, [invoices, totalRevenue]);
+    return invoices
+      .filter((i: any) => i.status === "paid")
+      .reduce((acc: number, curr: any) => acc + (curr.totalAmount || 0), 0);
+  }, [invoices]);
 
   const pendingRevenue = Math.max(0, totalRevenue - paidRevenue);
 
@@ -88,42 +89,65 @@ export default function AnalyticsPage() {
     "all": 12.2
   }[timeframe];
 
-  // Monthly Revenue Data (derived from DB or fallback structured baseline)
+  // Monthly Revenue Data (derived from DB invoices or real monthly aggregates)
   const revenueTrendData = useMemo(() => {
     if (analytics?.monthlyInvoices && analytics.monthlyInvoices.length > 0) {
       return analytics.monthlyInvoices.map((item: any) => ({
         month: item._id,
         revenue: Math.round(item.total * timeframeMultiplier),
-        collected: Math.round(item.total * 0.85 * timeframeMultiplier),
+        collected: Math.round((item.paid || item.total * 0.85) * timeframeMultiplier),
         target: Math.round(item.total * 1.15 * timeframeMultiplier)
       }));
     }
 
-    // Default dynamic trajectory
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const baseAmounts = [180000, 220000, 290000, 310000, 390000, 480000, 520000, 610000, 690000, 780000, 840000, 950000];
-    return months.map((m, idx) => ({
-      month: m,
-      revenue: Math.round(baseAmounts[idx] * (timeframeMultiplier / 2)),
-      collected: Math.round(baseAmounts[idx] * 0.82 * (timeframeMultiplier / 2)),
-      target: Math.round(baseAmounts[idx] * 1.12 * (timeframeMultiplier / 2))
-    }));
-  }, [analytics, timeframeMultiplier]);
+    // Authentic monthly trends calculated from current invoices
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    const result = [];
 
-  // Lead Conversion Funnel
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const mIdx = d.getMonth();
+      const y = d.getFullYear();
+      const mName = monthNames[mIdx];
+
+      const monthInvoices = invoices.filter((inv: any) => {
+        const invDate = new Date(inv.createdAt || inv.issueDate || Date.now());
+        return invDate.getMonth() === mIdx && invDate.getFullYear() === y;
+      });
+
+      const revenue = monthInvoices.reduce((sum: number, inv: any) => sum + (inv.totalAmount || 0), 0);
+      const collected = monthInvoices
+        .filter((inv: any) => inv.status === "paid")
+        .reduce((sum: number, inv: any) => sum + (inv.totalAmount || 0), 0);
+
+      result.push({
+        month: `${mName} ${y === now.getFullYear() ? "" : y}`.trim(),
+        revenue: Math.round(revenue * timeframeMultiplier),
+        collected: Math.round(collected * timeframeMultiplier),
+        target: Math.round(revenue * 1.1 * timeframeMultiplier)
+      });
+    }
+
+    return result;
+  }, [analytics, invoices, timeframeMultiplier]);
+
+  // Lead Conversion Funnel strictly computed from real leads
   const funnelData = useMemo(() => {
-    const totalCount = leads.length || 64;
-    const contactedCount = leads.filter((l: any) => l.status === "contacted" || l.status === "qualified" || l.status === "converted").length || Math.round(totalCount * 0.72);
-    const qualifiedCount = leads.filter((l: any) => l.status === "qualified" || l.status === "converted").length || Math.round(totalCount * 0.45);
-    const convertedCount = leads.filter((l: any) => l.status === "converted").length || Math.round(totalCount * 0.28);
-    const closedCount = leads.filter((l: any) => l.status === "closed").length || Math.round(totalCount * 0.12);
+    const totalCount = leads.length;
+    const contactedCount = leads.filter((l: any) => l.status === "contacted" || l.status === "qualified" || l.status === "converted").length;
+    const qualifiedCount = leads.filter((l: any) => l.status === "qualified" || l.status === "converted").length;
+    const convertedCount = leads.filter((l: any) => l.status === "converted").length;
+    const closedCount = leads.filter((l: any) => l.status === "closed").length;
+
+    const rate = (num: number, den: number) => (den > 0 ? `${Math.round((num / den) * 100)}%` : "0%");
 
     return [
-      { stage: "Total Inquiries", count: totalCount, rate: "100%", fill: "#3b82f6" },
-      { stage: "Contacted & Vetted", count: contactedCount, rate: `${Math.round((contactedCount / totalCount) * 100)}%`, fill: "#6366f1" },
-      { stage: "Discovery Qualified", count: qualifiedCount, rate: `${Math.round((qualifiedCount / totalCount) * 100)}%`, fill: "#8b5cf6" },
-      { stage: "Contract Converted", count: convertedCount, rate: `${Math.round((convertedCount / totalCount) * 100)}%`, fill: "#10b981" },
-      { stage: "Retainer Closed", count: closedCount, rate: `${Math.round((closedCount / totalCount) * 100)}%`, fill: "#059669" }
+      { stage: "Total Inquiries", count: totalCount, rate: totalCount > 0 ? "100%" : "0%", fill: "#3b82f6" },
+      { stage: "Contacted & Vetted", count: contactedCount, rate: rate(contactedCount, totalCount), fill: "#6366f1" },
+      { stage: "Discovery Qualified", count: qualifiedCount, rate: rate(qualifiedCount, totalCount), fill: "#8b5cf6" },
+      { stage: "Contract Converted", count: convertedCount, rate: rate(convertedCount, totalCount), fill: "#10b981" },
+      { stage: "Retainer Closed", count: closedCount, rate: rate(closedCount, totalCount), fill: "#059669" }
     ];
   }, [leads]);
 
@@ -139,13 +163,7 @@ export default function AnalyticsPage() {
       return Object.entries(counts).map(([name, count]) => ({ name, count }));
     }
 
-    return [
-      { name: "Full-Stack Web Apps", count: 24 },
-      { name: "AI & ML Engineering", count: 18 },
-      { name: "Mobile Solutions", count: 14 },
-      { name: "Cloud Infrastructure", count: 11 },
-      { name: "UI/UX & Design Systems", count: 8 },
-    ];
+    return [];
   }, [leads]);
 
   // Project Status Pipeline
@@ -156,13 +174,15 @@ export default function AnalyticsPage() {
     const deployed = projects.filter((p: any) => p.status === "deployed").length;
     const completed = projects.filter((p: any) => p.status === "completed").length;
 
-    const total = projects.length || 1;
+    const total = projects.length;
+    const pct = (c: number) => (total > 0 ? Math.round((c / total) * 100) : 0);
+
     return [
-      { name: "Discovery", count: discovery || 3, pct: Math.round(((discovery || 3) / (projects.length || 12)) * 100), color: "#3b82f6" },
-      { name: "In Development", count: dev || 5, pct: Math.round(((dev || 5) / (projects.length || 12)) * 100), color: "#6366f1" },
-      { name: "QA & Audit", count: qa || 2, pct: Math.round(((qa || 2) / (projects.length || 12)) * 100), color: "#f59e0b" },
-      { name: "Deployed", count: deployed || 2, pct: Math.round(((deployed || 2) / (projects.length || 12)) * 100), color: "#06b6d4" },
-      { name: "Completed", count: completed || 4, pct: Math.round(((completed || 4) / (projects.length || 12)) * 100), color: "#10b981" },
+      { name: "Discovery", count: discovery, pct: pct(discovery), color: "#3b82f6" },
+      { name: "In Development", count: dev, pct: pct(dev), color: "#6366f1" },
+      { name: "QA & Audit", count: qa, pct: pct(qa), color: "#f59e0b" },
+      { name: "Deployed", count: deployed, pct: pct(deployed), color: "#06b6d4" },
+      { name: "Completed", count: completed, pct: pct(completed), color: "#10b981" },
     ];
   }, [projects]);
 
@@ -174,10 +194,10 @@ export default function AnalyticsPage() {
     const completed = tasks.filter((t: any) => t.status === "completed").length;
 
     return [
-      { name: "Backlog / Todo", count: todo || 8, color: "#94a3b8" },
-      { name: "In Progress", count: inProgress || 14, color: "#3b82f6" },
-      { name: "Peer Review", count: review || 6, color: "#f59e0b" },
-      { name: "Completed", count: completed || 28, color: "#10b981" },
+      { name: "Backlog / Todo", count: todo, color: "#94a3b8" },
+      { name: "In Progress", count: inProgress, color: "#3b82f6" },
+      { name: "Peer Review", count: review, color: "#f59e0b" },
+      { name: "Completed", count: completed, color: "#10b981" },
     ];
   }, [tasks]);
 
@@ -189,10 +209,10 @@ export default function AnalyticsPage() {
     const draft = invoices.filter((i: any) => i.status === "draft").length;
 
     return [
-      { name: "Paid Invoices", value: paid || 18, color: "#10b981" },
-      { name: "Issued / Pending", value: issued || 7, color: "#3b82f6" },
-      { name: "Overdue", value: overdue || 2, color: "#f43f5e" },
-      { name: "Drafts", value: draft || 3, color: "#94a3b8" }
+      { name: "Paid Invoices", value: paid, color: "#10b981" },
+      { name: "Issued / Pending", value: issued, color: "#3b82f6" },
+      { name: "Overdue", value: overdue, color: "#f43f5e" },
+      { name: "Drafts", value: draft, color: "#94a3b8" }
     ];
   }, [invoices]);
 
@@ -200,12 +220,12 @@ export default function AnalyticsPage() {
   const clientTierData = useMemo(() => {
     const enterprise = clients.filter((c: any) => c.tier === "Enterprise").length;
     const scaleup = clients.filter((c: any) => c.tier === "Scaleup").length;
-    const startup = clients.filter((c: any) => c.tier === "Startup").length;
+    const startup = clients.filter((c: any) => c.tier === "Startup" || !c.tier).length;
 
     return [
-      { name: "Enterprise Tier", count: enterprise || 5, fill: "#6366f1" },
-      { name: "Scaleup Tier", count: scaleup || 9, fill: "#3b82f6" },
-      { name: "Startup Tier", count: startup || 12, fill: "#10b981" }
+      { name: "Enterprise Tier", count: enterprise, fill: "#6366f1" },
+      { name: "Scaleup Tier", count: scaleup, fill: "#3b82f6" },
+      { name: "Startup Tier", count: startup, fill: "#10b981" }
     ];
   }, [clients]);
 
@@ -223,12 +243,12 @@ export default function AnalyticsPage() {
         ["Total Platform Revenue", `INR ${totalRevenue.toLocaleString("en-IN")}`],
         ["Paid Collected Revenue", `INR ${paidRevenue.toLocaleString("en-IN")}`],
         ["Pending Receivables", `INR ${pendingRevenue.toLocaleString("en-IN")}`],
-        ["Active Projects", projects.length || analytics?.totalProjects || 12],
-        ["Active Clients", clients.length || analytics?.activeClients || 14],
-        ["Total Leads Ingested", leads.length || 45],
-        ["Total Tasks Managed", tasks.length || 56],
-        ["System Uptime SLA", analytics?.telemetry?.systemUptimeSla || "99.998%"],
-        ["API Latency", `${analytics?.telemetry?.apiLatencyMs || 14}ms`],
+        ["Active Projects", projects.length],
+        ["Active Clients", clients.length],
+        ["Total Leads Ingested", leads.length],
+        ["Total Tasks Managed", tasks.length],
+        ["System Uptime SLA", analytics?.telemetry?.systemUptimeSla || "Operational"],
+        ["API Latency", `${analytics?.telemetry?.apiLatencyMs || 15}ms`],
         [],
         ["MONTHLY REVENUE DATA"],
         ["Month", "Revenue", "Collected", "Target"],
@@ -263,9 +283,9 @@ export default function AnalyticsPage() {
   // Strategic KPI cards for the overview
   const strategicKPIs = [
     {
-      title: "Total Revenue Run-Rate",
+      title: "Total Revenue Volume",
       value: `₹${totalRevenue.toLocaleString("en-IN")}`,
-      delta: "+24.8% YoY",
+      delta: `${invoices.length} invoices`,
       isPositive: true,
       subtext: `₹${paidRevenue.toLocaleString("en-IN")} collected`,
       icon: IndianRupee,
@@ -274,30 +294,30 @@ export default function AnalyticsPage() {
     },
     {
       title: "Active Enterprise Projects",
-      value: String(projects.length || analytics?.totalProjects || 14),
-      delta: "+18.2% throughput",
+      value: String(projects.length),
+      delta: `${projects.filter((p: any) => p.status === "completed").length} completed`,
       isPositive: true,
-      subtext: "85.4% on-schedule compliance",
+      subtext: `${projects.filter((p: any) => p.status === "in_development" || p.status === "in_progress").length} in active development`,
       icon: FolderKanban,
       color: "from-indigo-600 to-purple-600",
       accent: "text-indigo-500 bg-indigo-50 dark:bg-indigo-950/60"
     },
     {
       title: "Lead Conversion Rate",
-      value: `${analytics?.leadConversionRate || "28.4"}%`,
-      delta: "+4.6% vs target",
+      value: `${leads.length > 0 ? Math.round((leads.filter((l: any) => l.status === "converted").length / leads.length) * 100) : 0}%`,
+      delta: `${leads.filter((l: any) => l.status === "converted").length} converted`,
       isPositive: true,
-      subtext: `${leads.length || 42} total sales opportunities`,
+      subtext: `${leads.length} total sales opportunities`,
       icon: Target,
       color: "from-emerald-600 to-teal-600",
       accent: "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/60"
     },
     {
-      title: "High-Availability SLA",
-      value: analytics?.telemetry?.systemUptimeSla || analytics?.systemUptimeSla || "99.998%",
-      delta: `${analytics?.telemetry?.apiLatencyMs || 14}ms latency`,
+      title: "System Telemetry Status",
+      value: isConnected ? "Live Socket" : "HTTP Polling",
+      delta: isConnected ? "Active" : "Standby",
       isPositive: true,
-      subtext: "Tier-4 multi-region cluster",
+      subtext: isConnected ? "Real-time updates active" : "Auto-polling fallback enabled",
       icon: Cpu,
       color: "from-cyan-600 to-blue-600",
       accent: "text-cyan-500 bg-cyan-50 dark:bg-cyan-950/60"

@@ -22,9 +22,8 @@ export default function ForgotPasswordPage() {
       await apiClient.post("/auth/forgot-password", { email });
       setSubmitted(true);
     } catch (err: any) {
-      console.warn("Forgot password API attempt fallback:", err);
-      // Even if API returns 404 or network error, show friendly success state to user
-      setSubmitted(true);
+      console.error("Forgot password request error:", err);
+      setError(err.response?.data?.message || "Failed to reach server. Please check your network connection and try again.");
     } finally {
       setLoading(false);
     }

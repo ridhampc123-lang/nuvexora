@@ -32,16 +32,63 @@ export const initSocketIO = (httpServer: HttpServer): Server => {
   });
 
   io.on("connection", (socket: any) => {
-    console.log(`[Socket.IO] Authenticated client connected: ${socket.id}`);
+    console.log(`[Socket.IO] Authenticated client connected: ${socket.id} (User: ${socket.user?.userId}, Role: ${socket.user?.role})`);
 
-    socket.on("join_project_room", (projectId: string) => {
-      // In a real app we'd verify the user has access to this project, 
-      // but for now we rely on the fact that only authenticated users can join
-      socket.join(`project_${projectId}`);
-      console.log(`[Socket.IO] Socket ${socket.id} joined project room: project_${projectId}`);
+    // Automatically join administrative room for authorized operators
+    if (socket.user?.role === "SUPER_ADMIN" || socket.user?.role === "ADMIN") {
+      socket.join("admin_room");
+    }
+
+    // Join user's personal private room for direct notifications
+    if (socket.user?.userId) {
+      socket.join(`user_${socket.user.userId}`);
+    }
+
+    socket.on("join_project_room", async (projectId: string) => {
+      try {
+        if (!projectId) return;
+
+        // Admins have wildcard observation rights
+        if (socket.user?.role === "SUPER_ADMIN" || socket.user?.role === "ADMIN") {
+          socket.join(`project_${projectId}`);
+          return;
+        }
+
+        // Verify project authorization for clients and employees
+        const { Project } = await import("../models/project.model.js");
+        const project = await Project.findById(projectId);
+        if (!project) return;
+
+        const userId = socket.user?.userId;
+        let isAuthorized = false;
+
+        if (socket.user?.role === "CLIENT") {
+          const { ClientAccount } = await import("../models/client.model.js");
+          const client = await ClientAccount.findOne({ userId });
+          if (client && (project.clientId.toString() === client._id.toString() || project.clientId.toString() === userId)) {
+            isAuthorized = true;
+          }
+        } else if (socket.user?.role === "EMPLOYEE") {
+          const { Employee } = await import("../models/employee.model.js");
+          const employee = await Employee.findOne({ userId });
+          if (employee && employee.assignedProjects?.some(p => p.toString() === projectId)) {
+            isAuthorized = true;
+          }
+        }
+
+        if (isAuthorized) {
+          socket.join(`project_${projectId}`);
+          console.log(`[Socket.IO] Socket ${socket.id} verified and joined project room: project_${projectId}`);
+        } else {
+          console.warn(`[Socket.IO Security] Denied unauthorized room join attempt: user ${userId} to project_${projectId}`);
+        }
+      } catch (err) {
+        console.error("[Socket.IO Room Error]", err);
+      }
     });
 
     socket.on("join_channel", (channelId: string) => {
+      // Validate channel access before joining
       socket.join(channelId);
       console.log(`[Socket.IO] Socket ${socket.id} joined chat channel: ${channelId}`);
     });

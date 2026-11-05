@@ -12,16 +12,17 @@ export const verifyJWT = async (req: AuthenticatedRequest, _res: Response, next:
     if (!token && (req as any).cookies?.accessToken) {
       token = (req as any).cookies.accessToken;
     }
-    if (!token && req.query?.token && typeof req.query.token === "string") {
-      token = req.query.token;
-    }
 
     if (!token) {
       throw new ApiError(401, "Authentication token missing.");
     }
 
-    const secret = process.env.JWT_SECRET || "nuvexora_super_secret_jwt_key_2026_enterprise_level_secure";
-    const decoded = jwt.verify(token, secret) as IUserPayload;
+    const secret = process.env.JWT_SECRET;
+    if (!secret && process.env.NODE_ENV === "production") {
+      throw new ApiError(500, "Server security configuration error: JWT_SECRET missing");
+    }
+    const jwtSecret = secret || "nuvexora_dev_jwt_secret_key_minimum_32_characters_secure";
+    const decoded = jwt.verify(token, jwtSecret) as IUserPayload;
 
     const user = await User.findById(decoded.userId).select("status permissionsOverride role email name");
     if (!user || user.status !== "active") {
@@ -145,12 +146,9 @@ export const optionalAuth = async (req: AuthenticatedRequest, _res: Response, ne
     if (!token && (req as any).cookies?.accessToken) {
       token = (req as any).cookies.accessToken;
     }
-    if (!token && req.query?.token && typeof req.query.token === "string") {
-      token = req.query.token;
-    }
 
     if (token) {
-      const secret = process.env.JWT_SECRET || "nuvexora_super_secret_jwt_key_2026_enterprise_level_secure";
+      const secret = process.env.JWT_SECRET || "nuvexora_dev_jwt_secret_key_minimum_32_characters_secure";
       const decoded = jwt.verify(token, secret) as IUserPayload;
       req.user = decoded;
     }

@@ -1,118 +1,80 @@
 import { apiClient } from "./api-client";
 
 export const getClientDashboard = async () => {
-  try {
-    const { data } = await apiClient.get("/client/dashboard");
-    return data.data;
-  } catch {
-    return {
-      clientName: "Client Account",
-      companyName: "Organization",
-      primaryProject: "No Active Primary Project",
-      deliveryProgress: 0,
-      projects: [],
-      invoices: [],
-      tasks: [],
-      activeProjectsCount: 0,
-      pendingTasksCount: 0,
-      outstandingInvoicesTotal: "$0.00",
-    };
-  }
+  const { data } = await apiClient.get("/client/dashboard");
+  return data.data;
 };
 
 export const getClientProjects = async () => {
-  try {
-    const { data } = await apiClient.get("/client/projects");
-    if (Array.isArray(data.data)) return data.data;
-  } catch {}
-  return [];
+  const { data } = await apiClient.get("/client/projects");
+  return Array.isArray(data.data) ? data.data : [];
 };
 
 export const getClientTasks = async () => {
-  try {
-    const { data } = await apiClient.get("/client/tasks");
-    if (Array.isArray(data.data)) return data.data;
-  } catch {}
-  return [];
+  const { data } = await apiClient.get("/client/tasks");
+  return Array.isArray(data.data) ? data.data : [];
 };
 
 export const updateClientTaskStatus = async ({ id, status }: { id: string; status: string }) => {
-  try {
-    const { data } = await apiClient.patch(`/client/tasks/${id}`, { status });
-    return data.data;
-  } catch {
-    return { id, status };
-  }
+  const { data } = await apiClient.patch(`/client/tasks/${id}`, { status });
+  return data.data;
 };
 
 export const getClientInvoices = async () => {
-  try {
-    const { data } = await apiClient.get("/client/invoices");
-    if (Array.isArray(data.data)) return data.data;
-  } catch {}
-  return [];
+  const { data } = await apiClient.get("/client/invoices");
+  return Array.isArray(data.data) ? data.data : [];
 };
 
 export const payClientInvoice = async (id: string) => {
-  try {
-    const { data } = await apiClient.post(`/client/invoices/${id}/pay`);
-    return data.data;
-  } catch {
-    return { id, status: "paid" };
-  }
+  const { data } = await apiClient.post(`/client/invoices/${id}/pay`);
+  return data.data;
 };
 
-// --- APPROVALS ---
+// --- DELIVERABLE APPROVALS & STAGE GATES ---
 export const getClientApprovals = async () => {
-  try {
-    const { data } = await apiClient.get("/client/approvals");
-    if (Array.isArray(data.data)) return data.data;
-  } catch {}
-  return [];
+  const { data } = await apiClient.get("/client/approvals");
+  return Array.isArray(data.data) ? data.data : [];
 };
 
 export const approveDeliverable = async (id: string) => {
-  try {
-    const { data } = await apiClient.post(`/client/approvals/${id}/approve`);
-    return data.data;
-  } catch {
-    return { id, status: "approved" };
-  }
+  const { data } = await apiClient.post(`/client/approvals/${id}/approve`);
+  return data.data;
 };
 
 export const requestDeliverableChanges = async ({ id, comment, severity }: { id: string; comment: string; severity: string }) => {
-  try {
-    const { data } = await apiClient.post(`/client/approvals/${id}/request-changes`, { comment, severity });
-    return data.data;
-  } catch {
-    return { id, status: "changes_requested", comment, severity };
-  }
+  const { data } = await apiClient.post(`/client/approvals/${id}/request-changes`, { comment, severity });
+  return data.data;
 };
 
 // --- SUPPORT TICKETS ---
 export const getClientTickets = async () => {
-  try {
-    const { data } = await apiClient.get("/client/tickets");
-    if (Array.isArray(data.data)) return data.data;
-  } catch {}
-  return [];
+  const { data } = await apiClient.get("/client/tickets");
+  return Array.isArray(data.data) ? data.data : [];
 };
 
 export const createSupportTicket = async (ticketData: { subject: string; category: string; priority: string; description: string }) => {
-  try {
-    const { data } = await apiClient.post("/client/tickets", ticketData);
-    return data.data;
-  } catch {
-    return {
-      id: `TICK-${Math.floor(1000 + Math.random() * 9000)}`,
-      ...ticketData,
-      status: "open",
-      createdAt: "Just now",
-      assignedTo: "Support Engineering",
-      slaTimeRemaining: "Pending",
-      messages: [
-        { sender: "Client", role: "Client", text: ticketData.description, timestamp: "Just now" }
-      ]
-    };
-  }
+  const { data } = await apiClient.post("/client/tickets", ticketData);
+  return data.data;
+};
+
+// --- MEETINGS ---
+export const getClientMeetings = async () => {
+  const { data } = await apiClient.get("/client/meetings");
+  return Array.isArray(data.data) ? data.data : [];
+};
+
+export const scheduleClientMeeting = async (meetingData: { title: string; type?: string; meetingDate: string; timeSlot?: string; topic?: string }) => {
+  const { data } = await apiClient.post("/client/meetings", meetingData);
+  return data.data;
+};
+
+// --- CLIENT PROFILE ---
+export const getClientProfile = async () => {
+  const { data } = await apiClient.get("/client/profile");
+  return data.data;
+};
+
+export const updateClientProfile = async (profileData: { companyName?: string; ownerName?: string; phone?: string; industry?: string }) => {
+  const { data } = await apiClient.put("/client/profile", profileData);
+  return data.data;
 };

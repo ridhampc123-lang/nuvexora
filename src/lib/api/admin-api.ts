@@ -813,4 +813,15 @@ export const restoreMasterBackup = async (snapshotData: any) => {
   return data.data;
 };
 
+// --- SITE SETTINGS CMS ---
+export const getAdminSiteSettings = async () => {
+  const { data } = await apiClient.get("/admin/settings");
+  return data.data;
+};
+
+export const updateAdminSiteSettings = async (settingsData: any) => {
+  const { data } = await apiClient.put("/admin/settings", settingsData);
+  return data.data;
+};
+
 

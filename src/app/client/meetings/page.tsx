@@ -15,6 +15,7 @@ import {
   Download
 } from "lucide-react";
 import { toast } from "sonner";
+import { useClientMeetingsQuery, useScheduleClientMeetingMutation } from "@/hooks/use-api-queries";
 
 interface MeetingItem {
   id: string;
@@ -27,41 +28,56 @@ interface MeetingItem {
   status: string;
 }
 
-const initialMeetings: MeetingItem[] = [];
-
 export default function ClientMeetingsPage() {
-  const [meetings, setMeetings] = useState<MeetingItem[]>(initialMeetings);
+  const { data: dbMeetings = [], isLoading } = useClientMeetingsQuery();
+  const scheduleMutation = useScheduleClientMeetingMutation();
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   // Form State
   const [title, setTitle] = useState("");
   const [sessionType, setSessionType] = useState("Architecture Review");
-  const [meetingDate, setMeetingDate] = useState("2026-08-02");
-  const [meetingTime, setMeetingTime] = useState("02:00 PM EST");
-  const [organizer, setOrganizer] = useState("Alexander Vance (Lead Architect)");
+  const [organizer, setOrganizer] = useState("Engineering Lead");
+  const [meetingDate, setMeetingDate] = useState("");
+  const [meetingTime, setMeetingTime] = useState("10:00 AM EST");
+
+  const meetings: MeetingItem[] = dbMeetings.map((m: any) => ({
+    id: m._id || m.id,
+    title: m.title || "Technical Strategy Consultation",
+    type: m.topic || "Sprint Strategy",
+    date: m.meetingDate ? new Date(m.meetingDate).toLocaleDateString() : "TBD",
+    time: m.timeSlot || "Scheduled",
+    organizer: m.organizerName || "Engineering Lead",
+    link: m.meetingLink || "",
+    status: (m.status || "scheduled").toUpperCase(),
+  }));
 
   const handleScheduleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
-      toast.error("Please enter a meeting title.");
+    if (!title.trim() || !meetingDate) {
+      toast.error("Please enter a meeting title and date.");
       return;
     }
 
-    const newMeeting: MeetingItem = {
-      id: `m-${Date.now()}`,
-      title,
-      type: sessionType,
-      date: meetingDate,
-      time: `${meetingTime} (60 Mins)`,
-      organizer,
-      link: `https://meet.google.com/nuv-${Math.random().toString(36).substring(7)}`,
-      status: "Confirmed"
-    };
-
-    setMeetings([newMeeting, ...meetings]);
-    toast.success("Strategy call scheduled successfully! Calendar invite sent.");
-    setShowScheduleModal(false);
-    setTitle("");
+    scheduleMutation.mutate(
+      {
+        title,
+        type: sessionType,
+        meetingDate,
+        timeSlot: meetingTime,
+        topic: `${sessionType}: ${title}`,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Strategy call requested successfully! Our team will confirm your slot.");
+          setShowScheduleModal(false);
+          setTitle("");
+          setMeetingDate("");
+        },
+        onError: (err: any) => {
+          toast.error(err.response?.data?.message || "Failed to schedule meeting.");
+        },
+      }
+    );
   };
 
   const handleExportICS = (m: MeetingItem) => {

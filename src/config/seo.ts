@@ -3,7 +3,7 @@ import { siteConfig } from "@/config/site";
 
 export const seoConfig = {
   title: {
-    default: `${siteConfig.name} | ${siteConfig.tagline}`,
+    default: siteConfig.name,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,

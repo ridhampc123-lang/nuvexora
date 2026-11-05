@@ -17,10 +17,10 @@ import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
 export function HeroLeft() {
   const stats = [
-    { numberTarget: 100, suffix: "+", label: "Projects Delivered", icon: Briefcase },
-    { numberTarget: 50, suffix: "+", label: "Global Clients", icon: Building2 },
-    { numberTarget: 10, suffix: "+", label: "Industries Served", icon: Globe2 },
-    { numberTarget: 99, suffix: "%", label: "Client Satisfaction", icon: Award },
+    { numberTarget: 100, suffix: "%", label: "Zero-Trust Security", icon: Briefcase },
+    { numberTarget: 24, suffix: "/7", label: "System SLA Support", icon: Building2 },
+    { numberTarget: 100, suffix: "%", label: "Automated Auditing", icon: Globe2 },
+    { numberTarget: 99, suffix: ".9%", label: "Platform Availability", icon: Award },
   ];
 
   return (

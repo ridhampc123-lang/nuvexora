@@ -1,7 +1,7 @@
 "use client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getHomepageData, bookConsultationMeeting, subscribeNewsletter, getPublicBlogs, getPublicBlogBySlug, getPublicPortfolio, getPublicServices, getPublicCaseStudies, getPublicCaseStudyBySlug } from "@/lib/api/public-api";
-import { getEmployeeProjects, getEmployeeTasks, getMyAttendance, checkInEmployee, checkOutEmployee, getMyLeaveRequests, createEmployeeLeaveRequest } from "@/lib/api/employee-api";
+import { getEmployeeProjects, getEmployeeTasks, getMyAttendance, checkInEmployee, checkOutEmployee, getMyLeaveRequests, createEmployeeLeaveRequest, getEmployeeTickets, createEmployeeTicket, getEmployeeFiles } from "@/lib/api/employee-api";
 import { getChannelMessages, sendChatMessageApi, getChatChannelsApi, getAssignedTeamMembersApi } from "@/lib/api/chat-api";
 import { 
   getAdminMetrics, 
@@ -89,7 +89,9 @@ import {
   updateAdminCareer,
   deleteAdminCareer,
   getAdminAnalytics,
-  getAdminReports
+  getAdminReports,
+  getAdminSiteSettings,
+  updateAdminSiteSettings
 } from "@/lib/api/admin-api";
 import {
   getBusinessDeals,
@@ -111,7 +113,11 @@ import {
   approveDeliverable,
   requestDeliverableChanges,
   getClientTickets,
-  createSupportTicket
+  createSupportTicket,
+  getClientMeetings,
+  scheduleClientMeeting,
+  getClientProfile,
+  updateClientProfile
 } from "@/lib/api/client-api";
 
 export const useHomepageQuery = () => {
@@ -1019,6 +1025,59 @@ export const useCreateTicketMutation = () => {
   });
 };
 
+export const useClientMeetingsQuery = () => {
+  return useQuery({
+    queryKey: ["clientMeetings"],
+    queryFn: getClientMeetings,
+  });
+};
+
+export const useScheduleClientMeetingMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: scheduleClientMeeting,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clientMeetings"] });
+      queryClient.invalidateQueries({ queryKey: ["clientDashboard"] });
+    },
+  });
+};
+
+export const useClientProfileQuery = () => {
+  return useQuery({
+    queryKey: ["clientProfile"],
+    queryFn: getClientProfile,
+  });
+};
+
+export const useUpdateClientProfileMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateClientProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clientProfile"] });
+      queryClient.invalidateQueries({ queryKey: ["clientDashboard"] });
+    },
+  });
+};
+
+export const useAdminSiteSettingsQuery = () => {
+  return useQuery({
+    queryKey: ["adminSiteSettings"],
+    queryFn: getAdminSiteSettings,
+  });
+};
+
+export const useUpdateAdminSiteSettingsMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateAdminSiteSettings,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminSiteSettings"] });
+    },
+  });
+};
+
 // --- PUBLIC MUTATIONS ---
 
 export const useBookMeetingMutation = () => {
@@ -1321,6 +1380,30 @@ export const useEmployeeTimesheetsQuery = () => {
   return useQuery({
     queryKey: ["employeeTimesheets"],
     queryFn: getEmployeeTimesheets,
+  });
+};
+
+export const useEmployeeTicketsQuery = () => {
+  return useQuery({
+    queryKey: ["employeeTickets"],
+    queryFn: getEmployeeTickets,
+  });
+};
+
+export const useCreateEmployeeTicketMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createEmployeeTicket,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employeeTickets"] });
+    },
+  });
+};
+
+export const useEmployeeFilesQuery = () => {
+  return useQuery({
+    queryKey: ["employeeFiles"],
+    queryFn: getEmployeeFiles,
   });
 };
 

@@ -1,26 +1,63 @@
 "use client";
 
-import React, { useState } from "react";
-import { Save, CheckCircle2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Save, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { useAdminSiteSettingsQuery, useUpdateAdminSiteSettingsMutation } from "@/hooks/use-api-queries";
 
 export default function SiteSettingsCMSPage() {
+  const { data: remoteSettings, isLoading, isError, error } = useAdminSiteSettingsQuery();
+  const updateSettingsMutation = useUpdateAdminSiteSettingsMutation();
+
   const [saved, setSaved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [settings, setSettings] = useState({
-    siteName: "Nuvexora Technologies",
-    tagline: "Innovate. Build. Elevate.",
-    contactEmail: "nuvexoratech@gmail.com",
-    contactPhone: "+91 9213612847",
-    address: "San Francisco, CA & London, UK",
-    seoTitle: "Nuvexora Technologies — Enterprise Digital Engineering & AI Solutions",
-    seoDescription: "Deliver world-class software, AI, cloud, and digital solutions for modern businesses.",
+    siteName: "",
+    tagline: "",
+    contactEmail: "",
+    contactPhone: "",
+    address: "",
+    seoTitle: "",
+    seoDescription: "",
     maintenanceMode: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (remoteSettings) {
+      setSettings({
+        siteName: remoteSettings.siteName || "",
+        tagline: remoteSettings.tagline || "",
+        contactEmail: remoteSettings.contactEmail || "",
+        contactPhone: remoteSettings.contactPhone || "",
+        address: remoteSettings.address || "",
+        seoTitle: remoteSettings.seoTitle || "",
+        seoDescription: remoteSettings.seoDescription || "",
+        maintenanceMode: !!remoteSettings.maintenanceMode,
+      });
+    }
+  }, [remoteSettings]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setErrorMessage(null);
+    setSaved(false);
+
+    try {
+      await updateSettingsMutation.mutateAsync(settings);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 4000);
+    } catch (err: any) {
+      setErrorMessage(err?.response?.data?.message || err.message || "Failed to save settings. Please try again.");
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-16 space-y-4">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <p className="text-sm font-medium text-slate-500">Loading site settings...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -31,14 +68,28 @@ export default function SiteSettingsCMSPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-3xl p-8 shadow-sm space-y-6 text-xs">
-        {saved && (
-          <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-2 font-bold">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <span>Site settings updated and published successfully!</span>
-          </div>
-        )}
+      {isError && (
+        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-2 text-xs font-semibold">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <span>Notice: Could not load existing settings ({error instanceof Error ? error.message : "Network error"}). You may submit new settings to save.</span>
+        </div>
+      )}
 
+      {errorMessage && (
+        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800 flex items-center gap-2 text-xs font-semibold">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
+      {saved && (
+        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-2 font-bold text-xs">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <span>Site settings updated and persisted successfully!</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-3xl p-8 shadow-sm space-y-6 text-xs">
         <div className="space-y-4">
           <h2 className="text-sm font-extrabold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">1. Company Identity</h2>
 
@@ -47,6 +98,7 @@ export default function SiteSettingsCMSPage() {
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Company Name</label>
               <input
                 type="text"
+                required
                 value={settings.siteName}
                 onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-950 focus:border-blue-500 outline-none"
@@ -73,6 +125,7 @@ export default function SiteSettingsCMSPage() {
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Primary Email</label>
               <input
                 type="email"
+                required
                 value={settings.contactEmail}
                 onChange={(e) => setSettings({ ...settings, contactEmail: e.target.value })}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-950 focus:border-blue-500 outline-none"
@@ -125,13 +178,35 @@ export default function SiteSettingsCMSPage() {
           </div>
         </div>
 
-        <div className="pt-6 border-t border-slate-100 flex items-center justify-end">
+        <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <h2 className="text-sm font-extrabold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">4. System Controls</h2>
+
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={settings.maintenanceMode}
+              onChange={(e) => setSettings({ ...settings, maintenanceMode: e.target.checked })}
+              className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+            />
+            <div>
+              <span className="font-bold text-slate-800 dark:text-slate-200">Maintenance Mode</span>
+              <p className="text-slate-500 dark:text-slate-400 text-[11px]">When active, display a maintenance notice to standard visitors while allowing administrators to log in.</p>
+            </div>
+          </label>
+        </div>
+
+        <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end">
           <button
             type="submit"
-            className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/20 flex items-center gap-2 transition-all cursor-pointer"
+            disabled={updateSettingsMutation.isPending}
+            className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-400 text-white font-bold text-xs shadow-md shadow-blue-600/20 flex items-center gap-2 transition-all cursor-pointer"
           >
-            <Save className="w-4 h-4" />
-            <span>Save Settings</span>
+            {updateSettingsMutation.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            <span>{updateSettingsMutation.isPending ? "Saving..." : "Save Settings"}</span>
           </button>
         </div>
       </form>

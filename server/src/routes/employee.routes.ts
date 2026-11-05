@@ -357,5 +357,74 @@ router.post("/my/leave-requests", async (req: any, res) => {
   }
 });
 
+import { Ticket } from "../models/ticket.model.js";
+import { Media } from "../models/media.model.js";
+
+// GET /api/v1/employee/my/files
+router.get("/my/files", async (req: any, res) => {
+  try {
+    const files = await Media.find({
+      $or: [
+        { uploadedBy: req.user.userId },
+        { folder: "deliverables" },
+        { folder: "projects" }
+      ]
+    }).sort({ createdAt: -1 });
+
+    return res.json({ success: true, files });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message || "Failed to fetch files" });
+  }
+});
+
+// GET /api/v1/employee/my/tickets
+router.get("/my/tickets", async (req: any, res) => {
+  try {
+    const tickets = await Ticket.find({
+      $or: [
+        { submittedByUserId: req.user.userId },
+        { assignedTo: req.user.userId }
+      ]
+    }).sort({ createdAt: -1 });
+
+    return res.json({ success: true, tickets });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message || "Failed to fetch tickets" });
+  }
+});
+
+// POST /api/v1/employee/my/tickets
+router.post("/my/tickets", async (req: any, res) => {
+  try {
+    const { subject, category, priority, description } = req.body;
+    if (!subject || !description) {
+      return res.status(400).json({ success: false, message: "Subject and description are required." });
+    }
+
+    const ticketNumber = `IT-${Date.now().toString().slice(-6)}`;
+    const ticket = await Ticket.create({
+      ticketNumber,
+      submittedByUserId: req.user.userId,
+      subject,
+      category: (category || "technical").toLowerCase(),
+      priority: (priority || "medium").toLowerCase(),
+      description,
+      status: "open"
+    });
+
+    try {
+      getIO().emit("dashboard_update");
+    } catch {}
+
+    return res.status(201).json({
+      success: true,
+      message: "Internal support ticket submitted successfully.",
+      ticket
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message || "Failed to submit ticket" });
+  }
+});
+
 export default router;
 

@@ -1,36 +1,70 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Save, CheckCircle2 } from "lucide-react";
+import { Save, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
+import { useClientProfileQuery, useUpdateClientProfileMutation } from "@/hooks/use-api-queries";
+import { toast } from "sonner";
 
 export default function ClientSettingsPage() {
-  const [saved, setSaved] = useState(false);
   const { user } = useAuth();
+  const { data: clientData, isLoading } = useClientProfileQuery();
+  const updateProfileMutation = useUpdateClientProfileMutation();
+
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [profile, setProfile] = useState({
     name: "",
     email: "",
     company: "",
     phone: "",
-    timezone: "America/New_York (EST)",
+    industry: "FinTech & Enterprise",
   });
 
   useEffect(() => {
-    if (user) {
+    if (clientData) {
       setProfile({
+        name: clientData.ownerName || clientData.name || user?.name || "",
+        email: clientData.email || user?.email || "",
+        company: clientData.companyName || clientData.company || user?.companyName || "",
+        phone: clientData.phone || "",
+        industry: clientData.industry || "FinTech & Enterprise",
+      });
+    } else if (user) {
+      setProfile((prev) => ({
+        ...prev,
         name: user.name || "",
         email: user.email || "",
-        company: user.companyName || (user as any).company || "",
-        phone: "",
-        timezone: "America/New_York (EST)",
-      });
+        company: user.companyName || "",
+      }));
     }
-  }, [user]);
+  }, [clientData, user]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setError(null);
+
+    updateProfileMutation.mutate(
+      {
+        ownerName: profile.name,
+        companyName: profile.company,
+        phone: profile.phone,
+        industry: profile.industry,
+      },
+      {
+        onSuccess: () => {
+          setSaved(true);
+          toast.success("Client account profile updated successfully!");
+          setTimeout(() => setSaved(false), 4000);
+        },
+        onError: (err: any) => {
+          const msg = err.response?.data?.message || "Failed to update profile settings";
+          setError(msg);
+          toast.error(msg);
+        },
+      }
+    );
   };
 
   return (
@@ -82,11 +116,12 @@ export default function ClientSettingsPage() {
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Timezone</label>
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Phone Number</label>
             <input
               type="text"
-              value={profile.timezone}
-              onChange={(e) => setProfile({ ...profile, timezone: e.target.value })}
+              placeholder="+1 (555) 000-0000"
+              value={profile.phone}
+              onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
               className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-950 focus:border-blue-500 outline-none"
             />
           </div>
@@ -95,9 +130,14 @@ export default function ClientSettingsPage() {
         <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end">
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/20 flex items-center gap-2 transition-all cursor-pointer"
+            disabled={updateProfileMutation.isPending}
+            className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/20 flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
           >
-            <Save className="w-4 h-4" />
+            {updateProfileMutation.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
             <span>Save Profile</span>
           </button>
         </div>

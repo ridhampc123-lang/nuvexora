@@ -62,41 +62,43 @@ export default function BlogPage() {
             descriptionClassName="text-slate-400 text-base sm:text-lg max-w-3xl"
           />
 
-          {/* Search & Dynamic Filter Bar */}
-          <div className="mt-8 mb-12 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 p-4 rounded-2xl backdrop-blur-xl shadow-xl">
-            {/* Category Tabs */}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                    selectedCategory === cat
-                      ? "bg-blue-600 text-white shadow-lg shadow-blue-600/25"
-                      : "bg-slate-950/60 text-slate-400 hover:text-white hover:bg-slate-800/80 border border-slate-800/50"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+          {/* Search & Dynamic Filter Bar (Only displayed when real articles exist) */}
+          {articlesList.length > 0 && (
+            <div className="mt-8 mb-12 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 p-4 rounded-2xl backdrop-blur-xl shadow-xl">
+              {/* Category Tabs */}
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                      selectedCategory === cat
+                        ? "bg-blue-600 text-white shadow-lg shadow-blue-600/25"
+                        : "bg-slate-950/60 text-slate-400 hover:text-white hover:bg-slate-800/80 border border-slate-800/50"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
 
-            {/* Search Box */}
-            <div className="relative min-w-[260px]">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search verified articles..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all font-mono"
-              />
+              {/* Search Box */}
+              <div className="relative min-w-[260px]">
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search articles..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-all font-mono"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Loading Skeleton */}
           {isLoading && (
-            <div className="space-y-8">
+            <div className="space-y-8 mt-8">
               <div className="animate-pulse bg-slate-900/60 rounded-3xl h-80 border border-slate-800" />
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {[1, 2, 3].map((i) => (
@@ -108,14 +110,23 @@ export default function BlogPage() {
 
           {/* Empty State when no blogs published in database */}
           {!isLoading && articlesList.length === 0 && (
-            <div className="text-center py-20 bg-slate-900/40 rounded-3xl border border-slate-800 p-8 max-w-xl mx-auto space-y-4">
+            <div className="text-center py-24 bg-slate-900/40 rounded-3xl border border-slate-800/80 p-8 sm:p-12 max-w-xl mx-auto space-y-5 mt-8 shadow-xl">
               <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto text-blue-400">
                 <BookOpen className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-extrabold text-white">No Articles Published Yet</h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                Our principal systems architects and engineering leads are currently preparing technical whitepapers and architecture case studies.
+              <h3 className="text-2xl font-extrabold text-white">No Articles Published Yet</h3>
+              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-md mx-auto">
+                Our team has not published any blog posts yet. When new articles and engineering insights are published, they will appear here.
               </p>
+              <div className="pt-2">
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-lg shadow-blue-600/25"
+                >
+                  <ArrowRight className="w-4 h-4 rotate-180" />
+                  <span>Return to Homepage</span>
+                </Link>
+              </div>
             </div>
           )}
 

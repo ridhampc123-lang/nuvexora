@@ -30,7 +30,7 @@ export const createProject = asyncHandler(async (req: Request, res: Response) =>
 export const getClientProjects = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user?.userId;
   
-  if (req.user?.role === "admin") {
+  if (req.user?.role === "SUPER_ADMIN" || req.user?.role === "ADMIN") {
     const projects = await Project.find().populate("clientId", "name email company").sort({ createdAt: -1 });
     return res.status(200).json(new ApiResponse(200, projects, "Projects retrieved successfully"));
   }
